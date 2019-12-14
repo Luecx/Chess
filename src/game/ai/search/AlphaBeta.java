@@ -1,12 +1,12 @@
-package game.ai.minimax;
+package game.ai.search;
 
 import board.Board;
 import board.Move;
-import game.ai.AI;
-import game.ai.minimax.evaluator.Evaluator;
-import game.ai.minimax.ordering.Orderer;
-import game.ai.minimax.tools.PVLine;
-import game.ai.minimax.tools.TranspositionTable;
+import game.ai.evaluator.Evaluator;
+import game.ai.ordering.Orderer;
+import game.ai.tools.PVLine;
+import game.ai.tools.TranspositionEntry;
+import game.ai.tools.TranspositionTable;
 
 import java.util.*;
 
@@ -19,12 +19,21 @@ public class AlphaBeta implements AI {
     private int quiesce_depth;
     private boolean use_iteration = true;
     private boolean use_transposition = false;
+    private boolean print_overview = false;
 
     public AlphaBeta(Evaluator evaluator, Orderer orderer, int max_depth, int quiesce_depth) {
         this.evaluator = evaluator;
         this.max_depth = max_depth;
         this.orderer = orderer;
         this.quiesce_depth = quiesce_depth;
+    }
+
+    public boolean isPrint_overview() {
+        return print_overview;
+    }
+
+    public void setPrint_overview(boolean print_overview) {
+        this.print_overview = print_overview;
     }
 
     public Evaluator getEvaluator() {
@@ -78,15 +87,18 @@ public class AlphaBeta implements AI {
     private int _depth;
     private int _quiesceNodes;
     private int _visitedNodes;
-    private int _evaluatedNodes;
+    private int _terminalNodes;
     private Board _board;
     private Move _bestMove;
 
-    private TranspositionTable<TranspositionTable.TranspositionEntry> _transpositionTable;
+    private TranspositionTable<TranspositionEntry> _transpositionTable;
 
     @Override
     public Move bestMove(Board board) {
         _board = board;
+        if (use_transposition){
+            _transpositionTable = new TranspositionTable<>((int) (50E6));
+        }
         long time = System.currentTimeMillis();
         if (use_iteration) {
             PVLine line = null;
@@ -96,42 +108,60 @@ public class AlphaBeta implements AI {
         } else {
             iteration(max_depth, null);
         }
-        System.out.println("required time: " + (System.currentTimeMillis() - time) + " ms");
+        if(print_overview)
+            System.out.println("required time: " + (System.currentTimeMillis() - time) + " ms");
         return _bestMove;
+    }
+
+    private void printIterationSummary(long nanos){
+
+        if (!print_overview) return;
+
+        int min = (int) (nanos / (60 * 1E9) % 60);
+        int sec = (int) (nanos / 1E9 % 60);
+        int mil = (int) (nanos / 1E6 % 1E3);
+        int nano = (int) (nanos % 1E6);
+
+        System.out.format(
+                        "required time[m:s:ms:ns]: %02d:%02d:%03d:%06d   " +
+                        "total visited nodes: %9d   " +
+                        "terminal nodes: %9d   " +
+                        "visited nodes full depth: %9d   " +
+                        "visited quiesce nodes: %9d\n",
+                min,sec,mil,nano,
+                _visitedNodes + _quiesceNodes, _terminalNodes, _visitedNodes, _quiesceNodes);
     }
 
     public PVLine iteration(int depth, PVLine lastIteration) {
         this._depth = depth;
         _bestMove = null;
-        _evaluatedNodes = 0;
+        _terminalNodes = 0;
         _visitedNodes = 0;
-        _transpositionTable = new TranspositionTable<>((int) (50E6));
+        _quiesceNodes = 0;
         PVLine pline = new PVLine(_depth);
+        long time = System.nanoTime();
         pvSearch(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, 0, pline, lastIteration);
-        System.out.println(
-                "    evaluated nodes: " + _evaluatedNodes +
-                        "    visited nodes:   " + _visitedNodes +
-                        "    quiesce nodes:   " + _quiesceNodes +
-                        "    hashed entries:  " + _transpositionTable.getSize());
+        printIterationSummary(System.nanoTime()-time);
+
         return pline;
     }
 
-    private double transpositionLookUp(long zobrist, int tiefe) {
+    private double transpositionLookUp(long zobrist, int depth) {
         if (use_transposition == false) return Double.NaN;
-        TranspositionTable.TranspositionEntry en = _transpositionTable.get(zobrist);
-        if (en != null && en.getDepth() <= tiefe) {
+        TranspositionEntry en = _transpositionTable.get(zobrist);
+        if (en != null && en.getSkipped_depths() >= (_depth - depth)) {
             return en.getVal();
         }
         return Double.NaN;
     }
 
     private void transpositionPlacement(long key, int depth, double alpha) {
-        if (_transpositionTable.isFull() || !use_transposition) return;
-        TranspositionTable.TranspositionEntry en = _transpositionTable.get(key);
+        if (!use_transposition || _transpositionTable == null || _transpositionTable.isFull()) return;
+        TranspositionEntry en = _transpositionTable.get(key);
         if (en == null) {
-            _transpositionTable.put(key, new TranspositionTable.TranspositionEntry(alpha, depth));
+            _transpositionTable.put(key, new TranspositionEntry(alpha, _depth - depth));
         } else {
-            if (en.getDepth() > depth) {
+            if (en.getSkipped_depths() > depth) {
                 en.setVal(alpha);
             }
         }
@@ -144,7 +174,7 @@ public class AlphaBeta implements AI {
         if (!Double.isNaN(transposition)) {
             return transposition;
         }
-        List<Move> allMoves = _board.getAvailableMovesShallow();
+        List<Move> allMoves = currentDepth == 0 ? _board.getAvailableMovesComplete() : _board.getAvailableMovesShallow();
         if (currentDepth == _depth || allMoves.size() == 0 || _board.isGameOver()) {
             double val = Quiesce(alpha, beta, quiesce_depth);
             transpositionPlacement(zobrist, currentDepth, val);
@@ -162,6 +192,7 @@ public class AlphaBeta implements AI {
             }
             if (score > alpha) {
                 alpha = score;
+                transpositionPlacement(zobrist, currentDepth, alpha);
                 pLine.getLine()[0] = m;
                 for (int i = 0; i < line.getMovesInLine(); i++) {
                     pLine.getLine()[i + 1] = line.getLine()[i];
@@ -172,7 +203,7 @@ public class AlphaBeta implements AI {
                 }
             }
         }
-        transpositionPlacement(zobrist, currentDepth, alpha);
+        //transpositionPlacement(zobrist, currentDepth, alpha);
         return alpha;
     }
 
@@ -183,7 +214,7 @@ public class AlphaBeta implements AI {
         if (!Double.isNaN(transposition)) {
             return transposition;
         }
-        List<Move> allMoves = _board.getAvailableMovesShallow();
+        List<Move> allMoves = currentDepth == 0 ? _board.getAvailableMovesComplete() : _board.getAvailableMovesShallow();
         if (currentDepth == _depth || allMoves.size() == 0 || _board.isGameOver()) {
             double val = Quiesce(alpha, beta, quiesce_depth);
             transpositionPlacement(zobrist, currentDepth, val);
@@ -208,6 +239,7 @@ public class AlphaBeta implements AI {
             }
             if (score > alpha) {
                 alpha = score;
+                transpositionPlacement(zobrist, currentDepth, alpha);
                 pLine.getLine()[0] = m;
                 for (int i = 0; i < line.getMovesInLine(); i++) {
                     pLine.getLine()[i + 1] = line.getLine()[i];
@@ -219,19 +251,21 @@ public class AlphaBeta implements AI {
             }
             bSearchPv = false;
         }
-        transpositionPlacement(zobrist, currentDepth, alpha);
+        //transpositionPlacement(zobrist, currentDepth, alpha);
         return alpha;
     }
 
     private double Quiesce(double alpha, double beta, int depth_left) {
         _quiesceNodes++;
-        _evaluatedNodes++;
         double stand_pat = evaluator.evaluate(_board) * _board.getActivePlayer();
         if (depth_left == 0) {
+            _terminalNodes++;
             return stand_pat;
         }
-        if (stand_pat >= beta)
+        if (stand_pat >= beta){
+            _terminalNodes++;
             return beta;
+        }
         if (alpha < stand_pat)
             alpha = stand_pat;
         List<Move> allMoves = _board.getAvailableMovesShallow();

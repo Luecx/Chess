@@ -92,29 +92,28 @@ public class GamePanel extends JPanel {
                 buttons[i][n].setIcon(getIcon(i, n));
             }
         }
-        if (selected != -1) {
 
-
-
-            for (Object obj : g.getBoard().getAvailableMovesShallow()) {
-                    if (((Move) obj).getFrom() == selected) {
-                        if (g.getBoard().getPiece(((Move) obj).getTo()) != 0) {
-                            buttons[g.getBoard().x(((Move) obj).getTo())][g.getBoard().y(((Move) obj).getTo())].setBackground(color_takeable);
-                        } else {
-                            buttons[g.getBoard().x(((Move) obj).getTo())][g.getBoard().y(((Move) obj).getTo())].setBackground(color_available);
-                        }
-                    }
-
-
-            }
-            buttons[g.getBoard().x(selected)][g.getBoard().y(selected)].setBackground(color_selected);
-        }
 
         if(!g.getBoard().getMoveHistory().empty()){
             Move m = (Move) g.getBoard().getMoveHistory().peek();
             buttons[g.getBoard().x(m.getFrom())][g.getBoard().y(m.getFrom())].setBackground(color_lastMove);
             buttons[g.getBoard().x(m.getTo())][g.getBoard().y(m.getTo())].setBackground(color_lastMove);
         }
+
+        if (selected != -1) {
+            for (Object obj : g.getBoard().getAvailableMovesShallow()) {
+                if (((Move) obj).getFrom() == selected) {
+                    if (g.getBoard().getPiece(((Move) obj).getTo()) != 0) {
+                        buttons[g.getBoard().x(((Move) obj).getTo())][g.getBoard().y(((Move) obj).getTo())].setBackground(color_takeable);
+                    } else {
+                        buttons[g.getBoard().x(((Move) obj).getTo())][g.getBoard().y(((Move) obj).getTo())].setBackground(color_available);
+                    }
+                }
+            }
+            buttons[g.getBoard().x(selected)][g.getBoard().y(selected)].setBackground(color_selected);
+        }
+
+
     }
 
     private int selected = -1;

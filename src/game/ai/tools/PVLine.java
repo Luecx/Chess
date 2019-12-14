@@ -1,4 +1,4 @@
-package game.ai.minimax.tools;
+package game.ai.tools;
 
 import board.Move;
 

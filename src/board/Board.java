@@ -16,6 +16,8 @@ public abstract class Board<T extends Board<T>> {
         this.reset();
     }
 
+    public abstract void clear();
+
     public Stack<Move> getMoveHistory() {
         return moveHistory;
     }
@@ -36,6 +38,10 @@ public abstract class Board<T extends Board<T>> {
 
     public abstract int getPiece(int x, int y);
 
+    public abstract void setPiece(int x, int y, int piece);
+
+    public abstract void setPiece(int index, int piece);
+
     public abstract int getPiece(int index);
 
     public void changeActivePlayer() {
@@ -46,10 +52,13 @@ public abstract class Board<T extends Board<T>> {
 
     public abstract void undoMove();
 
+    public abstract int winner();
+
     public abstract T copy();
 
-    public abstract long zobrist();
+    public abstract T newInstance();
 
+    public abstract long zobrist();
 
     public byte getActivePlayer() {
         return activePlayer;
