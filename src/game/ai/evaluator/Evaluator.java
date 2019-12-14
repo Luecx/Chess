@@ -1,4 +1,4 @@
-package game.ai.minimax.evaluator;
+package game.ai.evaluator;
 
 import board.Board;
 

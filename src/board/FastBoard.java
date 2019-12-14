@@ -381,6 +381,11 @@ public class FastBoard extends Board<FastBoard> {
         this.update_longs();
     }
 
+    @Override
+    public int winner() {
+        return 0;
+    }
+
     private void moveSimpleMove(Move m) {
         this.setPiece(0, m.getFrom());
         this.setPiece(m.getPieceFrom(), m.getTo());
@@ -420,6 +425,19 @@ public class FastBoard extends Board<FastBoard> {
         return copy;
     }
 
+
+    @Override
+    public void clear() {
+    }
+
+    @Override
+    public FastBoard newInstance() {
+        return null;
+    }
+
+    @Override
+    public void setPiece(int x, int y, int piece) {
+    }
 
     public static void main(String[] args) {
         SlowBoard board = new SlowBoard();

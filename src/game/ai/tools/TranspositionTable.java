@@ -1,37 +1,10 @@
-package game.ai.minimax.tools;
-
-import board.Board;
+package game.ai.tools;
 
 import java.util.Arrays;
-import java.util.HashMap;
 
 public class TranspositionTable<V> {
 
-    public static class TranspositionEntry{
-        private double val;
-        private int depth;
 
-        public TranspositionEntry(double val, int depth) {
-            this.val = val;
-            this.depth = depth;
-        }
-
-        public double getVal() {
-            return val;
-        }
-
-        public void setVal(double val) {
-            this.val = val;
-        }
-
-        public int getDepth() {
-            return depth;
-        }
-
-        public void setDepth(int depth) {
-            this.depth = depth;
-        }
-    }
 
     private int[] table;
     private int[] nextPtrs;
@@ -64,6 +37,10 @@ public class TranspositionTable<V> {
                 k = nextPtrs[k];
             } while (k != -1);
         return null;
+    }
+
+    public void clear() {
+
     }
 
     public V put(long key, V val) {

@@ -1,7 +1,7 @@
-package game.ai.minimax.ordering;
+package game.ai.ordering;
 
 import board.Move;
-import game.ai.minimax.tools.PVLine;
+import game.ai.tools.PVLine;
 
 import java.util.List;
 

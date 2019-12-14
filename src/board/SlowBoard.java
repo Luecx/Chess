@@ -1,15 +1,16 @@
 package board;
 
 import game.Game;
-import game.ai.minimax.AlphaBeta;
-import game.ai.minimax.evaluator.FinnEvaluator;
-import game.ai.minimax.ordering.NoOrderer;
-import game.ai.minimax.ordering.SimpleOrderer;
+import game.Player;
+import game.ai.search.AlphaBeta;
+import game.ai.evaluator.FinnEvaluator;
+import game.ai.ordering.SimpleOrderer;
+import io.IOBoard;
+import visual.Frame;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Stack;
 
 public class SlowBoard extends Board<SlowBoard> {
 
@@ -132,7 +133,7 @@ public class SlowBoard extends Board<SlowBoard> {
 
     @Override
     public List<Move> getAvailableMovesComplete() {
-        return null;
+        return getAvailableMovesShallow();
     }
 
     @Override
@@ -215,14 +216,7 @@ public class SlowBoard extends Board<SlowBoard> {
 
     @Override
     public void reset() {
-        this.field = new int[12 * 12];
-        for (byte i = 0; i < 12; i++) {
-            for (byte j = 0; j < 12; j++) {
-                if (i < 2 || i > 9 || j < 2 || j > 9) {
-                    field[i * 12 + j] = INVALID;
-                }
-            }
-        }
+        this.clear();
         field[index((byte) 0, (byte) 0)] = (byte) 2;
         field[index((byte) 1, (byte) 0)] = (byte) 3;
         field[index((byte) 2, (byte) 0)] = (byte) 4;
@@ -299,14 +293,60 @@ public class SlowBoard extends Board<SlowBoard> {
         return (!whiteKing || !blackKing);
     }
 
+    public int[] getField() {
+        return field;
+    }
+
     public static void main(String[] args) {
-        AlphaBeta alphaBeta1 = new AlphaBeta(new FinnEvaluator(), new SimpleOrderer(), 4    ,2);
-        SlowBoard board = new SlowBoard();
-//        List<Move> moves = board.getAvailableMovesShallow();
-//        new SimpleOrderer().sort(moves,0,null);
-//        for(Move m:moves){
-//            System.out.println(m);
-//        }
+        AlphaBeta alphaBeta1 = new AlphaBeta(new FinnEvaluator(), new SimpleOrderer(), 6    ,0);
+        alphaBeta1.setUse_iteration(false);
+        alphaBeta1.setUse_transposition(true);
+        alphaBeta1.setPrint_overview(true);
+        SlowBoard board = IOBoard.read_lichess(new SlowBoard(), "1r6/1rkn4/2nb2R1/2p1p3/1P2Pp2/1QP2P2/2K5/8");
+        //new Frame(new Game(board, new Player(){}, alphaBeta1));
         System.out.println(alphaBeta1.bestMove(board));
+    }
+
+    @Override
+    public SlowBoard newInstance() {
+        return new SlowBoard();
+    }
+
+    @Override
+    public void setPiece(int x, int y, int piece) {
+        field[index(x,y)] = piece;
+    }
+
+    @Override
+    public void setPiece(int index, int piece) {
+        field[index] = piece;
+    }
+
+    @Override
+    public int winner() {
+        boolean whiteKing = false;
+        boolean blackKing = false;
+        for (byte i = 0; i < 8; i++) {
+            for (byte j = 0; j < 8; j++) {
+                if (getPiece(i, j) == 6) whiteKing = true;
+                if (getPiece(i, j) == -6) blackKing = true;
+            }
+        }
+        if(whiteKing && blackKing) return 0;
+        if(whiteKing) return 1;
+        if(blackKing) return -1;
+        return 0;
+    }
+
+    @Override
+    public void clear() {
+        this.field = new int[12 * 12];
+        for (byte i = 0; i < 12; i++) {
+            for (byte j = 0; j < 12; j++) {
+                if (i < 2 || i > 9 || j < 2 || j > 9) {
+                    field[i * 12 + j] = INVALID;
+                }
+            }
+        }
     }
 }
