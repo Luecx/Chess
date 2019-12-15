@@ -211,6 +211,7 @@ public class GeneticEvaluator implements Evaluator {
     public static void main(String[] args) {
         ArrayList<Object[]> population = generatePopulation(10,4,2);
         evolve(population, 1, 4, 0.1,0.8);
+        System.out.println("Finished");
     }
 
     public int[] getEVALUATE_PRICE() {
