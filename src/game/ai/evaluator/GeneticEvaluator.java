@@ -2,12 +2,12 @@ package game.ai.evaluator;
 
 import board.Board;
 import board.SlowBoard;
-import core.tensor.Tensor2D;
-import core.tensor.Tensor3D;
 import game.Game;
 import game.ai.ordering.SimpleOrderer;
 import game.ai.search.AI;
 import game.ai.search.AlphaBeta;
+import game.ai.tools.tensor.Tensor2D;
+import game.ai.tools.tensor.Tensor3D;
 
 import java.lang.reflect.Array;
 import java.util.*;
