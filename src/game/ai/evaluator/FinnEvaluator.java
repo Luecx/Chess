@@ -1,8 +1,8 @@
 package game.ai.evaluator;
 
 import board.Board;
-import core.tensor.Tensor2D;
-import core.tensor.Tensor3D;
+import game.ai.tools.tensor.Tensor2D;
+import game.ai.tools.tensor.Tensor3D;
 
 public class FinnEvaluator implements Evaluator {
 

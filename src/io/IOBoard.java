@@ -2,8 +2,27 @@ package io;
 
 import board.Board;
 
+/**
+ * the IOBoard class implements methods to generate boards encoded
+ * boards. It can also decode them the other way around.
+ *
+ */
 public class IOBoard {
 
+    /**
+     *
+     * This method will generate a new board using a key
+     * generated on lichess.com. It will not copy the following
+     * things:
+     *  - who has to move next
+     *  - information about Castling
+     *  - information about previous moves (no en passent)
+     *
+     * @param template      a template class to create a new board object
+     * @param key           the key from lichess.com
+     * @param <T>           a type argument for the board
+     * @return              a new board of type T
+     */
     public static <T extends Board<T>> T read_lichess(T template, String key){
 
         int x = 0;
@@ -44,6 +63,12 @@ public class IOBoard {
         return board;
     }
 
+    /**
+     * if the char represents a digit, the digit will be returned.
+     * If the char represents something else, -1 will be returned.
+     * @param c     the digit represented by the char
+     * @return
+     */
     public static int getNumber(char c){
         try{
             if (c >= '0' && c <= '9'){

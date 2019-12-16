@@ -2,6 +2,7 @@ package visual;
 
 
 import board.Board;
+import board.Move;
 import board.SlowBoard;
 import game.Game;
 import game.Player;
@@ -9,6 +10,7 @@ import game.ai.evaluator.SimpleEvaluator;
 import game.ai.search.AlphaBeta;
 import game.ai.evaluator.FinnEvaluator;
 import game.ai.ordering.SimpleOrderer;
+import game.ai.tools.TranspositionTable;
 
 import javax.swing.*;
 import java.awt.event.KeyEvent;
@@ -52,13 +54,9 @@ public class Frame extends JFrame implements KeyListener {
     }
 
     public static void main(String[] args) {
-        Player player = new Player() {};
-        Player enemy = new AlphaBeta(new SimpleEvaluator(), new SimpleOrderer(), 6,6);
-        ((AlphaBeta) enemy).setUse_iteration(true);
-        ((AlphaBeta) enemy).setUse_transposition(false);
-        ((AlphaBeta) enemy).setPrint_overview(true);
+        Board b = new SlowBoard();
 
-        Frame f = new Frame(new SlowBoard(), player, enemy);
+        b.clear();
     }
 
     @Override
@@ -67,8 +65,6 @@ public class Frame extends JFrame implements KeyListener {
 
     @Override
     public void keyPressed(KeyEvent e) {
-
-
         //gamePanel.undo();
     }
 

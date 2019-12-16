@@ -303,8 +303,8 @@ public class SlowBoard extends Board<SlowBoard> {
         alphaBeta1.setUse_transposition(true);
         alphaBeta1.setPrint_overview(true);
         SlowBoard board = IOBoard.read_lichess(new SlowBoard(), "1r6/1rkn4/2nb2R1/2p1p3/1P2Pp2/1QP2P2/2K5/8");
-        //new Frame(new Game(board, new Player(){}, alphaBeta1));
-        System.out.println(alphaBeta1.bestMove(board));
+        new Frame(new Game(board, alphaBeta1, new Player(){}));
+        //System.out.println(alphaBeta1.bestMove(board));
     }
 
     @Override
