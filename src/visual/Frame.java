@@ -13,6 +13,9 @@ import game.ai.ordering.SimpleOrderer;
 import game.ai.tools.TranspositionTable;
 
 import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
@@ -50,13 +53,23 @@ public class Frame extends JFrame implements KeyListener {
         this.addKeyListener(this);
         this.gamePanel.addKeyListener(this);
 
+        this.addComponentListener(new ComponentAdapter()
+        {
+            public void componentResized(ComponentEvent evt) {
+                gamePanel.render();
+            }
+        });
+
         this.setVisible(true);
+        this.gamePanel.render();
     }
 
     public static void main(String[] args) {
         Board b = new SlowBoard();
+        Player p1 = new Player(){};
+        Player p2 = new AlphaBeta(new FinnEvaluator(), new SimpleOrderer(), 4,4);
 
-        b.clear();
+        new Frame(b,p1,p2);
     }
 
     @Override

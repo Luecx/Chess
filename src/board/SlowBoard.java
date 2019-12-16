@@ -298,13 +298,24 @@ public class SlowBoard extends Board<SlowBoard> {
     }
 
     public static void main(String[] args) {
-        AlphaBeta alphaBeta1 = new AlphaBeta(new FinnEvaluator(), new SimpleOrderer(), 6    ,0);
-        alphaBeta1.setUse_iteration(false);
-        alphaBeta1.setUse_transposition(true);
-        alphaBeta1.setPrint_overview(true);
+//        AlphaBeta alphaBeta1 = new AlphaBeta(new FinnEvaluator(), new SimpleOrderer(), 6    ,0);
+//        alphaBeta1.setUse_iteration(false);
+//        alphaBeta1.setUse_transposition(true);
+//        alphaBeta1.setPrint_overview(true);
         SlowBoard board = IOBoard.read_lichess(new SlowBoard(), "1r6/1rkn4/2nb2R1/2p1p3/1P2Pp2/1QP2P2/2K5/8");
-        new Frame(new Game(board, alphaBeta1, new Player(){}));
+        //new Frame(new Game(board, alphaBeta1, new Player(){}));
         //System.out.println(alphaBeta1.bestMove(board));
+
+
+        long secs = System.currentTimeMillis();
+        int counter = 0;
+        int seconds = 3;
+        while (System.currentTimeMillis() - secs < seconds * 1E3){
+            board.getAvailableMovesShallow();
+            counter ++;
+        }
+        System.out.println(counter / seconds);
+
     }
 
     @Override
