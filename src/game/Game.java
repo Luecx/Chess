@@ -1,7 +1,7 @@
 package game;
 
 import board.Board;
-import board.Move;
+import board.moves.Move;
 import game.ai.search.AI;
 
 import java.util.ArrayList;
@@ -90,5 +90,19 @@ public class Game {
         this.isInterrupted = false;
     }
 
+    /**
+     * returns the player object that plays the white pieces
+     * @return  the player object
+     */
+    public Player getPlayerWhite() {
+        return playerWhite;
+    }
 
+    /**
+     * returns the player object that plays the black pieces
+     * @return  the player object
+     */
+    public Player getPlayerBlack() {
+        return playerBlack;
+    }
 }

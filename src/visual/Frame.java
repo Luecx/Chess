@@ -2,18 +2,14 @@ package visual;
 
 
 import board.Board;
-import board.Move;
 import board.SlowBoard;
 import game.Game;
 import game.Player;
-import game.ai.evaluator.SimpleEvaluator;
 import game.ai.search.AlphaBeta;
 import game.ai.evaluator.FinnEvaluator;
 import game.ai.ordering.SimpleOrderer;
-import game.ai.tools.TranspositionTable;
 
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.KeyEvent;
@@ -69,7 +65,7 @@ public class Frame extends JFrame implements KeyListener {
         Player p1 = new Player(){};
         Player p2 = new AlphaBeta(new FinnEvaluator(), new SimpleOrderer(), 4,4);
 
-        new Frame(b,p1,p2);
+        new Frame(b,p1,p1);
     }
 
     @Override
@@ -78,7 +74,7 @@ public class Frame extends JFrame implements KeyListener {
 
     @Override
     public void keyPressed(KeyEvent e) {
-        //gamePanel.undo();
+        gamePanel.undo();
     }
 
     @Override

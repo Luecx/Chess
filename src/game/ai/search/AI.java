@@ -1,7 +1,7 @@
 package game.ai.search;
 
 import board.Board;
-import board.Move;
+import board.moves.Move;
 import game.Player;
 
 /**

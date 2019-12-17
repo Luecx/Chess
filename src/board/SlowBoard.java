@@ -1,12 +1,7 @@
 package board;
 
-import game.Game;
-import game.Player;
-import game.ai.search.AlphaBeta;
-import game.ai.evaluator.FinnEvaluator;
-import game.ai.ordering.SimpleOrderer;
+import board.moves.Move;
 import io.IOBoard;
-import visual.Frame;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,8 +15,36 @@ public class SlowBoard extends Board<SlowBoard> {
     private static final int[] SPRINGER_OFFSET = {23, 25, 14, 10, -10, -14, -23, -25};
     private static final int[] KOENIG_OFFSET = {12, 13, 1, -13, -12, -11, -1, 11};
 
+
+
+    public static final short MASK_NONE                         = (short)0;
+    public static final short MASK_WHITE_KINGSIDE_CASTLING      = (short)1 << 0;
+    public static final short MASK_WHITE_QUEENSIDE_CASTLING     = (short)1 << 1;
+    public static final short MASK_BLACK_QUEENSIDE_CASTLING     = (short)1 << 2;
+    public static final short MASK_BLACK_KINGSIDE_CASTLING      = (short)1 << 3;
+
+    public static final short INDEX_WHITE_QUEENSIDE_ROOK        = 26;
+    public static final short INDEX_WHITE_KINGSIDE_ROOK         = 26 + 7;
+    public static final short INDEX_BLACK_QUEENSIDE_ROOK        = 26 + 7 * 12;
+    public static final short INDEX_BLACK_KINGSIDE_ROOK         = 26 + 7 * 12 + 7;
+
+
     private static int INVALID = Byte.MIN_VALUE;
 
+    /**
+     * bits:
+     * 1:   white kingside castle
+     * 2:   white queenside castle
+     * 3:   black kingside castle
+     * 4:   black queenside castle
+     * 5:   en passent A
+     * 6:   en passent B
+     * 7:   en passent C
+     * ...
+     * ...
+     * 12:  en passent G
+     */
+    private short board_meta_informtion;  //1st bit: white castle
     private int[] field; //2x2 padding each side
 
 //    private boolean white_shortCastle = false;
@@ -82,6 +105,8 @@ public class SlowBoard extends Board<SlowBoard> {
 
     @Override
     public void move(Move m) {
+
+        //------------------castling-------------------------
         if (m.getPieceFrom() * getActivePlayer() == 6) {
             if (Math.abs(m.getTo() - m.getFrom()) == 2) {
                 if (m.getTo() > m.getFrom()) {
@@ -91,11 +116,15 @@ public class SlowBoard extends Board<SlowBoard> {
                 }
             }
         }
-        this.moveSimpleMove(m);
 
+        this.moveSimpleMove(m);
+        this.board_meta_informtion ^= m.getMetaInformation();
+
+        //-------------------promotion-------------------------
         if(m.getPieceFrom() * getActivePlayer() == 1){
             if((y(m.getTo()) == 7 && getActivePlayer() == 1) ||
                     (y(m.getTo()) == 0 && getActivePlayer() == -1)){
+                System.err.println(");");
                 this.field[m.getTo()] = 5 * getActivePlayer();
             }
         }
@@ -116,34 +145,60 @@ public class SlowBoard extends Board<SlowBoard> {
         this.field[old.getTo()] = old.getPieceTo();
     }
 
-    private void slidingPieces(int pos, int direction, ArrayList<Move> list) {
+    private void slidingPieces(int pos, int direction, ArrayList<Move> list, short mask) {
         int c = pos + direction;
         while (field[c] != INVALID) {
             if (field[c] != 0) {
                 if (field[c] * getActivePlayer() < 1) {
-                    list.add(new Move(pos, c, this));
+                    list.add(new Move(pos, c, this,mask));
                 }
                 return;
             } else {
-                list.add(new Move(pos, c, this));
+                list.add(new Move(pos, c, this,mask));
+            }
+            c += direction;
+        }
+    }
+
+    private void slidingPiecesCapture(int pos, int direction, ArrayList<Move> list, short mask) {
+        int c = pos + direction;
+        while (field[c] != INVALID) {
+            if (field[c] != 0) {
+                if (field[c] * getActivePlayer() < 1) {
+                    list.add(new Move(pos, c, this, mask));
+                }
+                return;
             }
             c += direction;
         }
     }
 
     @Override
-    public List<Move> getAvailableMovesComplete() {
-        return getAvailableMovesShallow();
+    public List<Move> getLegalMoves() {
+        List<Move> moves = getPseudoLegalMoves();
+        for(int i = moves.size()-1; i>= 0; i--){;
+            move(moves.get(i));
+            List<Move> opponent = getPseudoLegalMoves();
+            for(Move m:opponent){
+                if(m.getPieceTo() * this.getActivePlayer() == -6){
+                    moves.remove(i);
+                    break;
+                }
+            }
+            undoMove();
+        }
+        return moves;
     }
 
     @Override
-    public List<Move> getAvailableMovesShallow() {
+    public List<Move> getPseudoLegalMoves() {
         ArrayList<Move> moves = new ArrayList<>(50);
         if (isGameOver()) return moves;
         for (byte i = 0; i < 8; i++) {
             for (byte j = 0; j < 8; j++) {
                 int index = index(i, j);
                 if (field[index] * getActivePlayer() <= 0) continue;
+
                 if (field[index] == getActivePlayer()) { // Bauern
                     if (j == 0 || j == 7) continue;
                     if (field[index + getActivePlayer() * 12] == 0) {
@@ -158,41 +213,201 @@ public class SlowBoard extends Board<SlowBoard> {
                     if (field[index + getActivePlayer() * 13] != INVALID && field[index + getActivePlayer() * 13] * getActivePlayer() < 0) {
                         moves.add(new Move(index, index + getActivePlayer() * 13, this));
                     }
-                } else if (getPiece(i, j) == getActivePlayer() * 3) { // Springer
+                }
+
+                else if (getPiece(i, j) == getActivePlayer() * 3) { // knight
                     for (int ar : SPRINGER_OFFSET) {
                         if (this.field[ar + index] != INVALID && field[ar + index] * getActivePlayer() <= 0) {
                             moves.add(new Move(index, ar + index, this));
                         }
                     }
-                } else if (getPiece(i, j) == getActivePlayer() * 2) { // Türme
-                    for (int dir : TURM_DIRECTIONS) {
-                        slidingPieces(index, dir, moves);
+                }
+
+                else if (getPiece(i, j) == getActivePlayer() * 2) { // rook
+                    short mask = MASK_NONE;
+                    switch (index){
+                        case INDEX_WHITE_QUEENSIDE_ROOK:
+                            if((board_meta_informtion & MASK_WHITE_QUEENSIDE_CASTLING) > 0)
+                                mask = MASK_WHITE_QUEENSIDE_CASTLING;
+                            break;
+                        case INDEX_WHITE_KINGSIDE_ROOK:
+                            if((board_meta_informtion & MASK_WHITE_KINGSIDE_CASTLING) > 0)
+                                mask = MASK_WHITE_KINGSIDE_CASTLING;
+                            break;
+                        case INDEX_BLACK_QUEENSIDE_ROOK:
+                            if((board_meta_informtion & MASK_BLACK_QUEENSIDE_CASTLING) > 0)
+                                mask = MASK_BLACK_QUEENSIDE_CASTLING;
+                            break;
+                        case INDEX_BLACK_KINGSIDE_ROOK:
+                            if((board_meta_informtion & MASK_BLACK_KINGSIDE_CASTLING) > 0)
+                                mask = MASK_BLACK_KINGSIDE_CASTLING;
+                            break;
                     }
-                } else if (getPiece(i, j) == getActivePlayer() * 5) { // Dame
+
                     for (int dir : TURM_DIRECTIONS) {
-                        slidingPieces(index, dir, moves);
+                        slidingPieces(index, dir, moves, mask);
+                    }
+                }
+
+                else if (getPiece(i, j) == getActivePlayer() * 5) { // queen
+                    for (int dir : TURM_DIRECTIONS) {
+                        slidingPieces(index, dir, moves, MASK_NONE);
                     }
                     for (int dir : LAEUFER_DIRECTIONS) {
-                        slidingPieces(index, dir, moves);
+                        slidingPieces(index, dir, moves, MASK_NONE);
                     }
-                } else if (getPiece(i, j) == getActivePlayer() * 4) { // Läufer
+                }
+
+                else if (getPiece(i, j) == getActivePlayer() * 4) { // bishop
                     for (int dir : LAEUFER_DIRECTIONS) {
-                        slidingPieces(index, dir, moves);
+                        slidingPieces(index, dir, moves, MASK_NONE);
                     }
-                } else if (getPiece(i, j) == getActivePlayer() * 6) { //König
+                }
+
+                else if (getPiece(i, j) == getActivePlayer() * 6) { //king
                     for (int ar : KOENIG_OFFSET) {
                         if (this.field[ar + index] != INVALID && field[ar + index] * getActivePlayer() <= 0) {
+                            if(this.getActivePlayer() == 1){
+                                moves.add(new Move(index, ar + index, this, (short)
+                                        (((board_meta_informtion & MASK_WHITE_QUEENSIDE_CASTLING) > 0 ? MASK_WHITE_QUEENSIDE_CASTLING:0) |
+                                        ((board_meta_informtion & MASK_WHITE_KINGSIDE_CASTLING) > 0 ? MASK_WHITE_KINGSIDE_CASTLING :0))
+                                ));
+                            }else{
+                                moves.add(new Move(index, ar + index, this, (short)
+                                        (((board_meta_informtion & MASK_BLACK_QUEENSIDE_CASTLING) > 0 ? MASK_BLACK_QUEENSIDE_CASTLING:0) |
+                                                ((board_meta_informtion & MASK_BLACK_KINGSIDE_CASTLING) > 0 ? MASK_BLACK_KINGSIDE_CASTLING:0))
+                                ));
+                            }
+                        }
+                    }
+
+                    //################################ CASTLING #####################################
+                    if (((index == index(4,0) && this.getActivePlayer() == 1) ||
+                            (index == index(4,7) && this.getActivePlayer() == -1))) {
+
+                        //-------------------------------- WHITE --------------------------------------
+                        if(getActivePlayer() == 1){
+                            //-------------------------------- KING SIDE --------------------------------------
+                            if (field[index+3] == 2
+                                    && field[index + 1] == 0
+                                    && field[index + 2] == 0
+                                    && (board_meta_informtion & MASK_WHITE_KINGSIDE_CASTLING) > 0) {
+                                moves.add(new Move(index, index + 2, 6, 0, (short)3));
+                            }
+
+                            //-------------------------------- QUEEN SIDE --------------------------------------
+                            if (field[index-4] == 2
+                                    && field[index - 1] == 0
+                                    && field[index - 2] == 0
+                                    && field[index - 3] == 0
+                                    && (board_meta_informtion & MASK_WHITE_QUEENSIDE_CASTLING) > 0) {
+                                moves.add(new Move(index, index - 2, 6, 0,(short)3));
+                            }
+                        }
+                        //-------------------------------- BLACK --------------------------------------
+
+                        else{
+                            //-------------------------------- KING SIDE --------------------------------------
+                            if (field[index+3] == -2
+                                    && field[index + 1] == 0
+                                    && field[index + 2] == 0
+                                    && (board_meta_informtion & MASK_BLACK_KINGSIDE_CASTLING) > 0) {
+                                moves.add(new Move(index, index + 2, -6, 0,(short)12));
+                            }
+
+                            //-------------------------------- QUEEN SIDE --------------------------------------
+                            if (field[index-4] == -2
+                                    && field[index - 1] == 0
+                                    && field[index - 2] == 0
+                                    && field[index - 3] == 0
+                                    && (board_meta_informtion & MASK_BLACK_QUEENSIDE_CASTLING) > 0) {
+                                moves.add(new Move(index, index - 2, -6, 0,(short)12));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return moves;
+    }
+
+    @Override
+    public List<Move> getCaptureMoves() {
+        ArrayList<Move> moves = new ArrayList<>(20);
+        for (byte i = 0; i < 8; i++) {
+            for (byte j = 0; j < 8; j++) {
+                int index = index(i, j);
+                if (field[index] * getActivePlayer() <= 0) continue;
+                if (field[index] == getActivePlayer()) { // Bauern
+                    if (j == 0 || j == 7) continue;
+                    if (field[index + getActivePlayer() * 11] != INVALID && field[index + getActivePlayer() * 11] * getActivePlayer() < 0) {
+                        moves.add(new Move(index, index + getActivePlayer() * 11, this));
+                    }
+                    if (field[index + getActivePlayer() * 13] != INVALID && field[index + getActivePlayer() * 13] * getActivePlayer() < 0) {
+                        moves.add(new Move(index, index + getActivePlayer() * 13, this));
+                    }
+                } else if (getPiece(i, j) == getActivePlayer() * 3) { // Springer
+                    for (int ar : SPRINGER_OFFSET) {
+                        if (this.field[ar + index] != INVALID && field[ar + index] * getActivePlayer() < 0) {
                             moves.add(new Move(index, ar + index, this));
                         }
                     }
-                    if (((index == index(4,0) && this.getActivePlayer() == 1) ||
-                            (index == index(4,7) && this.getActivePlayer() == -1))) {
-                        if (field[index+3] * getActivePlayer() == 2 &&
-                        field[index + 1] == 0 && field[index + 2] == 0) {
-                            moves.add(new Move(index, index + 2, this));
-                        } if (field[index-4] * getActivePlayer() == 2 &&
-                                field[index - 1] == 0 && field[index - 2] == 0 && field[index - 3] == 0) {
-                            moves.add(new Move(index, index - 2, this));
+                } else if (getPiece(i, j) == getActivePlayer() * 2) { // Türme
+
+                    short mask = MASK_NONE;
+//                    switch (index){
+//                        case INDEX_WHITE_QUEENSIDE_ROOK:
+//                            if((board_meta_informtion & MASK_WHITE_QUEENSIDE_CASTLING) > 0)
+//                                mask = MASK_WHITE_QUEENSIDE_CASTLING;
+//                            break;
+//                        case INDEX_WHITE_KINGSIDE_ROOK:
+//                            if((board_meta_informtion & MASK_WHITE_KINGSIDE_CASTLING) > 0)
+//                                mask = MASK_WHITE_KINGSIDE_CASTLING;
+//                            break;
+//                        case INDEX_BLACK_QUEENSIDE_ROOK:
+//                            if((board_meta_informtion & MASK_BLACK_QUEENSIDE_CASTLING) > 0)
+//                                mask = MASK_BLACK_QUEENSIDE_CASTLING;
+//                            break;
+//                        case INDEX_BLACK_KINGSIDE_ROOK:
+//                            if((board_meta_informtion & MASK_BLACK_KINGSIDE_CASTLING) > 0)
+//                                mask = MASK_BLACK_KINGSIDE_CASTLING;
+//                            break;
+//                    }
+                    System.err.println(mask);
+                    for (int dir : TURM_DIRECTIONS) {
+                        slidingPiecesCapture(index, dir, moves, mask);
+                    }
+                }
+
+                else if (getPiece(i, j) == getActivePlayer() * 5) { // Dame
+                    for (int dir : TURM_DIRECTIONS) {
+                        slidingPiecesCapture(index, dir, moves, MASK_NONE);
+                    }
+                    for (int dir : LAEUFER_DIRECTIONS) {
+                        slidingPiecesCapture(index, dir, moves,MASK_NONE);
+                    }
+                }
+
+                else if (getPiece(i, j) == getActivePlayer() * 4) { // Läufer
+                    for (int dir : LAEUFER_DIRECTIONS) {
+                        slidingPiecesCapture(index, dir, moves,MASK_NONE);
+                    }
+                }
+
+                else if (getPiece(i, j) == getActivePlayer() * 6) { //König
+                    for (int ar : KOENIG_OFFSET) {
+                        if (this.field[ar + index] != INVALID && field[ar + index] * getActivePlayer() < 0) {
+                            if(this.getActivePlayer() == 1){
+                                moves.add(new Move(index, ar + index, this, (short)
+                                        (((board_meta_informtion & MASK_WHITE_QUEENSIDE_CASTLING) > 0 ? MASK_WHITE_QUEENSIDE_CASTLING:0) |
+                                                ((board_meta_informtion & MASK_WHITE_KINGSIDE_CASTLING) > 0 ? MASK_WHITE_KINGSIDE_CASTLING :0))
+                                ));
+                            }else{
+                                moves.add(new Move(index, ar + index, this, (short)
+                                        (((board_meta_informtion & MASK_BLACK_QUEENSIDE_CASTLING) > 0 ? MASK_BLACK_QUEENSIDE_CASTLING:0) |
+                                                ((board_meta_informtion & MASK_BLACK_KINGSIDE_CASTLING) > 0 ? MASK_BLACK_KINGSIDE_CASTLING:0))
+                                ));
+                            }
                         }
                     }
                 }
@@ -205,9 +420,10 @@ public class SlowBoard extends Board<SlowBoard> {
     public void undoMove() {
         if (this.moveHistory.size() == 0) return;
 
-        int turn = this.moveHistory.peek().getPieceFrom() > 0 ? 1:-1;
-
-        while(this.moveHistory.size() > 0 && turn * this.moveHistory.peek().getPieceFrom() > 0){
+        Move last = this.moveHistory.peek();
+        this.board_meta_informtion ^= last.getMetaInformation();
+        undoMoveSimpleMove();
+        while(this.moveHistory.size() > 0 && this.moveHistory.peek().getPieceFrom() * last.getPieceFrom() > 1){
             undoMoveSimpleMove();
         }
 
@@ -297,27 +513,6 @@ public class SlowBoard extends Board<SlowBoard> {
         return field;
     }
 
-    public static void main(String[] args) {
-//        AlphaBeta alphaBeta1 = new AlphaBeta(new FinnEvaluator(), new SimpleOrderer(), 6    ,0);
-//        alphaBeta1.setUse_iteration(false);
-//        alphaBeta1.setUse_transposition(true);
-//        alphaBeta1.setPrint_overview(true);
-        SlowBoard board = IOBoard.read_lichess(new SlowBoard(), "1r6/1rkn4/2nb2R1/2p1p3/1P2Pp2/1QP2P2/2K5/8");
-        //new Frame(new Game(board, alphaBeta1, new Player(){}));
-        //System.out.println(alphaBeta1.bestMove(board));
-
-
-        long secs = System.currentTimeMillis();
-        int counter = 0;
-        int seconds = 3;
-        while (System.currentTimeMillis() - secs < seconds * 1E3){
-            board.getAvailableMovesShallow();
-            counter ++;
-        }
-        System.out.println(counter / seconds);
-
-    }
-
     @Override
     public SlowBoard newInstance() {
         return new SlowBoard();
@@ -352,6 +547,10 @@ public class SlowBoard extends Board<SlowBoard> {
     @Override
     public void clear() {
         this.field = new int[12 * 12];
+        this.board_meta_informtion = MASK_BLACK_KINGSIDE_CASTLING |
+                MASK_WHITE_KINGSIDE_CASTLING |
+                MASK_WHITE_QUEENSIDE_CASTLING|
+                MASK_BLACK_QUEENSIDE_CASTLING;
         for (byte i = 0; i < 12; i++) {
             for (byte j = 0; j < 12; j++) {
                 if (i < 2 || i > 9 || j < 2 || j > 9) {
@@ -360,4 +559,32 @@ public class SlowBoard extends Board<SlowBoard> {
             }
         }
     }
+
+    public short getBoard_meta_informtion() {
+        return board_meta_informtion;
+    }
+
+    public static void main(String[] args) {
+//        AlphaBeta alphaBeta1 = new AlphaBeta(new FinnEvaluator(), new SimpleOrderer(), 6    ,0);
+//        alphaBeta1.setUse_iteration(false);
+//        alphaBeta1.setUse_transposition(true);
+//        alphaBeta1.setPrint_overview(true);
+        SlowBoard board = IOBoard.read_lichess(new SlowBoard(), "rnbqkbnr/ppppp3/8/5pp1/5PPp/8/PPPPP3/RNBQKBNR");
+        board.changeActivePlayer();
+        System.out.println(board);
+
+
+        for(Move m:board.getPseudoLegalMoves()){
+            System.out.println(m + "  " + m.getMetaInformation());
+        }
+
+
+        //System.out.println(MASK_BLACK_KINGSIDE_CASTLING ^ MASK_BLACK_QUEENSIDE_CASTLING);
+
+
+        //new Frame(new Game(board, new Player(){}, new Player(){}));
+
+
+    }
+
 }

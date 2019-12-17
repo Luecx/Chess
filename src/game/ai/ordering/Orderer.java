@@ -1,6 +1,6 @@
 package game.ai.ordering;
 
-import board.Move;
+import board.moves.Move;
 import game.ai.tools.PVLine;
 
 import java.util.List;

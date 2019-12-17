@@ -1,6 +1,6 @@
 package game.ai.ordering;
 
-import board.Move;
+import board.moves.Move;
 import game.ai.evaluator.FinnEvaluator;
 import game.ai.tools.PVLine;
 

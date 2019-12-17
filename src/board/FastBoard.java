@@ -1,5 +1,7 @@
 package board;
 
+import board.moves.Move;
+
 import java.util.*;
 
 public class FastBoard extends Board<FastBoard> {
@@ -222,107 +224,38 @@ public class FastBoard extends Board<FastBoard> {
     }
 
 
-    public ArrayList<Move> getAvailableMovesShallow() {
-        ArrayList<Move> moves = new ArrayList<>(30);
-        if (isGameOver()) return moves;
-        if (getActivePlayer() == 1) {
-            for (int i : white_pieces[0]) {
-                if (!BitBoard.get_bit(this.team_total[1], i + 8)) {
-                    moves.add(new Move(i, i + 8, this));
-                    if (i < 16 && !BitBoard.get_bit(this.team_total[1], i + 16)) {
-                        moves.add(new Move(i, i + 16, this));
+    public ArrayList<Move> getPseudoLegalMoves() {
+        ArrayList<Move> moves = new ArrayList<>(20);
+        for (byte i = 0; i < 8; i++) {
+            for (byte j = 0; j < 8; j++) {
+
+                int index = index(i, j);
+                if(getActivePlayer() == 1 && !BitBoard.get_bit(occupied[0], index)){
+                        continue;
+                }else if(getActivePlayer() == -1 && !BitBoard.get_bit(occupied[1], index)){
+                    continue;
+                }
+
+                int piece = getPiece(index);
+
+                if (piece * getActivePlayer() <= 0) continue;
+                if (piece == getActivePlayer()) { // Bauern
+                    if (j == 0 || j == 7) continue;
+                    if (getPiece(index + getActivePlayer() * 12) == 0) {
+                        moves.add(new Move(index, index + getActivePlayer() * 12, getActivePlayer(), (byte) 0));
+                        if ((j == getActivePlayer() || j == 7 + getActivePlayer()) && getPiece(index + getActivePlayer() * 2 * 12) == 0) {
+                            moves.add(new Move(index, index + getActivePlayer() * 24, getActivePlayer(), (byte) 0));
+                        }
                     }
-                }
-                if (BitBoard.get_bit(this.team_total[1], i + 9) && BitBoard.fileIndex(i) < 7) {
-                    moves.add(new Move(i, i + 9, this));
-                }
-                if (BitBoard.get_bit(this.team_total[1], i + 7) && BitBoard.fileIndex(i) > 0) {
-                    moves.add(new Move(i, i + 7, this));
-                }
-            }
-            for (int i : white_pieces[2]) {
-                long target = BitBoard.and(BitBoard.not(team_total[0]), BitBoard.KNIGHT_TABLE[i]);
-                for(int k = 0; k < 64; k++){
-                    if(BitBoard.get_bit(target, k)){
-                        moves.add(new Move(i,k,2,getPiece(k)));
-                    }
-                }
-            }
-
-
-        }
-        else {
-
-            for (int i : black_pieces[0]) {
-                if (!BitBoard.get_bit(this.team_total[0], i - 8)) {
-                    moves.add(new Move(i, i - 8, this));
-                    if (i > 47 && !BitBoard.get_bit(this.team_total[0], i - 16)) {
-                        moves.add(new Move(i, i - 16, this));
-                    }
-                }
-                if (BitBoard.fileIndex(i) < 7 && BitBoard.get_bit(this.team_total[0], i - 7)) {
-                    moves.add(new Move(i, i - 7, this));
-                }
-                if (BitBoard.fileIndex(i) > 0 && BitBoard.get_bit(this.team_total[0], i - 9)) {
-                    moves.add(new Move(i, i - 9, this));
-                }
-            }
-
-        }
-//        for (byte i = 0; i < 8; i++) {
-//            for (byte j = 0; j < 8; j++) {
-//                int index = index(i, j);
-//
-//                if (field[index] * getActivePlayer() <= 0) continue;
-//
-//                if (field[index] == getActivePlayer()) { // Bauern
-//                    if (j == 0 || j == 7) continue;
-//                    if (field[index + getActivePlayer() * 12] == 0) {
-//                        moves.add(new Move(index, index + getActivePlayer() * 12, getActivePlayer(), (byte) 0));
-//                        if ((j == getActivePlayer() || j == 7 + getActivePlayer()) && field[index + getActivePlayer() * 2 * 12] == 0) {
-//                            moves.add(new Move(index, index + getActivePlayer() * 24, getActivePlayer(), (byte) 0));
-//                        }
-//                    }
-//
 //                    if (field[index + getActivePlayer() * 11] != INVALID && field[index + getActivePlayer() * 11] * getActivePlayer() < 0) {
 //                        moves.add(new Move(index, index + getActivePlayer() * 11, this));
 //                    }
 //                    if (field[index + getActivePlayer() * 13] != INVALID && field[index + getActivePlayer() * 13] * getActivePlayer() < 0) {
 //                        moves.add(new Move(index, index + getActivePlayer() * 13, this));
 //                    }
-//
-//                } else if (getPiece(i, j) == getActivePlayer() * 3) { // Springer
-//                    for (int ar : SPRINGER_OFFSET) {
-//                        if (this.field[ar + index] != INVALID && field[ar + index] * getActivePlayer() <= 0) {
-//                            moves.add(new Move(index, ar + index, this));
-//                        }
-//                    }
-//                } else if (getPiece(i, j) == getActivePlayer() * 2) { // Türme
-//                    for (int dir : TURM_DIRECTIONS) {
-//                        slidingPieces(index, dir, moves);
-//                    }
-//                } else if (getPiece(i, j) == getActivePlayer() * 5) { // Dame
-//                    for (int dir : TURM_DIRECTIONS) {
-//                        slidingPieces(index, dir, moves);
-//                    }
-//                    for (int dir : LAEUFER_DIRECTIONS) {
-//                        slidingPieces(index, dir, moves);
-//                    }
-//                } else if (getPiece(i, j) == getActivePlayer() * 4) { // Läufer
-//                    for (int dir : LAEUFER_DIRECTIONS) {
-//                        slidingPieces(index, dir, moves);
-//                    }
-//                } else if (getPiece(i, j) == getActivePlayer() * 6) { //König
-//                    for (int ar : KOENIG_OFFSET) {
-//                        if (this.field[ar + index] != INVALID && field[ar + index] * getActivePlayer() <= 0) {
-//                            moves.add(new Move(index, ar + index, this));
-//                        }
-//                    }
-//                }
-//
-//
-//            }
-//        }
+                }
+            }
+        }
         return moves;
     }
 
@@ -400,7 +333,12 @@ public class FastBoard extends Board<FastBoard> {
     }
 
     @Override
-    public List<Move> getAvailableMovesComplete() {
+    public List<Move> getLegalMoves() {
+        return null;
+    }
+
+    @Override
+    public List<Move> getCaptureMoves() {
         return null;
     }
 
@@ -440,14 +378,12 @@ public class FastBoard extends Board<FastBoard> {
     }
 
     public static void main(String[] args) {
-        SlowBoard board = new SlowBoard();
-
-        HashMap<Long, Double> table = new HashMap<>(10000000);
+        FastBoard board = new FastBoard();
 
         long time = System.currentTimeMillis();
         int count = 0;
-        while (System.currentTimeMillis()-time < 3E3 && table.size() < 10000000){
-            table.put((long)(Math.random() * 10000000L), Math.random());
+        while (System.currentTimeMillis()-time < 3E3){
+            board.getPseudoLegalMoves();
             count ++;
         }
         System.out.println(count / 3);

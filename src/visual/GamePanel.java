@@ -1,7 +1,9 @@
 package visual;
 
-import board.Move;
+import board.SlowBoard;
+import board.moves.Move;
 import game.Game;
+import game.ai.search.AI;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;
@@ -26,10 +28,25 @@ public class GamePanel extends JPanel {
     public static Color color_lastMove_black = new Color(0xB9CC36);
 
     public static Color color_available_white = new Color(0xadb066);
-    public static Color color_available_black = new Color(0xadb066);
+    public static Color color_available_black = new Color(0xB09F54);
 
     public static Color color_takeable_white = new Color(0xC8342F);
     public static Color color_takeable_black = new Color(0xC8342F);
+
+//    public static Color color_white = new Color(0xCCE5FF);
+//    public static Color color_black = new Color(0x004C99);
+//
+//    public static Color color_selected_white = new Color(0xF6F879);
+//    public static Color color_selected_black = new Color(0xF6F879);
+//
+//    public static Color color_lastMove_white = new Color(0xF6F879);
+//    public static Color color_lastMove_black = new Color(0xF6F879);
+//
+//    public static Color color_available_white = new Color(0xffcc99);
+//    public static Color color_available_black = new Color(0xffcc99);
+//
+//    public static Color color_takeable_white = new Color(0xff6666);
+//    public static Color color_takeable_black = new Color(0xff6666);
 
 
     public static boolean renderAvailableCells = true;
@@ -127,7 +144,7 @@ public class GamePanel extends JPanel {
     public void renderAttacks() {
         if (selected != -1) {
 
-            for (Object obj : g.getBoard().getAvailableMovesComplete()) {
+            for (Object obj : g.getBoard().getLegalMoves()) {
                 if (((Move) obj).getFrom() == selected) {
                     if (g.getBoard().getPiece(((Move) obj).getTo()) != 0) {
                         renderSquareTakeable(g.getBoard().x(((Move) obj).getTo()), g.getBoard().y(((Move) obj).getTo()));
@@ -184,6 +201,8 @@ public class GamePanel extends JPanel {
         renderBackground();
         renderPreviousMove();
         renderAttacks();
+        this.repaint();
+        this.revalidate();
     }
 
 
@@ -204,7 +223,7 @@ public class GamePanel extends JPanel {
             } else if (g.getBoard().getPiece(x, y) * g.getBoard().getActivePlayer() > 0) {
                 selected = g.getBoard().index(x, y);
             } else {
-                for (Object o : g.getBoard().getAvailableMovesShallow()) {
+                for (Object o : g.getBoard().getPseudoLegalMoves()) {
                     if (o instanceof Move) {
                         Move z = (Move) o;
 
@@ -229,6 +248,7 @@ public class GamePanel extends JPanel {
     public void runMoveInThread(Move z){
         new Thread(() -> g.move(z)).start();
         this.selected = -1;
+        render();
     }
 
     /**
@@ -236,9 +256,13 @@ public class GamePanel extends JPanel {
      * This might cause problems when dealing with AIs!
      */
     public void undo() {
+        if(g.getPlayerWhite() instanceof AI ||g.getPlayerBlack() instanceof AI){
+            return;
+        }
         this.selected = -1;
-        this.g.getBoard().undoMove();
         this.g.getBoard().undoMove();
         this.render();
     }
+
+
 }

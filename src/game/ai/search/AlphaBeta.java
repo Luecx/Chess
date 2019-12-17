@@ -1,7 +1,7 @@
 package game.ai.search;
 
 import board.Board;
-import board.Move;
+import board.moves.Move;
 import game.ai.evaluator.Evaluator;
 import game.ai.ordering.Orderer;
 import game.ai.tools.PVLine;
@@ -293,7 +293,7 @@ public class AlphaBeta implements AI {
         }
 
 
-        List<Move> allMoves = currentDepth == 0 ? _board.getAvailableMovesComplete() : _board.getAvailableMovesShallow();
+        List<Move> allMoves = currentDepth == 0 ? _board.getLegalMoves() : _board.getPseudoLegalMoves();
         if (currentDepth == _depth || allMoves.size() == 0 || _board.isGameOver()) {
             double val = Quiesce(alpha, beta, quiesce_depth);
             return val;
@@ -362,7 +362,7 @@ public class AlphaBeta implements AI {
         }
 
 
-        List<Move> allMoves = currentDepth == 0 ? _board.getAvailableMovesComplete() : _board.getAvailableMovesShallow();
+        List<Move> allMoves = currentDepth == 0 ? _board.getLegalMoves() : _board.getPseudoLegalMoves();
         if (currentDepth == _depth || allMoves.size() == 0 || _board.isGameOver()) {
             double val = Quiesce(alpha, beta, quiesce_depth);
             return val;
@@ -432,7 +432,7 @@ public class AlphaBeta implements AI {
         }
         if (alpha < stand_pat)
             alpha = stand_pat;
-        List<Move> allMoves = _board.getAvailableMovesShallow();
+        List<Move> allMoves = _board.getPseudoLegalMoves();
         orderer.sort(allMoves, 0, null);
         for (Move m : allMoves) {
             if (m.getPieceTo() * m.getPieceFrom() < 0) {

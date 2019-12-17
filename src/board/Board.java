@@ -1,7 +1,7 @@
 package board;
 
-import java.util.Collection;
-import java.util.LinkedList;
+import board.moves.Move;
+
 import java.util.List;
 import java.util.Stack;
 
@@ -47,7 +47,8 @@ public abstract class Board<T extends Board<T>> {
      * <p>
      * @return All the available moves
      */
-    public abstract List<Move> getAvailableMovesShallow();
+    public abstract List<Move> getPseudoLegalMoves();
+
 
     /**
      * It returns a list of all moves that are available for the current
@@ -58,7 +59,13 @@ public abstract class Board<T extends Board<T>> {
      *
      * @return All the available moves
      */
-    public abstract List<Move> getAvailableMovesComplete();
+    public abstract List<Move> getLegalMoves();
+
+    /**
+     * returns a list off all moves that capture a piece.
+     * @return
+     */
+    public abstract List<Move> getCaptureMoves();
 
     /**
      * The method returns true if one side has won the game

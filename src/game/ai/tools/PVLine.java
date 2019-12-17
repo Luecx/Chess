@@ -1,6 +1,6 @@
 package game.ai.tools;
 
-import board.Move;
+import board.moves.Move;
 
 import java.util.List;
 
