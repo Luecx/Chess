@@ -53,7 +53,7 @@ public class Frame extends JFrame implements KeyListener {
 
     public static void main(String[] args) {
         Player player = new Player() {};
-        Player enemy = new AlphaBeta(new SimpleEvaluator(), new SimpleOrderer(), 6,6);
+        Player enemy = new AlphaBeta(new FinnEvaluator(), new SimpleOrderer(), 7,6);
         ((AlphaBeta) enemy).setUse_iteration(true);
         ((AlphaBeta) enemy).setUse_transposition(false);
         ((AlphaBeta) enemy).setPrint_overview(true);

@@ -82,6 +82,11 @@ public class SlowBoard extends Board<SlowBoard> {
 
     @Override
     public void move(Move m) {
+        if (m.getIsNull()) { // does null move stuff
+            this.changeActivePlayer();
+            this.moveHistory.push(m);
+            return;
+        }
         if (m.getPieceFrom() * getActivePlayer() == 6) {
             if (Math.abs(m.getTo() - m.getFrom()) == 2) {
                 if (m.getTo() > m.getFrom()) {
@@ -91,7 +96,7 @@ public class SlowBoard extends Board<SlowBoard> {
                 }
             }
         }
-        this.moveSimpleMove(m);
+        this.moveSimpleMove(m); // stuff for every non-null move
 
         if(m.getPieceFrom() * getActivePlayer() == 1){
             if((y(m.getTo()) == 7 && getActivePlayer() == 1) ||
@@ -204,6 +209,12 @@ public class SlowBoard extends Board<SlowBoard> {
     @Override
     public void undoMove() {
         if (this.moveHistory.size() == 0) return;
+
+        if (this.moveHistory.peek().getIsNull()) { // null move stuff
+            this.changeActivePlayer();
+            this.moveHistory.pop();
+            return;
+        }
 
         int turn = this.moveHistory.peek().getPieceFrom() > 0 ? 1:-1;
 

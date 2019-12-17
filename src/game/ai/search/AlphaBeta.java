@@ -21,6 +21,8 @@ public class AlphaBeta implements AI {
     private boolean use_transposition = false;
     private boolean print_overview = false;
 
+    private final int NULL_MOVE_REDUCTION = 3;
+
     public AlphaBeta(Evaluator evaluator, Orderer orderer, int max_depth, int quiesce_depth) {
         this.evaluator = evaluator;
         this.max_depth = max_depth;
@@ -215,17 +217,26 @@ public class AlphaBeta implements AI {
             return transposition;
         }
         List<Move> allMoves = currentDepth == 0 ? _board.getAvailableMovesComplete() : _board.getAvailableMovesShallow();
-        if (currentDepth == _depth || allMoves.size() == 0 || _board.isGameOver()) {
+        if (currentDepth >= _depth || allMoves.size() == 0 || _board.isGameOver()) {
             double val = Quiesce(alpha, beta, quiesce_depth);
             transpositionPlacement(zobrist, currentDepth, val);
             return val;
         }
+
+        PVLine line = new PVLine(_depth - currentDepth); // here is where I moved it
+        //null move
+        Move nullMove = new Move();
+        _board.move(nullMove);
+        double score = -pvSearch(-alpha - 1, -alpha, currentDepth + 1 + NULL_MOVE_REDUCTION, line, lastIteration);
+        _board.undoMove();
+        if (score >= beta) { return beta; }
+
         orderer.sort(allMoves, currentDepth, lastIteration);
-        PVLine line = new PVLine(_depth - currentDepth);
+        //PVLine line = new PVLine(_depth - currentDepth); // moved it up
         boolean bSearchPv = true;
         for (Move m : allMoves) {
             _board.move(m);
-            double score;
+            //double score; // moved it up
             if (bSearchPv) {
                 score = -pvSearch(-beta, -alpha, currentDepth + 1, line, lastIteration);
             } else {
