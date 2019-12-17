@@ -1,6 +1,6 @@
 package game.ai.ordering;
 
-import board.Move;
+import board.moves.Move;
 import game.ai.evaluator.FinnEvaluator;
 import game.ai.tools.PVLine;
 
@@ -10,7 +10,17 @@ import java.util.List;
 public class SimpleOrderer implements Orderer {
 
 
-
+    /**
+     * this methods sorts a list of moves by the following ranking:
+     *
+     *   1: PV-Moves from the last iteration (if lastIteration != null)
+     *   2: Ranking by the evaluation price of the piece that moves + the piece that has been taken.
+     *      This uses the EVALUATE_PRICE variable in the FinnEvaluator.
+     * @param collection
+     * @param depth
+     * @param lastIteration
+     * @param <T>
+     */
     @Override
     public <T extends Move> void sort(List<T> collection, int depth,PVLine lastIteration) {
         if(lastIteration != null){

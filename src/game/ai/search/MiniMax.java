@@ -1,7 +1,7 @@
 package game.ai.search;
 
 import board.Board;
-import board.Move;
+import board.moves.Move;
 import board.SlowBoard;
 import game.ai.evaluator.Evaluator;
 import game.ai.evaluator.SimpleEvaluator;
@@ -43,7 +43,7 @@ public class MiniMax implements AI {
     }
 
     private double minimax(int tiefe){
-        List<Move> moves = _board.getAvailableMovesShallow();
+        List<Move> moves = _board.getPseudoLegalMoves();
         _visitedNodes ++;
 
         long zobrist = _board.zobrist();

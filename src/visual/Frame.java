@@ -5,12 +5,13 @@ import board.Board;
 import board.SlowBoard;
 import game.Game;
 import game.Player;
-import game.ai.evaluator.SimpleEvaluator;
 import game.ai.search.AlphaBeta;
 import game.ai.evaluator.FinnEvaluator;
 import game.ai.ordering.SimpleOrderer;
 
 import javax.swing.*;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
@@ -48,17 +49,23 @@ public class Frame extends JFrame implements KeyListener {
         this.addKeyListener(this);
         this.gamePanel.addKeyListener(this);
 
+        this.addComponentListener(new ComponentAdapter()
+        {
+            public void componentResized(ComponentEvent evt) {
+                gamePanel.render();
+            }
+        });
+
         this.setVisible(true);
+        this.gamePanel.render();
     }
 
     public static void main(String[] args) {
-        Player player = new Player() {};
-        Player enemy = new AlphaBeta(new FinnEvaluator(), new SimpleOrderer(), 7,6);
-        ((AlphaBeta) enemy).setUse_iteration(true);
-        ((AlphaBeta) enemy).setUse_transposition(false);
-        ((AlphaBeta) enemy).setPrint_overview(true);
+        Board b = new SlowBoard();
+        Player p1 = new Player(){};
+        Player p2 = new AlphaBeta(new FinnEvaluator(), new SimpleOrderer(), 4,4);
 
-        Frame f = new Frame(new SlowBoard(), player, enemy);
+        new Frame(b,p1,p1);
     }
 
     @Override
@@ -67,9 +74,7 @@ public class Frame extends JFrame implements KeyListener {
 
     @Override
     public void keyPressed(KeyEvent e) {
-
-
-        //gamePanel.undo();
+        gamePanel.undo();
     }
 
     @Override

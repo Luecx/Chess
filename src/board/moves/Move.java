@@ -1,4 +1,6 @@
-package board;
+package board.moves;
+
+import board.Board;
 
 import java.util.Objects;
 
@@ -10,6 +12,8 @@ public class Move {
     int pieceFrom;
     int pieceTo;
     boolean isNull; // true if it is a null-move ie a "pass"
+
+    short metaInformation;
 
     public Move(int from, int to, int pieceFrom, int pieceTo) {
         this.from = from;
@@ -29,6 +33,30 @@ public class Move {
 
     public Move() { // to create null move
         this.isNull = true;
+    }
+
+    public Move(int from, int to, Board board, short metaInformation) {
+        this.from = from;
+        this.to = to;
+        this.pieceFrom = board.getPiece(from);
+        this.pieceTo = board.getPiece(to);
+        this.metaInformation = metaInformation;
+    }
+
+    public Move(int from, int to, int pieceFrom, int pieceTo, short metaInformation) {
+        this.from = from;
+        this.to = to;
+        this.pieceFrom = pieceFrom;
+        this.pieceTo = pieceTo;
+        this.metaInformation = metaInformation;
+    }
+
+    public short getMetaInformation() {
+        return metaInformation;
+    }
+
+    public void setMetaInformation(short metaInformation) {
+        this.metaInformation = metaInformation;
     }
 
     public int getPieceFrom() {
