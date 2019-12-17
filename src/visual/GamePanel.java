@@ -223,7 +223,7 @@ public class GamePanel extends JPanel {
             } else if (g.getBoard().getPiece(x, y) * g.getBoard().getActivePlayer() > 0) {
                 selected = g.getBoard().index(x, y);
             } else {
-                for (Object o : g.getBoard().getPseudoLegalMoves()) {
+                for (Object o : g.getBoard().getLegalMoves()) {
                     if (o instanceof Move) {
                         Move z = (Move) o;
 

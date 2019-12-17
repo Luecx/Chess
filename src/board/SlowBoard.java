@@ -1,6 +1,10 @@
 package board;
 
 import board.moves.Move;
+import game.ai.evaluator.FinnEvaluator;
+import game.ai.evaluator.SimpleEvaluator;
+import game.ai.ordering.SimpleOrderer;
+import game.ai.search.AlphaBeta;
 import io.IOBoard;
 
 import java.util.ArrayList;
@@ -129,7 +133,6 @@ public class SlowBoard extends Board<SlowBoard> {
         if(m.getPieceFrom() * getActivePlayer() == 1){
             if((y(m.getTo()) == 7 && getActivePlayer() == 1) ||
                     (y(m.getTo()) == 0 && getActivePlayer() == -1)){
-                System.err.println(");");
                 this.field[m.getTo()] = 5 * getActivePlayer();
             }
         }
@@ -360,25 +363,24 @@ public class SlowBoard extends Board<SlowBoard> {
                 } else if (getPiece(i, j) == getActivePlayer() * 2) { // Türme
 
                     short mask = MASK_NONE;
-//                    switch (index){
-//                        case INDEX_WHITE_QUEENSIDE_ROOK:
-//                            if((board_meta_informtion & MASK_WHITE_QUEENSIDE_CASTLING) > 0)
-//                                mask = MASK_WHITE_QUEENSIDE_CASTLING;
-//                            break;
-//                        case INDEX_WHITE_KINGSIDE_ROOK:
-//                            if((board_meta_informtion & MASK_WHITE_KINGSIDE_CASTLING) > 0)
-//                                mask = MASK_WHITE_KINGSIDE_CASTLING;
-//                            break;
-//                        case INDEX_BLACK_QUEENSIDE_ROOK:
-//                            if((board_meta_informtion & MASK_BLACK_QUEENSIDE_CASTLING) > 0)
-//                                mask = MASK_BLACK_QUEENSIDE_CASTLING;
-//                            break;
-//                        case INDEX_BLACK_KINGSIDE_ROOK:
-//                            if((board_meta_informtion & MASK_BLACK_KINGSIDE_CASTLING) > 0)
-//                                mask = MASK_BLACK_KINGSIDE_CASTLING;
-//                            break;
-//                    }
-                    System.err.println(mask);
+                    switch (index){
+                        case INDEX_WHITE_QUEENSIDE_ROOK:
+                            if((board_meta_informtion & MASK_WHITE_QUEENSIDE_CASTLING) > 0)
+                                mask = MASK_WHITE_QUEENSIDE_CASTLING;
+                            break;
+                        case INDEX_WHITE_KINGSIDE_ROOK:
+                            if((board_meta_informtion & MASK_WHITE_KINGSIDE_CASTLING) > 0)
+                                mask = MASK_WHITE_KINGSIDE_CASTLING;
+                            break;
+                        case INDEX_BLACK_QUEENSIDE_ROOK:
+                            if((board_meta_informtion & MASK_BLACK_QUEENSIDE_CASTLING) > 0)
+                                mask = MASK_BLACK_QUEENSIDE_CASTLING;
+                            break;
+                        case INDEX_BLACK_KINGSIDE_ROOK:
+                            if((board_meta_informtion & MASK_BLACK_KINGSIDE_CASTLING) > 0)
+                                mask = MASK_BLACK_KINGSIDE_CASTLING;
+                            break;
+                    }
                     for (int dir : TURM_DIRECTIONS) {
                         slidingPiecesCapture(index, dir, moves, mask);
                     }
@@ -575,25 +577,12 @@ public class SlowBoard extends Board<SlowBoard> {
     }
 
     public static void main(String[] args) {
-//        AlphaBeta alphaBeta1 = new AlphaBeta(new FinnEvaluator(), new SimpleOrderer(), 6    ,0);
-//        alphaBeta1.setUse_iteration(false);
-//        alphaBeta1.setUse_transposition(true);
-//        alphaBeta1.setPrint_overview(true);
-        SlowBoard board = IOBoard.read_lichess(new SlowBoard(), "rnbqkbnr/ppppp3/8/5pp1/5PPp/8/PPPPP3/RNBQKBNR");
-        board.changeActivePlayer();
-        System.out.println(board);
+        SlowBoard b = IOBoard.read_lichess(new SlowBoard(), "rnb2b1r/ppp1pkpp/3q1n2/1B1p1p2/3PP3/2N2N1K/PPPB1PPP/R2Q1R2");
 
-
-        for(Move m:board.getPseudoLegalMoves()){
-            System.out.println(m + "  " + m.getMetaInformation());
-        }
-
-
-        //System.out.println(MASK_BLACK_KINGSIDE_CASTLING ^ MASK_BLACK_QUEENSIDE_CASTLING);
-
-
-        //new Frame(new Game(board, new Player(){}, new Player(){}));
-
+        AlphaBeta ab = new AlphaBeta(new FinnEvaluator(), new SimpleOrderer(), 6,2);
+        ab.setPrint_overview(true);
+        ab.setUse_iteration(true);
+        System.out.println(ab.bestMove(b));
 
     }
 

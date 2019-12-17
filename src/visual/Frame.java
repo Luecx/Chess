@@ -8,6 +8,7 @@ import game.Player;
 import game.ai.search.AlphaBeta;
 import game.ai.evaluator.FinnEvaluator;
 import game.ai.ordering.SimpleOrderer;
+import io.IOBoard;
 
 import javax.swing.*;
 import java.awt.event.ComponentAdapter;
@@ -61,11 +62,14 @@ public class Frame extends JFrame implements KeyListener {
     }
 
     public static void main(String[] args) {
-        Board b = new SlowBoard();
-        Player p1 = new Player(){};
-        Player p2 = new AlphaBeta(new FinnEvaluator(), new SimpleOrderer(), 4,4);
+        SlowBoard b = IOBoard.read_lichess(new SlowBoard(), "rnb2b1r/ppp1pkpp/3q1n2/1B1p1p2/3PP3/2N2N1K/PPPB1PPP/R2Q1R2");
 
-        new Frame(b,p1,p1);
+        Player p1 = new Player(){};
+        AlphaBeta p2 = new AlphaBeta(new FinnEvaluator(), new SimpleOrderer(), 8,2);
+        p2.setUse_iteration(true);
+        p2.setPrint_overview(true);
+
+        new Frame(b,p1,p2);
     }
 
     @Override

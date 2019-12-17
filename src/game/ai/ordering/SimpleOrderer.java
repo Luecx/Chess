@@ -10,6 +10,9 @@ import java.util.List;
 public class SimpleOrderer implements Orderer {
 
 
+    public static final int[] EVALUATE_PRICE = new int[]{0, 100, 500, 320, 330, 900, 20000};
+
+
     /**
      * this methods sorts a list of moves by the following ranking:
      *
@@ -23,19 +26,18 @@ public class SimpleOrderer implements Orderer {
      */
     @Override
     public <T extends Move> void sort(List<T> collection, int depth,PVLine lastIteration) {
+
+        collection.sort((o1, o2) -> {
+            int p1 = EVALUATE_PRICE[Math.abs(o1.getPieceTo())] - EVALUATE_PRICE[Math.abs(o1.getPieceFrom())];
+            int p2 = EVALUATE_PRICE[Math.abs(o2.getPieceTo())] - EVALUATE_PRICE[Math.abs(o2.getPieceFrom())];
+
+//            System.out.println(o1 +"  " + p1);
+//            System.out.println(o2 +"  " + p2);
+
+            return -Integer.compare(p1,p2);
+        });
+
         if(lastIteration != null){
-
-            collection.sort(new Comparator<T>() {
-                @Override
-                public int compare(T o1, T o2) {
-                    int p1 = FinnEvaluator.EVALUATE_PRICE[Math.abs(o1.getPieceTo())] + FinnEvaluator.EVALUATE_PRICE[Math.abs(o1.getPieceFrom())];
-                    int p2 = FinnEvaluator.EVALUATE_PRICE[Math.abs(o2.getPieceTo())] + FinnEvaluator.EVALUATE_PRICE[Math.abs(o2.getPieceFrom())];
-
-                    return -Integer.compare(p1,p2);
-                }
-            });
-
-
             if(depth < lastIteration.getLine().length){
                 int index = collection.indexOf(lastIteration.getLine()[depth]);
                 if(index != -1){
@@ -44,16 +46,6 @@ public class SimpleOrderer implements Orderer {
                     collection.add(0,(T)object);
                 }
             }
-
-        }else{
-            collection.sort(new Comparator<T>() {
-                @Override
-                public int compare(T o1, T o2) {
-                    return -Integer.compare(
-                            FinnEvaluator.EVALUATE_PRICE[Math.abs(o1.getPieceTo())] + FinnEvaluator.EVALUATE_PRICE[Math.abs(o1.getPieceFrom())],
-                            FinnEvaluator.EVALUATE_PRICE[Math.abs(o2.getPieceTo())] + FinnEvaluator.EVALUATE_PRICE[Math.abs(o2.getPieceFrom())]);
-                }
-            });
         }
 
     }

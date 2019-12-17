@@ -362,6 +362,7 @@ public class AlphaBeta implements AI {
                 alpha = transposition.getVal();
             }
         }
+
         List<Move> allMoves = currentDepth == 0 ? _board.getLegalMoves() : _board.getPseudoLegalMoves();
         if (currentDepth >= _depth || allMoves.size() == 0 || _board.isGameOver()) {
             double val = Quiesce(alpha, beta, quiesce_depth);
@@ -439,18 +440,17 @@ public class AlphaBeta implements AI {
         }
         if (alpha < stand_pat)
             alpha = stand_pat;
-        List<Move> allMoves = _board.getPseudoLegalMoves();
+        List<Move> allMoves = _board.getCaptureMoves();
         orderer.sort(allMoves, 0, null);
         for (Move m : allMoves) {
-            if (m.getPieceTo() * m.getPieceFrom() < 0) {
-                _board.move(m);
-                double score = -Quiesce(-beta, -alpha, depth_left - 1);
-                _board.undoMove();
-                if (score >= beta)
-                    return beta;
-                if (score > alpha)
-                    alpha = score;
-            }
+            _board.move(m);
+            double score = -Quiesce(-beta, -alpha, depth_left - 1);
+            _board.undoMove();
+            if (score >= beta)
+                return beta;
+            if (score > alpha)
+                alpha = score;
+
         }
         return alpha;
     }
