@@ -84,7 +84,10 @@ public class Game {
             listeners.forEach(Runnable::run);
         }while(!humansTurn() && !board.isGameOver() && !isInterrupted){
             AI AI = board.getActivePlayer() == 1 ? (AI) playerWhite: (AI) playerBlack;
-            board.move(AI.bestMove(board.copy()));
+            Move move = AI.bestMove(board.copy());
+            if(move == null)
+                return;
+            board.move(move);
             listeners.forEach(Runnable::run);
         }
         this.isInterrupted = false;

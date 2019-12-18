@@ -5,6 +5,7 @@ import board.Board;
 import board.SlowBoard;
 import game.Game;
 import game.Player;
+import game.ai.evaluator.GeneticEvaluator;
 import game.ai.search.AlphaBeta;
 import game.ai.evaluator.FinnEvaluator;
 import game.ai.ordering.SimpleOrderer;
@@ -63,11 +64,16 @@ public class Frame extends JFrame implements KeyListener {
 
     public static void main(String[] args) {
         SlowBoard b = IOBoard.read_lichess(new SlowBoard(), "rnb2b1r/ppp1pkpp/3q1n2/1B1p1p2/3PP3/2N2N1K/PPPB1PPP/R2Q1R2");
+        b.reset();
 
-        Player p1 = new Player(){};
-        AlphaBeta p2 = new AlphaBeta(new FinnEvaluator(), new SimpleOrderer(), 8,2);
+        AlphaBeta p1 = new AlphaBeta(new FinnEvaluator(), new SimpleOrderer(), 7,2);
+        AlphaBeta p2 = new AlphaBeta(new GeneticEvaluator(), new SimpleOrderer(), 7,2);
         p2.setUse_iteration(true);
+        p2.setUse_null_moves(true);
         p2.setPrint_overview(true);
+        p1.setUse_iteration(true);
+        p1.setUse_null_moves(true);
+        p1.setPrint_overview(true);
 
         new Frame(b,p1,p2);
     }

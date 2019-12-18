@@ -20,6 +20,7 @@ public class AlphaBeta implements AI {
     private boolean use_iteration = true;           //flag for iterative deepening
     private boolean use_transposition = false;      //flag for transposition tables
     private boolean print_overview = false;         //flag for output-printing
+    private boolean use_null_moves = true;
 
     private final int NULL_MOVE_REDUCTION = 3;
 
@@ -171,6 +172,24 @@ public class AlphaBeta implements AI {
      */
     public void setUse_transposition(boolean use_transposition) {
         this.use_transposition = use_transposition;
+    }
+
+    /**
+     * null moves are used to reduce the search space dramatically.
+     * It might cost some performance.
+     * @return  the flag for the usage of null moves
+     */
+    public boolean isUse_null_moves() {
+        return use_null_moves;
+    }
+
+    /**
+     * null moves are used to reduce the search space dramatically.
+     * It might cost some performance.
+     * @param use_null_moves   the new flag for the usage of null moves
+     */
+    public void setUse_null_moves(boolean use_null_moves) {
+        this.use_null_moves = use_null_moves;
     }
 
     private int _depth;
@@ -348,40 +367,47 @@ public class AlphaBeta implements AI {
     private double pvSearch(double alpha, double beta, int currentDepth, PVLine pLine, PVLine lastIteration) {
         _visitedNodes++;
 
-
+        //TODO
+        //<editor-fold desc="Transposition lookup">
         //used to determine if the node is a PV_Node and has a placed transposition entry.
         boolean transpositionHasBeenPlaced = false;
         long zobrist = _board.zobrist();
         TranspositionEntry transposition = transpositionLookUp(zobrist, currentDepth);
         if (transposition != null) {
-            if(transposition.getNode_type() == TranspositionEntry.PV_NODE){
-                return transposition.getVal();
-            }else if (transposition.getNode_type() == TranspositionEntry.CUT_NODE){
-                beta = transposition.getVal();
-            }else{
-                alpha = transposition.getVal();
-            }
+            //TODO
         }
+        //</editor-fold>
 
+
+        //<editor-fold desc="quiesce search">
         List<Move> allMoves = currentDepth == 0 ? _board.getLegalMoves() : _board.getPseudoLegalMoves();
         if (currentDepth >= _depth || allMoves.size() == 0 || _board.isGameOver()) {
             double val = Quiesce(alpha, beta, quiesce_depth);
             return val;
         }
+        //</editor-fold>
 
-        PVLine line = new PVLine(_depth - currentDepth); // here is where I moved it
-        //null move
-        Move nullMove = new Move();
-        _board.move(nullMove);
-        double score = -pvSearch(-alpha - 1, -alpha, currentDepth + 1 + NULL_MOVE_REDUCTION, line, lastIteration);
-        _board.undoMove();
-        if (score >= beta) { return beta; }
+        PVLine line = new PVLine(_depth - currentDepth);
 
+        //<editor-fold desc="Null moves">
+        double score;
+        if(use_null_moves){
+            Move nullMove = new Move();
+            _board.move(nullMove);
+            score = -pvSearch(-alpha - 1, -alpha, currentDepth + 1 + NULL_MOVE_REDUCTION, line, lastIteration);
+            _board.undoMove();
+            if (score >= beta) { return beta; }
+        }
+        //</editor-fold>
+
+
+        //<editor-fold desc="move-ordering">
         orderer.sort(allMoves, currentDepth, lastIteration);
-        //PVLine line = new PVLine(_depth - currentDepth); // moved it up
+        //</editor-fold>
+
+
+        //<editor-fold desc="Searching">
         boolean bSearchPv = true;
-
-
         for (Move m : allMoves) {
 
             _board.move(m);
@@ -420,9 +446,13 @@ public class AlphaBeta implements AI {
             }
             bSearchPv = false;
         }
+        //</editor-fold>
 
+        //TODO
+        //<editor-fold desc="Transposition placing">
         if (!transpositionHasBeenPlaced)
             transpositionPlacement(zobrist, currentDepth, alpha, TranspositionEntry.ALL_NODE);
+        //</editor-fold>
 
         return alpha;
     }

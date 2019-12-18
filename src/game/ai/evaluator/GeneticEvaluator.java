@@ -81,7 +81,7 @@ public class GeneticEvaluator implements Evaluator {
             {20, 30, 10, 0, 0, 10, 30, 20}
     });
 
-    private int[] EVALUATE_PRICE = new int[]{0, 100, 500, 320, 330, 900, 20000};
+    private int[] EVALUATE_PRICE = new int[]{0,31,880,228,498,1155,5797};
     private Tensor3D POSITION_PRICE = new Tensor3D(PAWN_VALUES, ROOK_VALUES, KNIGHT_VALUES, BISHOP_VALUES, QUEEN_VALUES);
 
 
@@ -124,7 +124,7 @@ public class GeneticEvaluator implements Evaluator {
 
     public static void evolve(ArrayList<Object[]> ais, int games, int survivors, double mutationStrength, double crossoverStrength){
         for(int i = 0; i < ais.size(); i++){
-            ais.get(i)[1] = 0;
+            ais.get(i)[1] = new Double(0);
         }
         for(int g = 0; g < games; g++){
             Collections.shuffle(ais);
@@ -132,12 +132,12 @@ public class GeneticEvaluator implements Evaluator {
 
             for(int i = 0; i < ais.size(); i+=2){
                 double score = playAMatch((AlphaBeta)ais.get(i)[0], (AlphaBeta)ais.get(i + 1)[0]);
-                ais.get(i)[1] = (Integer)ais.get(i)[1] + score;
-                ais.get(i+1)[1] = (Integer)ais.get(i+1)[1] - score;
+                ais.get(i)[1] = (Double)ais.get(i)[1] + (double) score;
+                ais.get(i+1)[1] = (Double) ais.get(i + 1)[1] - (double) score;
             }
 
         }
-        ais.sort(Comparator.comparingDouble(o -> (double) o[1]));
+        ais.sort(Comparator.comparingDouble(o -> -(double) o[1]));
 
         for(int i = survivors; i < ais.size(); i++){
             GeneticEvaluator v = (GeneticEvaluator)((AlphaBeta)ais.get(i)[0]).getEvaluator();
@@ -161,9 +161,10 @@ public class GeneticEvaluator implements Evaluator {
 
         for(int i = 0; i < count;i ++){
             GeneticEvaluator gen1 = new GeneticEvaluator();
-            gen1.mutate(0.3);
+            gen1.mutate(1);
             AlphaBeta ai1 = new AlphaBeta(gen1, new SimpleOrderer(), depth, qDepth);
-            res.add(new Object[]{ai1, 0});
+            ai1.setUse_null_moves(false);
+            res.add(new Object[]{ai1, new Double(0)});
         }
 
         return res;
@@ -192,7 +193,7 @@ public class GeneticEvaluator implements Evaluator {
         }
 
         double evaluation = evaluator.evaluate(game.getBoard());
-        double score = evaluation > 0 ? 0.5:(evaluation < 0 ? -0.5d:0);
+        double score = evaluation > 0 ? 0.2:(evaluation < 0 ? -0.2d:0);
 
         return score;
     }
@@ -210,7 +211,9 @@ public class GeneticEvaluator implements Evaluator {
 
     public static void main(String[] args) {
         ArrayList<Object[]> population = generatePopulation(10,4,2);
-        evolve(population, 1, 4, 0.1,0.8);
+
+        for(int i = 0; i < 10; i++)
+            evolve(population, 5, 4, 0.1,0.8);
         System.out.println("Finished");
     }
 
