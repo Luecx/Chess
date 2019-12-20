@@ -1,5 +1,6 @@
 package game.ai.ordering;
 
+import board.Board;
 import board.moves.Move;
 import game.ai.tools.PVLine;
 
@@ -22,8 +23,9 @@ public interface Orderer {
      * @param collection        the moves to be sorted.
      * @param depth             the current depth. (depth increases)
      * @param lastIteration     the principal variation line from the last iteration
+     * @param board             the board object
      * @param <T>               type-parameter for the move object.
      */
-    <T extends Move> void sort(List<T> collection, int depth, PVLine lastIteration);
+    <T extends Move> void sort(List<T> collection, int depth, PVLine lastIteration, Board board);
 
 }

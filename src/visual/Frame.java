@@ -7,10 +7,12 @@ import board.setup.Setup;
 import game.Game;
 import game.Player;
 import game.ai.evaluator.GeneticEvaluator;
+import game.ai.evaluator.SimpleEvaluator;
 import game.ai.ordering.NoahOrderer;
 import game.ai.search.AlphaBeta;
 import game.ai.evaluator.FinnEvaluator;
 import game.ai.ordering.SimpleOrderer;
+import game.ai.search.PVSearch;
 import io.IOBoard;
 
 import javax.swing.*;
@@ -67,18 +69,14 @@ public class Frame extends JFrame implements KeyListener {
     public static void main(String[] args) {
         SlowBoard b = new SlowBoard(Setup.DEFAULT);
 
-        System.out.println(b);
 
-        AlphaBeta p1 = new AlphaBeta(new FinnEvaluator(), new NoahOrderer(), 7,2);
-        AlphaBeta p2 = new AlphaBeta(new GeneticEvaluator(), new NoahOrderer(), 7,2);
-        p2.setUse_iteration(true);
-        p2.setUse_null_moves(true);
-        p2.setPrint_overview(true);
+        AlphaBeta p1 = new AlphaBeta(new FinnEvaluator(), new SimpleOrderer(), 8,2);
+
         p1.setUse_iteration(true);
         p1.setUse_null_moves(true);
         p1.setPrint_overview(true);
 
-        new Frame(b,new Player(){},p2);
+        new Frame(b,new Player(){}, p1);
     }
 
     @Override

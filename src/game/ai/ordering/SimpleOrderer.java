@@ -1,5 +1,6 @@
 package game.ai.ordering;
 
+import board.Board;
 import board.moves.Move;
 import game.ai.evaluator.FinnEvaluator;
 import game.ai.tools.PVLine;
@@ -25,7 +26,7 @@ public class SimpleOrderer implements Orderer {
      * @param <T>
      */
     @Override
-    public <T extends Move> void sort(List<T> collection, int depth,PVLine lastIteration) {
+    public <T extends Move> void sort(List<T> collection, int depth,PVLine lastIteration, Board board) {
 
         collection.sort((o1, o2) -> {
             int p1 = EVALUATE_PRICE[Math.abs(o1.getPieceTo())] - EVALUATE_PRICE[Math.abs(o1.getPieceFrom())];

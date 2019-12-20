@@ -1,8 +1,6 @@
 package board.moves;
 
 import board.Board;
-import board.SlowBoard;
-//import game.ai.evaluator.NoahEvaluator;
 
 import java.util.Objects;
 
@@ -19,15 +17,12 @@ public class Move {
     int orderPriority;
 
 
-    static SlowBoard tokenSB = new SlowBoard();
-
 
     public Move(int from, int to, int pieceFrom, int pieceTo) {
         this.from = from;
         this.to = to;
         this.pieceFrom = pieceFrom;
         this.pieceTo = pieceTo;
-        setOrderPriority();
         this.isNull = false;
     }
 
@@ -36,7 +31,6 @@ public class Move {
         this.to = to;
         this.pieceFrom = board.getPiece(from);
         this.pieceTo = board.getPiece(to);
-        setOrderPriority();
         this.isNull = false;
     }
 
@@ -118,31 +112,11 @@ public class Move {
                 '}';
     }
 
-//    int from;
-//    int to;
-//    int pieceFrom;
-//    int pieceTo;
-    public void setOrderPriority() {
-        int priority = 0;
-        int color = pieceFrom > 0 ? 1 : -1;
-//        priority += Math.abs(NoahEvaluator.EVALUATE_PRICE[Math.abs(pieceTo)]);
-//        priority -= Math.abs(pieceFrom); //to capture with least valuable piece
-//        if (color == 1) {
-//            priority += NoahEvaluator.W_POSITION_PRICE.get(Math.abs(pieceFrom)-1,tokenSB.x(to),tokenSB.y(to));
-//            priority -= NoahEvaluator.W_POSITION_PRICE.get(pieceFrom-1,tokenSB.x(from),tokenSB.y(from));
-//        }
-//        if (color == -1) {
-//            priority += NoahEvaluator.B_POSITION_PRICE.get(Math.abs(pieceFrom)-1,tokenSB.x(to),tokenSB.y(to));
-//            priority -= NoahEvaluator.B_POSITION_PRICE.get(Math.abs(pieceFrom)-1,tokenSB.x(from),tokenSB.y(from));
-//        }
 
-        orderPriority = priority;
+    public void setOrderPriority(int orderPriority) {
+        this.orderPriority = orderPriority;
     }
 
-    public static void main(String[] args) {
-        System.out.println(tokenSB.y(5));
-        Move m = new Move(41,42,1,1);
 
-    }
 
 }

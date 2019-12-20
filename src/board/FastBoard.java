@@ -57,6 +57,16 @@ public class FastBoard extends Board<FastBoard> {
         update_longs();
     }
 
+    @Override
+    public boolean getCastlingChance(int index) {
+        return false;
+    }
+
+    @Override
+    public boolean setCastlingChance(int index, boolean value) {
+        return false;
+    }
+
     public void setPiece(int piece, int index) {
         int p = getPiece(index);
         if (p > 0) {

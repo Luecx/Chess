@@ -5,6 +5,7 @@ import board.setup.Setup;
 import game.ai.evaluator.Evaluator;
 import game.ai.evaluator.FinnEvaluator;
 import game.ai.evaluator.SimpleEvaluator;
+import game.ai.ordering.NoahOrderer;
 import game.ai.ordering.SimpleOrderer;
 import game.ai.search.AlphaBeta;
 import io.IOBoard;
@@ -108,6 +109,17 @@ public class SlowBoard extends Board<SlowBoard> {
             }
         }
         return h;
+    }
+
+    @Override
+    public boolean getCastlingChance(int index) {
+        return (board_meta_informtion & (1L << index)) > 0;
+    }
+
+    @Override
+    public boolean setCastlingChance(int index, boolean value) {
+        board_meta_informtion |= (1L << index);
+        return true;
     }
 
     @Override
@@ -554,18 +566,13 @@ public class SlowBoard extends Board<SlowBoard> {
 
     public static void main(String[] args) {
         Board b = new SlowBoard(Setup.DEFAULT);
-        System.out.println(b);
+        b.move((Move) b.getPseudoLegalMoves().get(11));
 
+        AlphaBeta alphaBeta = new AlphaBeta(new FinnEvaluator(), new NoahOrderer(), 1,0);
+        alphaBeta.bestMove(b);
+//        System.out.println(b);
+//        System.out.println(b.getPseudoLegalMoves().size());
 
-        long counter = (long)10E6;
-
-        long time =System.currentTimeMillis();
-
-        for(int i = 0; i < counter; i++){
-            b.getPseudoLegalMoves();
-        }
-
-        System.out.println(System.currentTimeMillis() - time + " ms");
 
 
     }

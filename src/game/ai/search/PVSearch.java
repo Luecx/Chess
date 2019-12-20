@@ -8,9 +8,9 @@ import game.ai.tools.PVLine;
 import game.ai.tools.TranspositionEntry;
 import game.ai.tools.TranspositionTable;
 
-import java.util.*;
+import java.util.List;
 
-public class AlphaBeta implements AI {
+public class PVSearch implements AI {
 
     private Evaluator evaluator;
     private Orderer orderer;
@@ -24,7 +24,7 @@ public class AlphaBeta implements AI {
 
     private final int NULL_MOVE_REDUCTION = 3;
 
-    public AlphaBeta(Evaluator evaluator, Orderer orderer, int max_depth, int quiesce_depth) {
+    public PVSearch(Evaluator evaluator, Orderer orderer, int max_depth, int quiesce_depth) {
         this.evaluator = evaluator;
         this.max_depth = max_depth;
         this.orderer = orderer;
@@ -268,7 +268,7 @@ public class AlphaBeta implements AI {
         _quiesceNodes = 0;
         PVLine pline = new PVLine(_depth);
         long time = System.nanoTime();
-        alphaBetaSearch(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, 0, pline, lastIteration);
+        pvSearch(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, 0, pline, lastIteration);
         printIterationSummary(System.nanoTime()-time);
 
         return pline;
@@ -295,40 +295,62 @@ public class AlphaBeta implements AI {
         }
     }
 
-    private double alphaBetaSearch(double alpha, double beta, int currentDepth, PVLine pLine, PVLine lastIteration) {
+    private double pvSearch(double alpha, double beta, int currentDepth, PVLine pLine, PVLine lastIteration) {
         _visitedNodes++;
+        //System.out.println("pvSearch was called");
 
-
+        //TODO
+        //<editor-fold desc="Transposition lookup">
         //used to determine if the node is a PV_Node and has a placed transposition entry.
         boolean transpositionHasBeenPlaced = false;
         long zobrist = _board.zobrist();
         TranspositionEntry transposition = transpositionLookUp(zobrist, currentDepth);
-//        if (transposition != null) {
-//            if(transposition.getNode_type() == TranspositionEntry.PV_NODE){
-//                return transposition.getVal();
-//            }else if (transposition.getNode_type() == TranspositionEntry.CUT_NODE){
-//                beta = transposition.getVal();
-//            }else{
-//                alpha = transposition.getVal();
-//            }
-//        }
+        if (transposition != null) {
+            //TODO
+        }
+        //</editor-fold>
 
 
+        //<editor-fold desc="quiesce search">
         List<Move> allMoves = currentDepth == 0 ? _board.getLegalMoves() : _board.getPseudoLegalMoves();
-        if (currentDepth == _depth || allMoves.size() == 0 || _board.isGameOver()) {
+        if (currentDepth >= _depth || allMoves.size() == 0 || _board.isGameOver()) {
             double val = Quiesce(alpha, beta, quiesce_depth);
             return val;
         }
+        //</editor-fold>
 
-        orderer.sort(allMoves, currentDepth, lastIteration, _board);
         PVLine line = new PVLine(_depth - currentDepth);
 
+        //<editor-fold desc="Null moves">
+        double score;
+        if(use_null_moves){
+            Move nullMove = new Move();
+            _board.move(nullMove);
+            score = -pvSearch(-alpha - 1, -alpha, currentDepth + 1 + NULL_MOVE_REDUCTION, line, lastIteration);
+            _board.undoMove();
+            if (score >= beta) { return beta; }
+        }
+        //</editor-fold>
+
+
+        //<editor-fold desc="move-ordering">
+        orderer.sort(allMoves, currentDepth, lastIteration, _board);
+        //</editor-fold>
+
+
+        //<editor-fold desc="Searching">
+        boolean bSearchPv = true;
         for (Move m : allMoves) {
 
-
             _board.move(m);
-            double score;
-            score = -alphaBetaSearch(-beta, -alpha, currentDepth + 1, line, lastIteration);
+            //double score; // moved it up
+            if (bSearchPv) {
+                score = -pvSearch(-beta, -alpha, currentDepth + 1, line, lastIteration);
+            } else {
+                score = -pvSearch(-alpha - 1, -alpha, currentDepth + 1, line, lastIteration);
+                if (score > alpha && score < beta) // in fail-soft ... && score < beta ) is common
+                    score = -pvSearch(-beta, -alpha, currentDepth + 1, line, lastIteration); // re-search
+            }
             _board.undoMove();
 
 
@@ -344,22 +366,25 @@ public class AlphaBeta implements AI {
                 transpositionHasBeenPlaced = true;
                 transpositionPlacement(zobrist, currentDepth, alpha, TranspositionEntry.PV_NODE);
 
+
                 pLine.getLine()[0] = m;
                 for (int i = 0; i < line.getMovesInLine(); i++) {
                     pLine.getLine()[i + 1] = line.getLine()[i];
                 }
                 pLine.setMovesInLine(line.getMovesInLine() + 1);
-
                 if (currentDepth == 0) {
                     _bestMove = m;
                 }
             }
-
-
+            bSearchPv = false;
         }
+        //</editor-fold>
 
+        //TODO
+        //<editor-fold desc="Transposition placing">
         if (!transpositionHasBeenPlaced)
             transpositionPlacement(zobrist, currentDepth, alpha, TranspositionEntry.ALL_NODE);
+        //</editor-fold>
 
         return alpha;
     }

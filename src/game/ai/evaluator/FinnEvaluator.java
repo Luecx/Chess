@@ -86,6 +86,9 @@ public class FinnEvaluator implements Evaluator {
 
                 if (v != 0) {
                     ev += b * EVALUATE_PRICE[Math.abs(v)];
+//                    if(v > 0){
+//
+//                    }
                     if (Math.abs(v) < 6) {
                         if (v > 0) {
                             ev += (b * POSITION_PRICE.get(Math.abs(v) - 1,7-n,i));

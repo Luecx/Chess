@@ -249,6 +249,24 @@ public abstract class Board<T extends Board<T>> {
     public abstract long zobrist();
 
     /**
+     * returns true if its possible to castle according to the following list:
+     *    index = 0: white long castle
+     *    index = 1: white short castle
+     *    index = 2: black long castle
+     *    index = 3: black short castle
+     */
+    public abstract boolean getCastlingChance(int index);
+
+    /**
+     * enables/disables castling according to the following list:
+     *    index = 0: white long castle
+     *    index = 1: white short castle
+     *    index = 2: black long castle
+     *    index = 3: black short castle
+     */
+    public abstract boolean setCastlingChance(int index, boolean value);
+
+    /**
      * the method returns +1 if white is to move next.
      * If black has to move next, it will return -1.
      * @return      the active player that has to move
