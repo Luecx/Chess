@@ -19,7 +19,7 @@ public class AlphaBeta implements AI {
     private int quiesce_depth;                      //max search depth after the full-search has completed
     private boolean use_iteration = true;           //flag for iterative deepening
     private boolean use_transposition = false;      //flag for transposition tables
-    private boolean print_overview = false;         //flag for output-printing
+    private boolean print_overview = true;         //flag for output-printing
     private boolean use_null_moves = true;
 
     private final int NULL_MOVE_REDUCTION = 3;
@@ -366,6 +366,7 @@ public class AlphaBeta implements AI {
 
     private double pvSearch(double alpha, double beta, int currentDepth, PVLine pLine, PVLine lastIteration) {
         _visitedNodes++;
+        //System.out.println("pvSearch was called");
 
         //TODO
         //<editor-fold desc="Transposition lookup">
