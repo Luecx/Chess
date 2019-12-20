@@ -72,7 +72,7 @@ public class FinnEvaluator implements Evaluator {
     });
 
     public static final int[] EVALUATE_PRICE = new int[]{0, 100, 500, 320, 330, 900, 20000};
-    public static final Tensor3D POSITION_PRICE = new Tensor3D(PAWN_VALUES, ROOK_VALUES, KNIGHT_VALUES, BISHOP_VALUES, QUEEN_VALUES);
+    public static final Tensor3D POSITION_PRICE = new Tensor3D(PAWN_VALUES, ROOK_VALUES, KNIGHT_VALUES, BISHOP_VALUES, QUEEN_VALUES, KING_VALUES_MID);
 
 
     @Override
@@ -86,19 +86,22 @@ public class FinnEvaluator implements Evaluator {
 
                 if (v != 0) {
                     ev += b * EVALUATE_PRICE[Math.abs(v)];
-                    if (Math.abs(v) < 6) {
-                        if (v > 0) {
-                            ev += (b * POSITION_PRICE.get(Math.abs(v) - 1,7-n,i));
-                        } else {
-                            ev += (b * POSITION_PRICE.get(Math.abs(v) - 1,n,i));
-                        }
-                    } else {
-                        if (v > 0) {
-                            ev += (b * KING_VALUES_MID.get(7-n,i));
-                        } else {
-                            ev += (b * KING_VALUES_MID.get(n,i));
-                        }
+                    if(v > 0){
+
                     }
+//                    if (Math.abs(v) < 6) {
+//                        if (v > 0) {
+//                            ev += (b * POSITION_PRICE.get(Math.abs(v) - 1,7-n,i));
+//                        } else {
+//                            ev += (b * POSITION_PRICE.get(Math.abs(v) - 1,n,i));
+//                        }
+//                    } else {
+//                        if (v > 0) {
+//                            ev += (b * KING_VALUES_MID.get(7-n,i));
+//                        } else {
+//                            ev += (b * KING_VALUES_MID.get(n,i));
+//                        }
+//                    }
                 }
             }
         }

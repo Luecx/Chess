@@ -364,9 +364,6 @@ public class FastBoard extends Board<FastBoard> {
     }
 
 
-    @Override
-    public void clear() {
-    }
 
     @Override
     public FastBoard newInstance() {

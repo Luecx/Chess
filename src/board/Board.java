@@ -1,6 +1,7 @@
 package board;
 
 import board.moves.Move;
+import board.setup.Setup;
 
 import java.util.List;
 import java.util.Stack;
@@ -12,15 +13,13 @@ public abstract class Board<T extends Board<T>> {
     protected Stack<Move> moveHistory = new Stack<>();
 
 
+    public Board(Setup setup) {
+        this.setup(setup);
+    }
+
     public Board() {
         this.reset();
     }
-
-    /**
-     * Clears the board. This method should remove every
-     * piece that is on the board.
-     */
-    public abstract void clear();
 
     /**
      * The methods returns a Stack of the move history.
@@ -33,11 +32,21 @@ public abstract class Board<T extends Board<T>> {
     }
 
     /**
-     * This resets the board to the initial state.
-     * It should also place the the initial pieces
-     * on the board.
+     * The method resets the board.
+     * This includes:
+     *      - resetting the meta information
+     *      - clearing the board
      */
     public abstract void reset();
+
+    /**
+     * The method uses a predefined setup to
+     * first reset the board and then place the pieces on the board
+     * @param setup     the setup to apply
+     */
+    public void setup(Setup setup){
+        setup.apply(this);
+    }
 
     /**
      * It returns a list of all moves that are available for the current

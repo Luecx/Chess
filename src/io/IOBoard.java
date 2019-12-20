@@ -30,7 +30,7 @@ public class IOBoard {
 
 
         T board = template.newInstance();
-        board.clear();
+
 
         for(char c : key.toCharArray()){
 

@@ -3,6 +3,9 @@ package game.ai.evaluator;
 import board.Board;
 
 public class SimpleEvaluator implements Evaluator {
+
+    double[] values = new double[]{-1000,-7,-3.25,-3,-4,-1,0,1,4,3,3.25,7,1000};
+
     @Override
     public double evaluate(Board board) {
         double score = 0;
@@ -10,15 +13,7 @@ public class SimpleEvaluator implements Evaluator {
             for(int n = 0; n < 8; n++){
                 int p = board.getPiece((byte)i,(byte)n);
                 if(p == 0) continue;
-                byte sign = (byte) (p / Math.abs(p));
-                switch (Math.abs(p)){
-                    case 1: score += sign * 1; break;
-                    case 2: score += sign * 4; break;
-                    case 3: score += sign * 3; break;
-                    case 4: score += sign * 3.25; break;
-                    case 5: score += sign * 7; break;
-                    case 6: score += sign * 1000; break;
-                }
+                score += values[p+6];
             }
         }
         return score;
