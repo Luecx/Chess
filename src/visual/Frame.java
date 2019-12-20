@@ -7,6 +7,7 @@ import board.setup.Setup;
 import game.Game;
 import game.Player;
 import game.ai.evaluator.GeneticEvaluator;
+import game.ai.ordering.NoahOrderer;
 import game.ai.search.AlphaBeta;
 import game.ai.evaluator.FinnEvaluator;
 import game.ai.ordering.SimpleOrderer;
