@@ -2,7 +2,7 @@ package board.moves;
 
 import board.Board;
 import board.SlowBoard;
-import game.ai.evaluator.NoahEvaluator;
+//import game.ai.evaluator.NoahEvaluator;
 
 import java.util.Objects;
 
@@ -13,11 +13,14 @@ public class Move {
     int to;
     int pieceFrom;
     int pieceTo;
+    short metaInformation;
+
     boolean isNull; // true if it is a null-move ie a "pass"
     int orderPriority;
+
+
     static SlowBoard tokenSB = new SlowBoard();
 
-    short metaInformation;
 
     public Move(int from, int to, int pieceFrom, int pieceTo) {
         this.from = from;
@@ -26,8 +29,6 @@ public class Move {
         this.pieceTo = pieceTo;
         setOrderPriority();
         this.isNull = false;
-//        System.out.println(from);
-//        System.out.println(to);
     }
 
     public Move(int from, int to, Board board) {
@@ -124,16 +125,16 @@ public class Move {
     public void setOrderPriority() {
         int priority = 0;
         int color = pieceFrom > 0 ? 1 : -1;
-        priority += Math.abs(NoahEvaluator.EVALUATE_PRICE[Math.abs(pieceTo)]);
-        priority -= Math.abs(pieceFrom); //to capture with least valuable piece
-        if (color == 1) {
-            priority += NoahEvaluator.W_POSITION_PRICE.get(Math.abs(pieceFrom)-1,tokenSB.x(to),tokenSB.y(to));
-            priority -= NoahEvaluator.W_POSITION_PRICE.get(pieceFrom-1,tokenSB.x(from),tokenSB.y(from));
-        }
-        if (color == -1) {
-            priority += NoahEvaluator.B_POSITION_PRICE.get(Math.abs(pieceFrom)-1,tokenSB.x(to),tokenSB.y(to));
-            priority -= NoahEvaluator.B_POSITION_PRICE.get(Math.abs(pieceFrom)-1,tokenSB.x(from),tokenSB.y(from));
-        }
+//        priority += Math.abs(NoahEvaluator.EVALUATE_PRICE[Math.abs(pieceTo)]);
+//        priority -= Math.abs(pieceFrom); //to capture with least valuable piece
+//        if (color == 1) {
+//            priority += NoahEvaluator.W_POSITION_PRICE.get(Math.abs(pieceFrom)-1,tokenSB.x(to),tokenSB.y(to));
+//            priority -= NoahEvaluator.W_POSITION_PRICE.get(pieceFrom-1,tokenSB.x(from),tokenSB.y(from));
+//        }
+//        if (color == -1) {
+//            priority += NoahEvaluator.B_POSITION_PRICE.get(Math.abs(pieceFrom)-1,tokenSB.x(to),tokenSB.y(to));
+//            priority -= NoahEvaluator.B_POSITION_PRICE.get(Math.abs(pieceFrom)-1,tokenSB.x(from),tokenSB.y(from));
+//        }
 
         orderPriority = priority;
     }

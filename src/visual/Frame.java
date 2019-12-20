@@ -69,8 +69,8 @@ public class Frame extends JFrame implements KeyListener {
 
         System.out.println(b);
 
-        AlphaBeta p1 = new AlphaBeta(new FinnEvaluator(), new SimpleOrderer(), 7,2);
-        AlphaBeta p2 = new AlphaBeta(new GeneticEvaluator(), new SimpleOrderer(), 7,2);
+        AlphaBeta p1 = new AlphaBeta(new FinnEvaluator(), new NoahOrderer(), 7,2);
+        AlphaBeta p2 = new AlphaBeta(new GeneticEvaluator(), new NoahOrderer(), 7,2);
         p2.setUse_iteration(true);
         p2.setUse_null_moves(true);
         p2.setPrint_overview(true);
