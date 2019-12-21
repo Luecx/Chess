@@ -4,6 +4,7 @@ import board.Board;
 import board.moves.Move;
 import game.ai.evaluator.Evaluator;
 import game.ai.ordering.Orderer;
+import game.ai.ordering.SystematicOrderer;
 import game.ai.tools.KillerTable;
 import game.ai.tools.PVLine;
 import game.ai.tools.TranspositionEntry;
@@ -370,7 +371,7 @@ public class PVSearch implements AI {
         this._depth = depth;
         _bestMove = null;
         if(use_killer_heuristic)
-            _killerTable = new KillerTable(depth, 3);
+            _killerTable = new KillerTable(depth+1+NULL_MOVE_REDUCTION, 3);
         _terminalNodes = 0;
         _visitedNodes = 0;
         _quiesceNodes = 0;
@@ -405,7 +406,6 @@ public class PVSearch implements AI {
 
     private double pvSearch(double alpha, double beta, int currentDepth, PVLine pLine, PVLine lastIteration) {
         _visitedNodes++;
-        //System.out.println("pvSearch was called");
 
         //TODO
         //<editor-fold desc="Transposition lookup">
@@ -465,7 +465,7 @@ public class PVSearch implements AI {
 
 
             if (score >= beta) {
-                if (_killerTable != null)_killerTable.put(_depth, m);
+                if (_killerTable != null)_killerTable.put(currentDepth, m);
                 transpositionPlacement(zobrist, currentDepth, beta, TranspositionEntry.CUT_NODE);
                 return beta;
             }
@@ -515,7 +515,7 @@ public class PVSearch implements AI {
         if (alpha < stand_pat)
             alpha = stand_pat;
         List<Move> allMoves = _board.getCaptureMoves();
-        orderer.sort(allMoves, 0, null, _board, _killerTable);
+        orderer.sort(allMoves, 0, null, _board, null);
         for (Move m : allMoves) {
             _board.move(m);
             double score = -Quiesce(-beta, -alpha, depth_left - 1);

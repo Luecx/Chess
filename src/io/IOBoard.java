@@ -31,8 +31,8 @@ public class IOBoard {
         int x = 0;
         int y = 7;
 
-
         T board = template.newInstance();
+
 
 
         for(char c : key.toCharArray()){
@@ -61,6 +61,8 @@ public class IOBoard {
                 y --;
                 continue;
             }
+
+
 
         }
         return board;

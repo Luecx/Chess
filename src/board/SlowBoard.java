@@ -575,13 +575,12 @@ public class SlowBoard extends Board<SlowBoard> {
         PVSearch pvSearch = new PVSearch(
                 new FinnEvaluator(),
                 new SystematicOrderer(),
-                PVSearch.FLAG_TIME_LIMIT, 5000,2);
+                PVSearch.FLAG_DEPTH_LIMIT, 4,0);
+        pvSearch.setUse_killer_heuristic(false);
+        pvSearch.setUse_iteration(true);
+
         Move m = pvSearch.bestMove(b);
 
-        System.out.println(IOBoard.algebraicNotation(b, m));
-
-        new Frame(b, new Player() {
-        }, pvSearch);
 
     }
 

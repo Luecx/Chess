@@ -82,8 +82,6 @@ public class Frame extends JFrame implements KeyListener {
         p1.setUse_null_moves(true);
         p1.setPrint_overview(true);
 
-
-
         //new Frame(b,new Player(){}, p1);
         new Frame(b, new Player(){},p1);
     }
