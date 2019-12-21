@@ -31,7 +31,8 @@ public class PVSearch implements AI {
     private boolean use_null_moves = true;
 
     private boolean use_killer_heuristic = false;   //flag for killer tables
-    private int NULL_MOVE_REDUCTION = 2;            //how much to reduce null moves
+    private int killer_count = 2;
+    private int null_move_reduction = 2;            //how much to reduce null moves
 
 
 
@@ -277,7 +278,7 @@ public class PVSearch implements AI {
      * @return      the amount of killers
      */
     public int getNULL_MOVE_REDUCTION() {
-        return NULL_MOVE_REDUCTION;
+        return null_move_reduction;
     }
 
     /**
@@ -285,7 +286,7 @@ public class PVSearch implements AI {
      * @param reduction      the amount to reduce null moves by
      */
     public void setNULL_MOVE_REDUCTION(int reduction) {
-        this.NULL_MOVE_REDUCTION = reduction;
+        this.null_move_reduction = reduction;
     }
 
 
@@ -404,7 +405,7 @@ public class PVSearch implements AI {
         this._depth = depth;
         _bestMove = null;
         if(use_killer_heuristic)
-            _killerTable = new KillerTable(depth+1+NULL_MOVE_REDUCTION, killer_count);
+            _killerTable = new KillerTable(depth+1+null_move_reduction, killer_count);
         _terminalNodes = 0;
         _visitedNodes = 0;
         _quiesceNodes = 0;
@@ -467,7 +468,7 @@ public class PVSearch implements AI {
         if(use_null_moves){
             Move nullMove = new Move();
             _board.move(nullMove);
-            score = -pvSearch(-alpha - 1, -alpha, currentDepth + 1 + NULL_MOVE_REDUCTION, line, lastIteration);
+            score = -pvSearch(-alpha - 1, -alpha, currentDepth + 1 + null_move_reduction, line, lastIteration);
             _board.undoMove();
             if (score >= beta) {
                 return beta;

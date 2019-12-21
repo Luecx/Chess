@@ -574,12 +574,12 @@ public class SlowBoard extends Board<SlowBoard> {
         b = IOBoard.read_lichess(b, "rnb2rk1/p4ppp/2p3q1/2Pppb2/1p1PPnB1/1Q2B1P1/PP1NNP1P/R3K2R");
         PVSearch pvSearch = new PVSearch(
                 new FinnEvaluator(),
-                new NoahOrderer(),
+                new SystematicOrderer(),
                 PVSearch.FLAG_DEPTH_LIMIT, 8,2);
         pvSearch.setUse_killer_heuristic(false);
         pvSearch.setUse_iteration(true);
 
-        Move m = pvSearch.bestMove(b);
+        System.out.println(IOBoard.algebraicNotation(b, pvSearch.bestMove(b)));
 
 
     }
