@@ -2,13 +2,18 @@ package board;
 
 import board.moves.Move;
 import board.setup.Setup;
+import game.Player;
 import game.ai.evaluator.Evaluator;
 import game.ai.evaluator.FinnEvaluator;
+import game.ai.evaluator.NoahEvaluator;
 import game.ai.evaluator.SimpleEvaluator;
 import game.ai.ordering.NoahOrderer;
 import game.ai.ordering.SimpleOrderer;
+import game.ai.ordering.SystematicOrderer;
 import game.ai.search.AlphaBeta;
+import game.ai.search.PVSearch;
 import io.IOBoard;
+import visual.Frame;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -566,14 +571,17 @@ public class SlowBoard extends Board<SlowBoard> {
 
     public static void main(String[] args) {
         Board b = new SlowBoard(Setup.DEFAULT);
-        b.move((Move) b.getPseudoLegalMoves().get(11));
+        b = IOBoard.read_lichess(b, "rnb2rk1/p4ppp/2p3q1/2Pppb2/1p1PPnB1/1Q2B1P1/PP1NNP1P/R3K2R");
+        PVSearch pvSearch = new PVSearch(
+                new FinnEvaluator(),
+                new SystematicOrderer(),
+                PVSearch.FLAG_TIME_LIMIT, 5000,2);
+        Move m = pvSearch.bestMove(b);
 
-        AlphaBeta alphaBeta = new AlphaBeta(new FinnEvaluator(), new NoahOrderer(), 1,0);
-        alphaBeta.bestMove(b);
-//        System.out.println(b);
-//        System.out.println(b.getPseudoLegalMoves().size());
+        System.out.println(IOBoard.algebraicNotation(b, m));
 
-
+        new Frame(b, new Player() {
+        }, pvSearch);
 
     }
 

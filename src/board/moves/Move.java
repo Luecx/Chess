@@ -1,6 +1,8 @@
 package board.moves;
 
 import board.Board;
+import board.SlowBoard;
+import game.ai.evaluator.NoahEvaluator;
 
 import java.util.Objects;
 

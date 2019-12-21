@@ -320,7 +320,7 @@ public class AlphaBeta implements AI {
             return val;
         }
 
-        orderer.sort(allMoves, currentDepth, lastIteration, _board);
+        orderer.sort(allMoves, currentDepth, lastIteration, _board,null);
         PVLine line = new PVLine(_depth - currentDepth);
 
         for (Move m : allMoves) {
@@ -378,7 +378,7 @@ public class AlphaBeta implements AI {
         if (alpha < stand_pat)
             alpha = stand_pat;
         List<Move> allMoves = _board.getCaptureMoves();
-        orderer.sort(allMoves, 0, null, _board);
+        orderer.sort(allMoves, 0, null, _board, null);
         for (Move m : allMoves) {
             _board.move(m);
             double score = -Quiesce(-beta, -alpha, depth_left - 1);

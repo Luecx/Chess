@@ -2,6 +2,7 @@ package game.ai.ordering;
 
 import board.Board;
 import board.moves.Move;
+import game.ai.tools.KillerTable;
 import game.ai.tools.PVLine;
 
 import java.util.List;
@@ -22,10 +23,16 @@ public interface Orderer {
      *
      * @param collection        the moves to be sorted.
      * @param depth             the current depth. (depth increases)
-     * @param lastIteration     the principal variation line from the last iteration
+     * @param lastIteration     [can be NULL] the principal variation line from the last iteration
      * @param board             the board object
+     * @param killerTable       [can be NULL] a killerTable storing killer moves.
      * @param <T>               type-parameter for the move object.
      */
-    <T extends Move> void sort(List<T> collection, int depth, PVLine lastIteration, Board board);
+    <T extends Move> void sort(
+            List<T> collection,
+            int depth,
+            PVLine lastIteration,
+            Board board,
+            KillerTable killerTable);
 
 }

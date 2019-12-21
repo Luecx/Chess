@@ -35,16 +35,25 @@ public enum Setup {
                 public void accept(Board board) {
                     for(int i = 0; i< 4; i++)
                         board.setCastlingChance(0,false);
-                    for(int i = 0; i < 8; i++){
-                        board.setPiece(i,1,1);
-                        board.setPiece(i,6,-1);
-                        board.setPiece(i,0,i < 4 ? i+1: 8-i);
-                        board.setPiece(i,7,i < 4 ? i+1: 8-i);
+                    DEFAULT.apply(board);
+                    for(int i = 0;i < 16; i++){
+                        int i1 = (int)(Math.random() * 8);
+                        int i2 = (int)(Math.random() * 8);
+
+                        int p1 = board.getPiece(i1,0);
+                        board.setPiece(i1,0,board.getPiece(i2,0));
+                        board.setPiece(i2,0,p1);
+                    }
+                    for(int i = 0;i < 16; i++){
+                        int i1 = (int)(Math.random() * 8);
+                        int i2 = (int)(Math.random() * 8);
+
+                        int p1 = board.getPiece(i1,7);
+                        board.setPiece(i1,7,board.getPiece(i2,7));
+                        board.setPiece(i2,7,p1);
                     }
                 }
             }, null),
-
-
     ;
 
 
@@ -54,7 +63,6 @@ public enum Setup {
     Setup(Consumer<Board> function, int[][] ints) {
         this.function = function;
         this.field = ints;
-
     }
 
     public void apply(Board board){

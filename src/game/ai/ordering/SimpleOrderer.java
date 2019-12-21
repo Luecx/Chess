@@ -3,6 +3,7 @@ package game.ai.ordering;
 import board.Board;
 import board.moves.Move;
 import game.ai.evaluator.FinnEvaluator;
+import game.ai.tools.KillerTable;
 import game.ai.tools.PVLine;
 
 import java.util.Comparator;
@@ -26,7 +27,7 @@ public class SimpleOrderer implements Orderer {
      * @param <T>
      */
     @Override
-    public <T extends Move> void sort(List<T> collection, int depth,PVLine lastIteration, Board board) {
+    public <T extends Move> void sort(List<T> collection, int depth, PVLine lastIteration, Board board, KillerTable killerTable) {
 
         collection.sort((o1, o2) -> {
             int p1 = EVALUATE_PRICE[Math.abs(o1.getPieceTo())] - EVALUATE_PRICE[Math.abs(o1.getPieceFrom())];

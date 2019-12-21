@@ -3,6 +3,7 @@ package game;
 import board.Board;
 import board.moves.Move;
 import game.ai.search.AI;
+import io.IOBoard;
 
 import java.util.ArrayList;
 
@@ -80,6 +81,7 @@ public class Game {
     public void move(Move m){
         if(board.isGameOver()) return;
         if (humansTurn()){
+            System.out.println("Moving: " + IOBoard.algebraicNotation(board, m));
             board.move(m);
             listeners.forEach(Runnable::run);
         }while(!humansTurn() && !board.isGameOver() && !isInterrupted){

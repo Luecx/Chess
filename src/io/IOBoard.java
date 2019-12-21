@@ -1,6 +1,9 @@
 package io;
 
 import board.Board;
+import board.SlowBoard;
+import board.moves.Move;
+import board.setup.Setup;
 
 /**
  * the IOBoard class implements methods to generate boards encoded
@@ -78,5 +81,76 @@ public class IOBoard {
 
         }
         return -1;
+    }
+
+    /**
+     * returns the algebraic notation for a move on a given board.
+     * The board needs to be given in order to solve ambiguity.
+     *
+     * The rules can be read under:
+     *
+     * @see <a href="https://en.wikipedia.org/wiki/Algebraic_notation_(chess)">Rules</a>
+     * @param board
+     * @param move
+     * @return
+     */
+    public static String algebraicNotation(Board board, Move move){
+        StringBuilder result = new StringBuilder();
+
+
+
+
+        if(Math.abs(move.getPieceFrom()) == 6){
+            if(move.getTo() - move.getFrom() == 2){
+                return "O-O";
+            }
+            if(move.getFrom() - move.getTo() == 2){
+                return "O-O-O";
+            }
+        }
+
+        String pieceFrom = new String[]{
+                "",
+                "",
+                "R",
+                "N",
+                "B",
+                "Q",
+                "K"}[Math.abs(move.getPieceFrom())];
+
+
+        String ambiSolve = "";
+        for(Object m:board.getLegalMoves()){
+            if(((Move)m).getPieceFrom() == move.getPieceFrom() &&
+                move.getFrom() != ((Move)m).getFrom() &&
+                move.getTo() == ((Move)m).getTo()){
+
+                if(board.x(((Move)m).getFrom()) != board.x(move.getFrom())){
+                    ambiSolve = ""+(char)('a'+board.x(move.getFrom()));
+                }else if(board.y(((Move)m).getFrom()) != board.y(move.getFrom())){
+                    ambiSolve = ""+(board.y(move.getFrom())+1);
+                }else{
+                    ambiSolve = ""+(char)('a'+board.x(move.getFrom())) +""+ (board.y(move.getFrom())+1);
+                }
+            }
+        }
+
+        String destinationLetter = ""+(char)('a'+board.x(move.getTo()));
+        String destinationNumber = ""+(board.y(move.getTo())+1);
+
+        String capture = move.getPieceTo() != 0 ? "x":"";
+
+        result.append(pieceFrom);
+        result.append(ambiSolve);
+        result.append(capture);
+        result.append(destinationLetter);
+        result.append(destinationNumber);
+
+        return result.toString();
+    }
+
+    public static void main(String[] args) {
+        SlowBoard board = new SlowBoard(Setup.DEFAULT);
+        System.out.println(algebraicNotation(board, board.getPseudoLegalMoves().get(10)));
     }
 }
