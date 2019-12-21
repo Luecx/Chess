@@ -29,7 +29,9 @@ public class PVSearch implements AI {
     private boolean use_transposition = false;      //flag for transposition tables
     private boolean print_overview = true;          //flag for output-printing
     private boolean use_null_moves = true;
+
     private boolean use_killer_heuristic = false;   //flag for killer tables
+    private int killer_count = 3;
 
     private final int NULL_MOVE_REDUCTION = 3;
 
@@ -256,6 +258,22 @@ public class PVSearch implements AI {
         this.limit_flag = limit_flag;
     }
 
+    /**
+     * this method returns the amount of killers that will be stored per depth
+     * @return      the amount of killers
+     */
+    public int getKiller_count() {
+        return killer_count;
+    }
+
+    /**
+     * this methods will set the amount of killers that will be stored per depth
+     * @param killer_count      new amount of killers
+     */
+    public void setKiller_count(int killer_count) {
+        this.killer_count = killer_count;
+    }
+
     private int _depth;
     private int _quiesceNodes;
     private int _visitedNodes;
@@ -371,7 +389,7 @@ public class PVSearch implements AI {
         this._depth = depth;
         _bestMove = null;
         if(use_killer_heuristic)
-            _killerTable = new KillerTable(depth+1+NULL_MOVE_REDUCTION, 3);
+            _killerTable = new KillerTable(depth+1+NULL_MOVE_REDUCTION, killer_count);
         _terminalNodes = 0;
         _visitedNodes = 0;
         _quiesceNodes = 0;
