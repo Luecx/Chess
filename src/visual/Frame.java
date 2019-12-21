@@ -68,7 +68,7 @@ public class Frame extends JFrame implements KeyListener {
     }
 
     public static void main(String[] args) {
-        SlowBoard b = IOBoard.read_lichess(new SlowBoard(), "6k1/1p4p1/7p/3K4/8/8/2r2r2/8");
+        SlowBoard b = IOBoard.read_lichess(new SlowBoard(), "rnb2rk1/p4ppp/2p3q1/2Pppb2/1p1PPnB1/1Q2B1P1/PP1NNP1P/R3K2R");
 
 
         PVSearch p1 = new PVSearch(
@@ -77,7 +77,7 @@ public class Frame extends JFrame implements KeyListener {
                 PVSearch.FLAG_TIME_LIMIT,
                 5000,2);
 
-
+        p1.setUse_killer_heuristic(true);
         p1.setUse_iteration(true);
         p1.setUse_null_moves(true);
         p1.setPrint_overview(true);
