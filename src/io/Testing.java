@@ -3,6 +3,9 @@ package io;
 import board.Board;
 import board.SlowBoard;
 import game.ai.evaluator.FinnEvaluator;
+import game.ai.evaluator.GeneticEvaluator;
+import game.ai.evaluator.SimpleEvaluator;
+import game.ai.ordering.NoahOrderer;
 import game.ai.ordering.SystematicOrderer;
 import game.ai.search.AI;
 import game.ai.search.AlphaBeta;
@@ -36,7 +39,7 @@ public class Testing {
             seperator +=        "|--------------------------------------";
             bigSeperator +=     "|======================================";
             emptyLine +=        "|                                      ";
-            format += " | %25s %-10s";
+            format += " | %-25s %-10s";
         }
 
 
@@ -70,13 +73,10 @@ public class Testing {
             for(int i = 0; i < ais.length; i++){
                 boolean hasFlag = false;
                 for(String f:ais[i].getSearchOverview().getFlags()){
-
-                    if(all_flags.contains(f)){
+                    if(f == flag){
                         hasFlag = true;
                     }
                 }
-
-
                 line[1+2*i+1] = "";
                 if(hasFlag){
                     line[1+2*i] = flag;
@@ -198,10 +198,11 @@ public class Testing {
     }
 
     public static void main(String[] args) {
-        PVSearch ai1 = new PVSearch(new FinnEvaluator(), new SystematicOrderer(), 2,5,4);
-        PVSearch ai2 = new PVSearch(new FinnEvaluator(), new SystematicOrderer(), 2,3,4);
+        PVSearch ai1 = new PVSearch(new GeneticEvaluator(), new SystematicOrderer(), 2,7,4);
+        PVSearch ai2 = new PVSearch(new FinnEvaluator(), new SystematicOrderer(), 2,7,4);
+        PVSearch ai3 = new PVSearch(new SimpleEvaluator(), new SystematicOrderer(), 2,7,4);
 
-        compare(new SlowBoard(), new PVSearch[]{ai1,ai2},
+        compare(new SlowBoard(), new PVSearch[]{ai1,ai2,ai3},
                 "rnb2rk1/p4ppp/2p3q1/2Pppb2/1p1PPnB1/1Q2B1P1/PP1NNP1P/R3K2R",
                 "r2q1rk1/1pp1bppp/p1npbn2/4p1B1/B3P3/2NP1N2/PPPQ1PPP/2KR3R",
                 "r2q1rk1/ppp2ppp/2n2n2/2b5/2B2Bb1/2NP1N2/PPPQ2PP/R4R1K",

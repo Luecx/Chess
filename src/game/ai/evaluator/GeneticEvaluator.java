@@ -81,7 +81,7 @@ public class GeneticEvaluator implements Evaluator {
             {20, 30, 10, 0, 0, 10, 30, 20}
     });
 
-    private int[] EVALUATE_PRICE = new int[]{0,31,880,228,498,1155,5797};
+    private int[] EVALUATE_PRICE = new int[]{0, 100, 480, 320, 330, 900, 20000};
     private Tensor3D POSITION_PRICE = new Tensor3D(PAWN_VALUES, ROOK_VALUES, KNIGHT_VALUES, BISHOP_VALUES, QUEEN_VALUES);
 
 
