@@ -78,8 +78,8 @@ public class SystematicOrderer implements Orderer {
 
         collection.clear();
         collection.addAll(pvMoves);
-        collection.addAll(killerMoves);
         collection.addAll(captureMoves);
+        collection.addAll(killerMoves);
         collection.addAll(nonCaptureMoves);
 
 

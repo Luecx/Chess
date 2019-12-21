@@ -5,10 +5,7 @@ import board.moves.Move;
 import game.ai.evaluator.Evaluator;
 import game.ai.ordering.Orderer;
 import game.ai.ordering.SystematicOrderer;
-import game.ai.tools.KillerTable;
-import game.ai.tools.PVLine;
-import game.ai.tools.TranspositionEntry;
-import game.ai.tools.TranspositionTable;
+import game.ai.tools.*;
 
 import java.util.List;
 
@@ -35,6 +32,7 @@ public class PVSearch implements AI {
     private int null_move_reduction = 2;            //how much to reduce null moves
 
 
+    private SearchOverview searchOverview;
 
 
     public PVSearch(Evaluator evaluator, Orderer orderer, int limit_flag,  int limit, int quiesce_depth) {
@@ -277,7 +275,7 @@ public class PVSearch implements AI {
      * this method returns the number of ply null moves are reduced by
      * @return      the amount of killers
      */
-    public int getNULL_MOVE_REDUCTION() {
+    public int getNull_move_reduction() {
         return null_move_reduction;
     }
 
@@ -285,11 +283,21 @@ public class PVSearch implements AI {
      * this methods will set the number of ply null moves are reduced by
      * @param reduction      the amount to reduce null moves by
      */
-    public void setNULL_MOVE_REDUCTION(int reduction) {
+    public void setNull_move_reduction(int reduction) {
         this.null_move_reduction = reduction;
     }
 
+    /**
+     * this method returns the last search overview containing information
+     * about the iterations, the flags used etc.
+     * The search overview resets every time the bestMove() method is called.
+     * @return
+     */
+    public SearchOverview getSearchOverview() {
+        return searchOverview;
+    }
 
+   
     private int _depth;
     private int _quiesceNodes;
     private int _visitedNodes;
@@ -307,6 +315,15 @@ public class PVSearch implements AI {
             throw new RuntimeException("Cannot limit non iterative deepening on time");
         }
 
+        searchOverview = new SearchOverview(
+                use_iteration ? "ITERATIVE_DEEPENING":"",
+                limit_flag == FLAG_TIME_LIMIT ? "TIME_LIMIT":"DEPTH_LIMIT",
+                use_transposition ? "TRANSPOSITION TABLE":"",
+                use_null_moves ? "NULL MOVES":"",
+                use_killer_heuristic ? "KILLER HEURISTIC":""
+        );
+        searchOverview.setqDepth(quiesce_depth);
+
         long time = System.currentTimeMillis();
 
 
@@ -314,7 +331,6 @@ public class PVSearch implements AI {
             _transpositionTable = new TranspositionTable<>((int) (50E6));
         }
         if (use_iteration) {
-
             if(limit_flag == FLAG_TIME_LIMIT){
                 //<editor-fold desc="time limited iterative deepening">
                 PVLine line = null;
@@ -326,6 +342,9 @@ public class PVSearch implements AI {
                 while (System.currentTimeMillis() - time + expectedTime < limit) {
                     line = iteration(depth++, line);
 
+
+
+
                     long iterationTime = System.currentTimeMillis() - prevTime;
                     prevTime = System.currentTimeMillis();
 
@@ -334,8 +353,6 @@ public class PVSearch implements AI {
                     expectedTime = branchingFactor * iterationTime;
                 }
                 //</editor-fold>
-
-
             }else{
                 //<editor-fold desc="depth limited iterative deepening">
                 PVLine line = null;
@@ -349,70 +366,45 @@ public class PVSearch implements AI {
         }
 
 
+        searchOverview.setDepth(this._depth);
+        searchOverview.setTotalTime((int)(System.currentTimeMillis()-time));
 
-        if(print_overview)
-            System.out.println("required time: " + (System.currentTimeMillis() - time) + " ms");
+        if(print_overview) searchOverview.printTotalSummary();
         return _bestMove;
     }
 
-    /**
-     * prints a summary of the current iteration after is has finished.
-     * If print_overview is disabled, the method will not do anything.
-     *
-     * It prints the time in [mm:ss:uuu:nnnnnn] followed by the following parameters:
-     *  - total visited nodes: the total amount of nodes that have been visited including quiesce-search
-     *  - terminal nodes: the leaf nodes in qSearch.
-     *  - visited nodes full depth: the amount of nodes visited without qSearch.
-     *  - visited quiesce nodes: the amount of nodes visited only in qSearch.
-     *
-     * @param nanos     the time in nanoseconds that was needed.
-     */
-    private void printIterationSummary(long nanos){
-
-        if (!print_overview) return;
-
-        int min = (int) (nanos / (60 * 1E9) % 60);
-        int sec = (int) (nanos / 1E9 % 60);
-        int mil = (int) (nanos / 1E6 % 1E3);
-        int nano = (int) (nanos % 1E6);
-
-        //to = total visited nodes
-        //tm = terminal nodes
-        //fd = full depth
-        //qs = q search
-
-        System.out.format(
-                        "depth: %02d(+"+quiesce_depth+")\t" +
-                        "time[m:s:ms]: %02d:%02d:%03d\t" +
-                        "total: %9d\t" +
-                        "terminal : %9d\t" +
-                        "fullNodes: %9d\t" +
-                        "qNodes: %9d\n",
-                _depth,
-                min,sec,mil,
-                _visitedNodes + _quiesceNodes, _terminalNodes, _visitedNodes, _quiesceNodes);
-    }
 
     /**
      * processes one iteration to the given depth.
      * it resets internal values like the best move.
-     * It will also call printIterationSummary().
+     * It will also print an overview of the iteration.
      * @param depth
      * @param lastIteration
      * @return
      */
     public PVLine iteration(int depth, PVLine lastIteration) {
-        this._depth = depth;
-        _bestMove = null;
+
+
         if(use_killer_heuristic)
             _killerTable = new KillerTable(depth+1+null_move_reduction, killer_count);
-        _terminalNodes = 0;
-        _visitedNodes = 0;
-        _quiesceNodes = 0;
-        PVLine pline = new PVLine(_depth);
-        long time = System.nanoTime();
+
+        _depth              = depth;
+        _bestMove           = null;
+        _terminalNodes      = 0;
+        _visitedNodes       = 0;
+        _quiesceNodes       = 0;
+
+        PVLine pline        = new PVLine(_depth);
+        long time           = System.currentTimeMillis();
+
+
         pvSearch(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, 0, pline, lastIteration);
-        printIterationSummary(System.nanoTime()-time);
+
+
+        searchOverview.addIteration(_depth,
+                _visitedNodes + _quiesceNodes,
+                _visitedNodes, _terminalNodes,_quiesceNodes,(int)(System.currentTimeMillis() - time));
+        if(print_overview) searchOverview.printIterationSummary();
 
         return pline;
     }
@@ -438,6 +430,15 @@ public class PVSearch implements AI {
         }
     }
 
+    /**
+     * main search parth
+     * @param alpha             lower limit
+     * @param beta              upper limit
+     * @param currentDepth      current ply
+     * @param pLine             pvLine
+     * @param lastIteration     pvLine from prev iteration (nullable)
+     * @return
+     */
     private double pvSearch(double alpha, double beta, int currentDepth, PVLine pLine, PVLine lastIteration) {
         _visitedNodes++;
 
@@ -499,7 +500,9 @@ public class PVSearch implements AI {
 
 
             if (score >= beta) {
-                if (_killerTable != null)_killerTable.put(currentDepth, m);
+                if (_killerTable != null && m.getPieceTo() == 0){
+                    _killerTable.put(currentDepth, m);
+                }
                 transpositionPlacement(zobrist, currentDepth, beta, TranspositionEntry.CUT_NODE);
                 return beta;
             }
@@ -535,6 +538,13 @@ public class PVSearch implements AI {
         return alpha;
     }
 
+    /**
+     * Qsearch after main search
+     * @param alpha         lower limit
+     * @param beta          upper limit
+     * @param depth_left    depth left until stop
+     * @return
+     */
     private double Quiesce(double alpha, double beta, int depth_left) {
         _quiesceNodes++;
         double stand_pat = evaluator.evaluate(_board) * _board.getActivePlayer();

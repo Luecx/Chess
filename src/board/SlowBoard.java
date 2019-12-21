@@ -572,14 +572,32 @@ public class SlowBoard extends Board<SlowBoard> {
     public static void main(String[] args) {
         Board b = new SlowBoard(Setup.DEFAULT);
         b = IOBoard.read_lichess(b, "rnb2rk1/p4ppp/2p3q1/2Pppb2/1p1PPnB1/1Q2B1P1/PP1NNP1P/R3K2R");
-        PVSearch pvSearch = new PVSearch(
+
+
+
+        PVSearch pvSearch1 = new PVSearch(
                 new FinnEvaluator(),
                 new SystematicOrderer(),
-                PVSearch.FLAG_DEPTH_LIMIT, 8,2);
-        pvSearch.setUse_killer_heuristic(false);
-        pvSearch.setUse_iteration(true);
+                PVSearch.FLAG_DEPTH_LIMIT, 10,2);
+        pvSearch1.setUse_killer_heuristic(true);
+        pvSearch1.setUse_iteration(true);
 
-        System.out.println(IOBoard.algebraicNotation(b, pvSearch.bestMove(b)));
+
+        PVSearch pvSearch2 = new PVSearch(
+                new FinnEvaluator(),
+                new NoahOrderer(),
+                PVSearch.FLAG_DEPTH_LIMIT, 10,2);
+        pvSearch2.setUse_killer_heuristic(false);
+        pvSearch2.setUse_iteration(true);
+
+
+        for(int i = 0; i < 5; i++){
+
+            System.out.println("SystematicOrderer");
+            IOBoard.algebraicNotation(b, pvSearch1.bestMove(b));
+            System.out.println("Noah");
+            IOBoard.algebraicNotation(b, pvSearch2.bestMove(b));
+        }
 
 
     }
