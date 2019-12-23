@@ -217,8 +217,9 @@ public class Testing {
                 4);
         ai2.setUse_killer_heuristic(true);
         ai2.setUse_LMR(true);
+        ai2.setUse_null_moves(true);
 
-        compare(new SlowBoard(), new PVSearch[]{ai2},
+        compare(new SlowBoard(), new PVSearch[]{ai1, ai2},
                 "r2q1rk1/1pp1bppp/p1npbn2/4p1B1/B3P3/2NP1N2/PPPQ1PPP/2KR3R",
                 "r2q1rk1/ppp2ppp/2n2n2/2b5/2B2Bb1/2NP1N2/PPPQ2PP/R4R1K",
                 "r1bq1rk1/1p2ppbp/p1np1np1/8/3NP3/1BN1B2P/PPP2PP1/R2Q1RK1",

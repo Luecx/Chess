@@ -303,39 +303,8 @@ public class PVSearch implements AI {
         return searchOverview;
     }
 
-    /**
-     * This method returns the amount of plies to never reduce by.
-     * That is, the number of plies we will always calculate before any reductions
-     * @return the number of plies to never reduce
-     */
-    public int getDepth_to_never_reduce() {
-        return depth_to_never_reduce;
-    }
 
-    /**
-     * This method sets the amount of plies to never reduce by.
-     * That is, the number of plies we will always calculate before any reductions
-     * @param depth_to_never_reduce      the number of plies to never reduce by
-     */
-    public void setdepth_to_never_reduce(int depth_to_never_reduce) {
-        this.depth_to_never_reduce = depth_to_never_reduce;
-    }
 
-    /**
-     * This method gets the number of plies we reduce by in late move reduction
-     * @return the number of plies to reduce by
-     */
-    public int getLate_move_reduction() {
-        return late_move_reduction;
-    }
-
-    /**
-     * This method sets the number of plies we reduce by in late move reduction
-     * @param late_move_reduction      the number of plies to reduce by
-     */
-    public void setLate_move_reduction(int late_move_reduction) {
-        this.late_move_reduction = late_move_reduction;
-    }
 
     /**
      * This method gets the use LMR flag
@@ -352,21 +321,7 @@ public class PVSearch implements AI {
         this.use_LMR = use_LMR;
     }
     
-    /**
-     * This method gets the number of moves we don't reduce
-     * @return the number of moves we don't reduce
-     */
-    public int getNum_moves_not_reduced() {
-        return num_moves_not_reduced;
-    }
 
-    /**
-     * This method sets the number of moves we don't reduce
-     * @param num_moves_not_reduced      the number of moves we don't reduce
-     */
-    public void setNum_moves_not_reduced(int num_moves_not_reduced) {
-        this.num_moves_not_reduced = num_moves_not_reduced;
-    }
 
     /**
      * the reducer is used to determine the amount of depths to reduce a search for a given move
@@ -406,7 +361,8 @@ public class PVSearch implements AI {
                 limit_flag == FLAG_TIME_LIMIT ? "TIME_LIMIT":"DEPTH_LIMIT",
                 use_transposition ? "TRANSPOSITION TABLE":"",
                 use_null_moves ? "NULL MOVES":"",
-                use_killer_heuristic ? "KILLER HEURISTIC":""
+                use_killer_heuristic ? "KILLER HEURISTIC":"",
+                use_LMR ? "LATE_MOVE_REDUCTION":""
         );
         searchOverview.setqDepth(quiesce_depth);
 
@@ -605,7 +561,7 @@ public class PVSearch implements AI {
 
         //<editor-fold desc="Searching">
         boolean bSearchPv = true;
-        
+
         for(int index = 0; index < allMoves.size(); index++){
             Move m = allMoves.get(index);
 
@@ -615,8 +571,8 @@ public class PVSearch implements AI {
 
             //<editor-fold desc="LMR">
             int to_reduce = 0;
-            if (use_LMR && _depth > depth_to_never_reduce && m.getPieceTo() == 0 && index > num_moves_not_reduced) {
-                to_reduce = reducer.reduce(m, currentDepth, bSearchPv);
+            if (use_LMR && reducer != null) {
+                to_reduce = reducer.reduce(m, currentDepth, index, bSearchPv);
             }
             //</editor-fold>
 
