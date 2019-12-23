@@ -198,9 +198,12 @@ public class Testing {
     }
 
     public static void main(String[] args) {
-        PVSearch ai1 = new PVSearch(new GeneticEvaluator(), new SystematicOrderer(), 2,7,4);
+        PVSearch ai1 = new PVSearch(new FinnEvaluator(), new SystematicOrderer(), 2,7,4);
+        ai1.setUse_killer_heuristic(true);
+        ai1.setUse_LMR(false);
         PVSearch ai2 = new PVSearch(new FinnEvaluator(), new SystematicOrderer(), 2,7,4);
-        PVSearch ai3 = new PVSearch(new SimpleEvaluator(), new SystematicOrderer(), 2,7,4);
+        ai2.setUse_killer_heuristic(true);
+        ai2.setUse_LMR(true);
 
         compare(new SlowBoard(), new PVSearch[]{ai1,ai2,ai3},
                 "rnb2rk1/p4ppp/2p3q1/2Pppb2/1p1PPnB1/1Q2B1P1/PP1NNP1P/R3K2R",

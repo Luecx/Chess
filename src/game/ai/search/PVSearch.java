@@ -30,6 +30,10 @@ public class PVSearch implements AI {
     private boolean use_killer_heuristic = false;   //flag for killer tables
     private int killer_count = 2;
     private int null_move_reduction = 2;            //how much to reduce null moves
+    private int depth_to_never_reduce = 2;          //how many plies to never reduce
+    private int late_move_reduction = 2;            //how many plies to reduce by in LMR
+    private boolean use_LMR = true;                 //flag for LMR
+    private int num_moves_not_reduced;                  //the number of moves not to reduce (from the beginning of the list)
 
 
     private SearchOverview searchOverview;
@@ -297,6 +301,71 @@ public class PVSearch implements AI {
         return searchOverview;
     }
 
+    /**
+     * This method returns the amount of plies to never reduce by.
+     * That is, the number of plies we will always calculate before any reductions
+     * @return the number of plies to never reduce
+     */
+    public int getDepth_to_never_reduce() {
+        return depth_to_never_reduce;
+    }
+
+    /**
+     * This method sets the amount of plies to never reduce by.
+     * That is, the number of plies we will always calculate before any reductions
+     * @param depth_to_never_reduce      the number of plies to never reduce by
+     */
+    public void setdepth_to_never_reduce(int depth_to_never_reduce) {
+        this.depth_to_never_reduce = depth_to_never_reduce;
+    }
+
+    /**
+     * This method gets the number of plies we reduce by in late move reduction
+     * @return the number of plies to reduce by
+     */
+    public int getLate_move_reduction() {
+        return late_move_reduction;
+    }
+
+    /**
+     * This method sets the number of plies we reduce by in late move reduction
+     * @param late_move_reduction      the number of plies to reduce by
+     */
+    public void setLate_move_reduction(int late_move_reduction) {
+        this.late_move_reduction = late_move_reduction;
+    }
+
+    /**
+     * This method gets the use LMR flag
+     * @return the number of plies to reduce by
+     */
+    public boolean isUse_LMR() {
+        return use_LMR;
+    }
+    /**
+     * This method sets the use_LMR flag
+     * @param use_LMR      a flag for using LMR
+     */
+    public void setUse_LMR(boolean use_LMR) {
+        this.use_LMR = use_LMR;
+    }
+    
+    /**
+     * This method gets the number of moves we don't reduce
+     * @return the number of moves we don't reduce
+     */
+    public int getNum_moves_not_reduced() {
+        return num_moves_not_reduced;
+    }
+
+    /**
+     * This method sets the number of moves we don't reduce
+     * @param num_moves_not_reduced      the number of moves we don't reduce
+     */
+    public void setNum_moves_not_reduced(int num_moves_not_reduced) {
+        this.num_moves_not_reduced = num_moves_not_reduced;
+    }
+
    
     private int _depth;
     private int _quiesceNodes;
@@ -430,6 +499,9 @@ public class PVSearch implements AI {
         }
     }
 
+    static double working = 0;
+    static double not = 0;
+
     /**
      * main search parth
      * @param alpha             lower limit
@@ -484,16 +556,26 @@ public class PVSearch implements AI {
 
 
         //<editor-fold desc="Searching">
+        int countMoves = 0;
         boolean bSearchPv = true;
         for (Move m : allMoves) {
-
             _board.move(m);
+
+            int to_reduce = 0;
+            //// Late move reductions
+            countMoves++;
+            if (use_LMR && _depth > depth_to_never_reduce && m.getPieceTo() == 0 && countMoves > num_moves_not_reduced) {
+                to_reduce = late_move_reduction;
+            }
+
+            //// (end of) Late move reductions
+
             //double score; // moved it up
             if (bSearchPv) {
                 score = -pvSearch(-beta, -alpha, currentDepth + 1, line, lastIteration);
             } else {
-                score = -pvSearch(-alpha - 1, -alpha, currentDepth + 1, line, lastIteration);
-                if (score > alpha && score < beta) // in fail-soft ... && score < beta ) is common
+                score = -pvSearch(-alpha - 1, -alpha, currentDepth + 1 + to_reduce, line, lastIteration);
+                if (score > alpha && score < beta || (to_reduce != 0 && score > beta))
                     score = -pvSearch(-beta, -alpha, currentDepth + 1, line, lastIteration); // re-search
             }
             _board.undoMove();

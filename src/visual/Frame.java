@@ -13,6 +13,7 @@ import game.ai.ordering.SystematicOrderer;
 import game.ai.search.AlphaBeta;
 import game.ai.evaluator.FinnEvaluator;
 import game.ai.ordering.SimpleOrderer;
+import game.ai.search.MiniMax;
 import game.ai.search.PVSearch;
 import io.IOBoard;
 
@@ -68,22 +69,25 @@ public class Frame extends JFrame implements KeyListener {
     }
 
     public static void main(String[] args) {
-        SlowBoard b = IOBoard.read_lichess(new SlowBoard(), "rnb2rk1/p4ppp/2p3q1/2Pppb2/1p1PPnB1/1Q2B1P1/PP1NNP1P/R3K2R");
+        Board b = new SlowBoard(Setup.DEFAULT);
+
+       b = IOBoard.read_lichess(new SlowBoard(), "rnb2rk1/p4ppp/2p3q1/2Pppb2/1p1PPnB1/1Q2B1P1/PP1NNP1P/R3K2R");
 
 
         PVSearch p1 = new PVSearch(
                 new FinnEvaluator(),
                 new SystematicOrderer(),
                 PVSearch.FLAG_TIME_LIMIT,
-                5000,2);
+                10000,4);
 
         p1.setUse_killer_heuristic(true);
         p1.setUse_iteration(true);
         p1.setUse_null_moves(true);
         p1.setPrint_overview(true);
+        p1.setUse_LMR(false);
 
-        //new Frame(b,new Player(){}, p1);
-        new Frame(b, new Player(){},p1);
+        new Frame(b,new Player(){}, p1);
+        //new Frame(b, p1, p1);
     }
 
     @Override
