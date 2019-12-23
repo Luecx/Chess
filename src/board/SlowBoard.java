@@ -10,6 +10,7 @@ import game.ai.evaluator.SimpleEvaluator;
 import game.ai.ordering.NoahOrderer;
 import game.ai.ordering.SimpleOrderer;
 import game.ai.ordering.SystematicOrderer;
+import game.ai.reducing.SimpleReducer;
 import game.ai.search.AlphaBeta;
 import game.ai.search.PVSearch;
 import io.IOBoard;
@@ -578,6 +579,7 @@ public class SlowBoard extends Board<SlowBoard> {
         PVSearch pvSearch1 = new PVSearch(
                 new FinnEvaluator(),
                 new SystematicOrderer(),
+                new SimpleReducer(),
                 PVSearch.FLAG_DEPTH_LIMIT, 10,2);
         pvSearch1.setUse_killer_heuristic(true);
         pvSearch1.setUse_iteration(true);
@@ -586,6 +588,7 @@ public class SlowBoard extends Board<SlowBoard> {
         PVSearch pvSearch2 = new PVSearch(
                 new FinnEvaluator(),
                 new NoahOrderer(),
+                new SimpleReducer(),
                 PVSearch.FLAG_DEPTH_LIMIT, 10,2);
         pvSearch2.setUse_killer_heuristic(false);
         pvSearch2.setUse_iteration(true);

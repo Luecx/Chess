@@ -4,7 +4,7 @@ import board.Board;
 import board.moves.Move;
 import game.ai.evaluator.Evaluator;
 import game.ai.ordering.Orderer;
-import game.ai.ordering.SystematicOrderer;
+import game.ai.reducing.Reducer;
 import game.ai.tools.*;
 
 import java.util.List;
@@ -17,6 +17,7 @@ public class PVSearch implements AI {
 
     private Evaluator evaluator;
     private Orderer orderer;
+    private Reducer reducer;
 
     private int limit;                              //limit for searching. could be a time in ms or a depth
     private int limit_flag;                         //limit flag to determine if limit is max depth or time
@@ -39,9 +40,10 @@ public class PVSearch implements AI {
     private SearchOverview searchOverview;
 
 
-    public PVSearch(Evaluator evaluator, Orderer orderer, int limit_flag,  int limit, int quiesce_depth) {
+    public PVSearch(Evaluator evaluator, Orderer orderer, Reducer reducer, int limit_flag,  int limit, int quiesce_depth) {
         this.evaluator = evaluator;
         this.limit_flag = limit_flag;
+        this.reducer = reducer;
         this.limit = limit;
         this.orderer = orderer;
         this.quiesce_depth = quiesce_depth;
@@ -366,7 +368,22 @@ public class PVSearch implements AI {
         this.num_moves_not_reduced = num_moves_not_reduced;
     }
 
-   
+    /**
+     * the reducer is used to determine the amount of depths to reduce a search for a given move
+     * @return      the reducer object
+     */
+    public Reducer getReducer() {
+        return reducer;
+    }
+
+    /**
+     * the reducer is used to determine the amount of depths to reduce a search for a given move
+     * @param reducer       new reducer object
+     */
+    public void setReducer(Reducer reducer) {
+        this.reducer = reducer;
+    }
+
     private int _depth;
     private int _quiesceNodes;
     private int _visitedNodes;
@@ -410,10 +427,6 @@ public class PVSearch implements AI {
                 double expectedTime = 0;
                 while (System.currentTimeMillis() - time + expectedTime < limit) {
                     line = iteration(depth++, line);
-
-
-
-
                     long iterationTime = System.currentTimeMillis() - prevTime;
                     prevTime = System.currentTimeMillis();
 
@@ -467,17 +480,28 @@ public class PVSearch implements AI {
         long time           = System.currentTimeMillis();
 
 
-        pvSearch(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, 0, pline, lastIteration);
+        pvSearch(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, 0, depth, 0,pline, lastIteration);
 
 
-        searchOverview.addIteration(_depth,
+        searchOverview.addIteration(
+                _depth,
                 _visitedNodes + _quiesceNodes,
-                _visitedNodes, _terminalNodes,_quiesceNodes,(int)(System.currentTimeMillis() - time));
+                _visitedNodes,
+                _terminalNodes,
+                _quiesceNodes,
+                (int)(System.currentTimeMillis() - time));
+
         if(print_overview) searchOverview.printIterationSummary();
 
         return pline;
     }
 
+    /**
+     * a function used do look up a value in the transposition table
+     * @param zobrist
+     * @param depth
+     * @return
+     */
     private TranspositionEntry transpositionLookUp(long zobrist, int depth) {
         if (use_transposition == false || !use_transposition) return null;
         TranspositionEntry en = _transpositionTable.get(zobrist);
@@ -487,6 +511,13 @@ public class PVSearch implements AI {
         return null;
     }
 
+    /**
+     * a function used to place a value in the transposition table
+     * @param key
+     * @param depth
+     * @param alpha
+     * @param nodeType
+     */
     private void transpositionPlacement(long key, int depth, double alpha, int nodeType) {
         if (!use_transposition || _transpositionTable == null || _transpositionTable.isFull()) return;
         TranspositionEntry en = _transpositionTable.get(key);
@@ -508,10 +539,19 @@ public class PVSearch implements AI {
      * @param beta              upper limit
      * @param currentDepth      current ply
      * @param pLine             pvLine
+     * @param loopIndex         the loop index from the previous recursive call
+     * @param depthLeft         the depth left to search
      * @param lastIteration     pvLine from prev iteration (nullable)
      * @return
      */
-    private double pvSearch(double alpha, double beta, int currentDepth, PVLine pLine, PVLine lastIteration) {
+    private double pvSearch(
+            double alpha,
+            double beta,
+            int currentDepth,
+            int depthLeft,
+            int loopIndex,
+            PVLine pLine,
+            PVLine lastIteration) {
         _visitedNodes++;
 
         //TODO
@@ -528,11 +568,12 @@ public class PVSearch implements AI {
 
         //<editor-fold desc="quiesce search">
         List<Move> allMoves = currentDepth == 0 ? _board.getLegalMoves() : _board.getPseudoLegalMoves();
-        if (currentDepth >= _depth || allMoves.size() == 0 || _board.isGameOver()) {
+        if (depthLeft <= 0 || currentDepth >= _depth || allMoves.size() == 0 || _board.isGameOver()) {
             double val = Quiesce(alpha, beta, quiesce_depth);
             return val;
         }
         //</editor-fold>
+
 
         PVLine line = new PVLine(_depth - currentDepth);
 
@@ -541,7 +582,14 @@ public class PVSearch implements AI {
         if(use_null_moves){
             Move nullMove = new Move();
             _board.move(nullMove);
-            score = -pvSearch(-alpha - 1, -alpha, currentDepth + 1 + null_move_reduction, line, lastIteration);
+            score = -pvSearch(
+                    -alpha - 1,
+                    -alpha,
+                    currentDepth + 1,
+                    depthLeft - 1 - null_move_reduction,
+                    -1,
+                    line,
+                    lastIteration);
             _board.undoMove();
             if (score >= beta) {
                 return beta;
@@ -556,31 +604,63 @@ public class PVSearch implements AI {
 
 
         //<editor-fold desc="Searching">
-        int countMoves = 0;
         boolean bSearchPv = true;
-        for (Move m : allMoves) {
+        
+        for(int index = 0; index < allMoves.size(); index++){
+            Move m = allMoves.get(index);
+
+
             _board.move(m);
 
+
+            //<editor-fold desc="LMR">
             int to_reduce = 0;
-            //// Late move reductions
-            countMoves++;
-            if (use_LMR && _depth > depth_to_never_reduce && m.getPieceTo() == 0 && countMoves > num_moves_not_reduced) {
-                to_reduce = late_move_reduction;
+            if (use_LMR && _depth > depth_to_never_reduce && m.getPieceTo() == 0 && index > num_moves_not_reduced) {
+                to_reduce = reducer.reduce(m, currentDepth, bSearchPv);
             }
+            //</editor-fold>
 
-            //// (end of) Late move reductions
 
-            //double score; // moved it up
+            //<editor-fold desc="recursion">
             if (bSearchPv) {
-                score = -pvSearch(-beta, -alpha, currentDepth + 1, line, lastIteration);
+                //<editor-fold desc="pv node search">
+                score = -pvSearch(
+                        -beta,
+                        -alpha,
+                        currentDepth + 1,
+                        depthLeft - 1,
+                        index,
+                        line,
+                        lastIteration);
+                //</editor-fold>
             } else {
-                score = -pvSearch(-alpha - 1, -alpha, currentDepth + 1 + to_reduce, line, lastIteration);
+                //<editor-fold desc="non pv search">
+                score = -pvSearch(
+                        -alpha - 1,
+                        -alpha,
+                        currentDepth + 1,
+                        depthLeft - 1 - to_reduce,
+                        index,
+                        line,
+                        null);
                 if (score > alpha && score < beta || (to_reduce != 0 && score > beta))
-                    score = -pvSearch(-beta, -alpha, currentDepth + 1, line, lastIteration); // re-search
+                    score = -pvSearch(
+                            -beta,
+                            -alpha,
+                            currentDepth + 1,
+                            depthLeft - 1,
+                            index,
+                            line,
+                            null); // re-search
+                //</editor-fold>
             }
+            //</editor-fold>
+
+
             _board.undoMove();
 
 
+            //<editor-fold desc="beta cutoff">
             if (score >= beta) {
                 if (_killerTable != null && m.getPieceTo() == 0){
                     _killerTable.put(currentDepth, m);
@@ -588,8 +668,10 @@ public class PVSearch implements AI {
                 transpositionPlacement(zobrist, currentDepth, beta, TranspositionEntry.CUT_NODE);
                 return beta;
             }
+            //</editor-fold>
 
 
+            //<editor-fold desc="killer node">
             if (score > alpha) {
                 alpha = score;
 
@@ -608,6 +690,7 @@ public class PVSearch implements AI {
 
                 bSearchPv = false;
             }
+            //</editor-fold>
         }
         //</editor-fold>
 

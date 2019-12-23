@@ -7,6 +7,7 @@ import game.ai.evaluator.GeneticEvaluator;
 import game.ai.evaluator.SimpleEvaluator;
 import game.ai.ordering.NoahOrderer;
 import game.ai.ordering.SystematicOrderer;
+import game.ai.reducing.SimpleReducer;
 import game.ai.search.AI;
 import game.ai.search.AlphaBeta;
 import game.ai.search.PVSearch;
@@ -198,15 +199,26 @@ public class Testing {
     }
 
     public static void main(String[] args) {
-        PVSearch ai1 = new PVSearch(new FinnEvaluator(), new SystematicOrderer(), 2,7,4);
+        PVSearch ai1 = new PVSearch(
+                new FinnEvaluator(),
+                new SystematicOrderer(),
+                new SimpleReducer(),
+                2,
+                8,
+                4);
         ai1.setUse_killer_heuristic(true);
         ai1.setUse_LMR(false);
-        PVSearch ai2 = new PVSearch(new FinnEvaluator(), new SystematicOrderer(), 2,7,4);
+        PVSearch ai2 = new PVSearch(
+                new FinnEvaluator(),
+                new SystematicOrderer(),
+                new SimpleReducer(),
+                2,
+                8,
+                4);
         ai2.setUse_killer_heuristic(true);
         ai2.setUse_LMR(true);
 
-        compare(new SlowBoard(), new PVSearch[]{ai1,ai2,ai3},
-                "rnb2rk1/p4ppp/2p3q1/2Pppb2/1p1PPnB1/1Q2B1P1/PP1NNP1P/R3K2R",
+        compare(new SlowBoard(), new PVSearch[]{ai2},
                 "r2q1rk1/1pp1bppp/p1npbn2/4p1B1/B3P3/2NP1N2/PPPQ1PPP/2KR3R",
                 "r2q1rk1/ppp2ppp/2n2n2/2b5/2B2Bb1/2NP1N2/PPPQ2PP/R4R1K",
                 "r1bq1rk1/1p2ppbp/p1np1np1/8/3NP3/1BN1B2P/PPP2PP1/R2Q1RK1",
