@@ -206,7 +206,6 @@ public class Testing {
                 2,
                 8,
                 4);
-        ai1.setUse_killer_heuristic(true);
         ai1.setUse_LMR(false);
         PVSearch ai2 = new PVSearch(
                 new FinnEvaluator(),
@@ -215,9 +214,7 @@ public class Testing {
                 2,
                 8,
                 4);
-        ai2.setUse_killer_heuristic(true);
         ai2.setUse_LMR(true);
-        ai2.setUse_null_moves(true);
 
         compare(new SlowBoard(), new PVSearch[]{ai1, ai2},
                 "r2q1rk1/1pp1bppp/p1npbn2/4p1B1/B3P3/2NP1N2/PPPQ1PPP/2KR3R",

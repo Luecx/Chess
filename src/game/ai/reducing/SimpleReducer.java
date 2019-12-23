@@ -11,7 +11,7 @@ public class SimpleReducer implements Reducer{
     public SimpleReducer() {
         this.late_move_reduction = 2;
         this.depth_to_never_reduce = 2;
-        this.num_moves_not_reduced = 0;
+        this.num_moves_not_reduced = 5;
     }
 
     public SimpleReducer(int late_move_reduction, int depth_to_never_reduce, int num_moves_not_reduced) {
@@ -25,7 +25,11 @@ public class SimpleReducer implements Reducer{
         if(move.getPieceTo() != 0 || pv_node || moveIndex < num_moves_not_reduced){
             return 0;
         }
-        return 1;
+        if(depth > 3){
+            return late_move_reduction  ;
+        }else{
+            return late_move_reduction;
+        }
     }
 
     /**

@@ -524,7 +524,7 @@ public class PVSearch implements AI {
 
         //<editor-fold desc="quiesce search">
         List<Move> allMoves = currentDepth == 0 ? _board.getLegalMoves() : _board.getPseudoLegalMoves();
-        if (depthLeft <= 0 || currentDepth >= _depth || allMoves.size() == 0 || _board.isGameOver()) {
+        if (depthLeft <= 0 || allMoves.size() == 0 || _board.isGameOver()) {
             double val = Quiesce(alpha, beta, quiesce_depth);
             return val;
         }
@@ -574,6 +574,7 @@ public class PVSearch implements AI {
             if (use_LMR && reducer != null) {
                 to_reduce = reducer.reduce(m, currentDepth, index, bSearchPv);
             }
+            //to_reduce = 100;
             //</editor-fold>
 
 
@@ -584,7 +585,7 @@ public class PVSearch implements AI {
                         -beta,
                         -alpha,
                         currentDepth + 1,
-                        depthLeft - 1,
+                        depthLeft - 1 - to_reduce,
                         index,
                         line,
                         lastIteration);
@@ -604,7 +605,7 @@ public class PVSearch implements AI {
                             -beta,
                             -alpha,
                             currentDepth + 1,
-                            depthLeft - 1,
+                            depthLeft - 1 - to_reduce,
                             index,
                             line,
                             null); // re-search

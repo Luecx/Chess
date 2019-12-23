@@ -79,14 +79,16 @@ public class Frame extends JFrame implements KeyListener {
                 new FinnEvaluator(),
                 new SystematicOrderer(),
                 new SimpleReducer(),
-                PVSearch.FLAG_DEPTH_LIMIT,
-                8,4);
+                PVSearch.FLAG_TIME_LIMIT,
+                5000,6);
 
         p1.setUse_killer_heuristic(true);
         p1.setUse_iteration(true);
         p1.setUse_null_moves(true);
         p1.setPrint_overview(true);
         p1.setUse_LMR(true);
+
+        p1.bestMove(b);
 
         new Frame(b,new Player(){}, p1);
         //new Frame(b, p1, p1);
