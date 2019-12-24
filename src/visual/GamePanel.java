@@ -58,6 +58,9 @@ public class GamePanel extends JPanel {
     private Game g;
 
     private int selected = -1;
+    private boolean flippedBoard = true;
+
+
 
 
     public GamePanel(Game g, Frame f) {
@@ -100,31 +103,48 @@ public class GamePanel extends JPanel {
         }
     }
 
+
+    public boolean isFlippedBoard() {
+        return flippedBoard;
+    }
+
+    public void setFlippedBoard(boolean flippedBoard) {
+        this.flippedBoard = flippedBoard;
+    }
+
+    private GamePanelButton getButton(int x, int y){
+        if(!flippedBoard){
+            return buttons[x][y];
+        }else{
+            return buttons[7-x][7-y];
+        }
+    }
+    
     private void renderIcon(int x, int y){
 
         PieceImages img = PieceImages.getImage(g.getBoard().getPiece(x,y));
 
         if(img == null){
-            buttons[x][y].clearContent();
+            getButton(x,y).clearContent();
             return;
         }
 
 
         if(img.getImage() != null){
-            buttons[x][y].setPieceImage(img.getImage());
+            getButton(x,y).setPieceImage(img.getImage());
         } else{
-            buttons[x][y].setText(img.getString());
-            buttons[x][y].setFont(new Font(
-                    buttons[x][y].getFont().getName(),
-                    buttons[x][y].getFont().getStyle(),
-                    buttons[x][y].getWidth() * 2 / 3));
+            getButton(x,y).setText(img.getString());
+            getButton(x,y).setFont(new Font(
+                    getButton(x,y).getFont().getName(),
+                    getButton(x,y).getFont().getStyle(),
+                    getButton(x,y).getWidth() * 2 / 3));
         }
     }
 
     public void renderBackground() {
         for (int i = 0; i < 8; i++) {
             for (int n = 0; n < 8; n++) {
-                buttons[i][n].setBackground((i % 2 == 1 && n % 2 == 0 || i % 2 == 0 && n % 2 == 1 ? color_white : color_black));
+                getButton(i,n).setBackground((i % 2 == 1 && n % 2 == 0 || i % 2 == 0 && n % 2 == 1 ? color_white : color_black));
                 renderIcon(i,n);
             }
         }
@@ -160,36 +180,36 @@ public class GamePanel extends JPanel {
     private void renderSquarePrevMove(int i, int n){
         if(!renderLastMove) return;
         if(isWhiteSquare(i,n)){
-            buttons[i][n].setBackground(color_lastMove_white);
+            getButton(i,n).setBackground(color_lastMove_white);
         }else{
-            buttons[i][n].setBackground(color_lastMove_black);
+            getButton(i,n).setBackground(color_lastMove_black);
         }
     }
 
     private void renderSquareAvailable(int i, int n){
         if(!renderAvailableCells) return;
         if(isWhiteSquare(i,n)){
-            buttons[i][n].setBackground(color_available_white);
+            getButton(i,n).setBackground(color_available_white);
         }else{
-            buttons[i][n].setBackground(color_available_black);
+            getButton(i,n).setBackground(color_available_black);
         }
     }
 
     private void renderSquareTakeable(int i, int n){
         if(!renderTakeableCells) return;
         if(isWhiteSquare(i,n)){
-            buttons[i][n].setBackground(color_takeable_white);
+            getButton(i,n).setBackground(color_takeable_white);
         }else{
-            buttons[i][n].setBackground(color_takeable_black);
+            getButton(i,n).setBackground(color_takeable_black);
         }
     }
 
     private void renderSquareSelected(int i, int n){
         if(!renderSelectedCell) return;
         if(isWhiteSquare(i,n)){
-            buttons[i][n].setBackground(color_selected_white);
+            getButton(i,n).setBackground(color_selected_white);
         }else{
-            buttons[i][n].setBackground(color_selected_black);
+            getButton(i,n).setBackground(color_selected_black);
         }
     }
 
@@ -213,6 +233,12 @@ public class GamePanel extends JPanel {
      * @param y     the y coordinate
      */
     private void click(byte x, byte y) {
+
+        if(flippedBoard){
+            y = (byte)(7-y);
+            x = (byte)(7-x);
+        }
+
         if (selected == -1) {
             if (g.getBoard().getPiece(x, y) * g.getBoard().getActivePlayer() > 0) {
                 selected = g.getBoard().index(x, y);

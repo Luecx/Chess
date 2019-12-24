@@ -210,12 +210,22 @@ public class SlowBoard extends Board<SlowBoard> {
                 moves.add(new Move(index, index + getActivePlayer() * 24, getActivePlayer(), (byte) 0));
             }
         }
-        if (i > 0 && field[index + getActivePlayer() * 11] * getActivePlayer() < 0) {
-            moves.add(new Move(index, index + getActivePlayer() * 11, this));
+        if(getActivePlayer() > 0){
+            if (i > 0 && field[index + 11] < 0) {
+                moves.add(new Move(index, index + 11, this));
+            }
+            if (i < 7 && field[index + 13] < 0) {
+                moves.add(new Move(index, index + 13, this));
+            }
+        }else{
+            if (i > 0 && field[index - 13] > 0) {
+                moves.add(new Move(index, index - 13, this));
+            }
+            if (i < 7 && field[index - 11] > 0) {
+                moves.add(new Move(index, index - 11, this));
+            }
         }
-        if (i < 7 && field[index + getActivePlayer() * 13] * getActivePlayer() < 0) {
-            moves.add(new Move(index, index + getActivePlayer() * 13, this));
-        }
+
     }
 
     protected void pseudeLegalMoves_knight(int index, int i, int j, List<Move> moves){
@@ -572,7 +582,7 @@ public class SlowBoard extends Board<SlowBoard> {
 
     public static void main(String[] args) {
         Board b = new SlowBoard(Setup.DEFAULT);
-        b = IOBoard.read_lichess(b, "rnb2rk1/p4ppp/2p3q1/2Pppb2/1p1PPnB1/1Q2B1P1/PP1NNP1P/R3K2R");
+        b = IOBoard.read_lichess(b, "7R/8/8/8/3kp3/8/r7/4K3");
 
 
 
@@ -580,28 +590,13 @@ public class SlowBoard extends Board<SlowBoard> {
                 new FinnEvaluator(),
                 new SystematicOrderer(),
                 new SimpleReducer(),
-                PVSearch.FLAG_DEPTH_LIMIT, 10,2);
+                PVSearch.FLAG_DEPTH_LIMIT, 8,2);
         pvSearch1.setUse_killer_heuristic(true);
         pvSearch1.setUse_iteration(true);
+        pvSearch1.setUse_LMR(true);
 
 
-        PVSearch pvSearch2 = new PVSearch(
-                new FinnEvaluator(),
-                new NoahOrderer(),
-                new SimpleReducer(),
-                PVSearch.FLAG_DEPTH_LIMIT, 10,2);
-        pvSearch2.setUse_killer_heuristic(false);
-        pvSearch2.setUse_iteration(true);
-
-
-        for(int i = 0; i < 5; i++){
-
-            System.out.println("SystematicOrderer");
-            IOBoard.algebraicNotation(b, pvSearch1.bestMove(b));
-            System.out.println("Noah");
-            IOBoard.algebraicNotation(b, pvSearch2.bestMove(b));
-        }
-
+        System.out.println(IOBoard.algebraicNotation(b, pvSearch1.bestMove(b)));
 
     }
 

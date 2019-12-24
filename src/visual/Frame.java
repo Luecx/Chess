@@ -69,10 +69,18 @@ public class Frame extends JFrame implements KeyListener {
         this.gamePanel.render();
     }
 
+    public boolean isFlippedBoard() {
+        return gamePanel.isFlippedBoard();
+    }
+
+    public void setFlippedBoard(boolean flippedBoard) {
+        this.gamePanel.setFlippedBoard(flippedBoard);
+    }
+
     public static void main(String[] args) {
         Board b = new SlowBoard(Setup.DEFAULT);
 
-        //b = IOBoard.read_lichess(new SlowBoard(), "rnb2rk1/p4ppp/2p3q1/2Pppb2/1p1PPnB1/1Q2B1P1/PP1NNP1P/R3K2R");
+        //b = IOBoard.read_lichess(new SlowBoard(), "8/1pp3pp/1r3p2/4k3/8/p7/PP3PPP/5RK1");
 
 
         PVSearch p1 = new PVSearch(
@@ -80,7 +88,7 @@ public class Frame extends JFrame implements KeyListener {
                 new SystematicOrderer(),
                 new SimpleReducer(),
                 PVSearch.FLAG_TIME_LIMIT,
-                5000,6);
+                3000,4);
 
         p1.setUse_killer_heuristic(true);
         p1.setUse_iteration(true);
@@ -88,10 +96,17 @@ public class Frame extends JFrame implements KeyListener {
         p1.setPrint_overview(true);
         p1.setUse_LMR(true);
 
-        p1.bestMove(b);
 
-        new Frame(b,new Player(){}, p1);
-        //new Frame(b, p1, p1);
+
+        boolean iAmPlayingWhite = false;
+
+        if(iAmPlayingWhite){
+
+            new Frame(b, p1,new Player(){}).setFlippedBoard(false);
+        }else{
+
+            new Frame(b,new Player(){}, p1).setFlippedBoard(true);
+        }
     }
 
     @Override
