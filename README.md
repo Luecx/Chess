@@ -3,7 +3,7 @@
 A small Chess Engine
 
 
-#Supported operations for searching:
+<b>Supported operations for searching:</b>
 
 - Null move reduction
 - Late move reduction
