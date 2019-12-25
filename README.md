@@ -1,9 +1,11 @@
 # Chess
 
-A small Chess Engine
+
+![GitHub](https://img.shields.io/github/license/Luecx/Chess)
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/Luecx/Chess)
 
 
-#Supported operations for searching:
+### Supported operations for searching:
 
 - Null move reduction
 - Late move reduction
