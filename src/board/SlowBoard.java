@@ -36,6 +36,8 @@ public class SlowBoard extends Board<SlowBoard> {
     public static final short MASK_BLACK_QUEENSIDE_CASTLING     = (short)1 << 2;
     public static final short MASK_BLACK_KINGSIDE_CASTLING      = (short)1 << 3;
 
+    public static final short MASK_EN_PASSENT_MOVES             = (short) 4080;
+
     public static final short INDEX_WHITE_QUEENSIDE_ROOK        = 26;
     public static final short INDEX_WHITE_KINGSIDE_ROOK         = 26 + 7;
     public static final short INDEX_BLACK_QUEENSIDE_ROOK        = 26 + 7 * 12;
@@ -136,6 +138,30 @@ public class SlowBoard extends Board<SlowBoard> {
             return;
         }
 
+
+
+        //-------------------en passant--------------------------
+        short xor_mask = (short)(board_meta_informtion & MASK_EN_PASSENT_MOVES);
+        m.setMetaInformation((short) (xor_mask ^ m.getMetaInformation()));
+
+        if(m.getPieceFrom() * getActivePlayer() == 1 &&
+                m.getPieceTo() == 0 &&
+                Math.abs((m.getTo() - m.getFrom())) % 12 != 0) {
+            if (getActivePlayer() == 1) {
+                if (m.getTo() - m.getFrom() == 13) {
+                    this.field[m.getFrom() + 1] = 0;
+                } else {
+                    this.field[m.getFrom() - 1] = 0;
+                }
+            } else {
+                if (m.getTo() - m.getFrom() == -13) {
+                    this.field[m.getFrom() - 1] = 0;
+                } else {
+                    this.field[m.getFrom() + 1] = 0;
+                }
+            }
+        }
+
         //------------------castling-------------------------
         if (m.getPieceFrom() * getActivePlayer() == 6) {
             if (Math.abs(m.getTo() - m.getFrom()) == 2) {
@@ -157,6 +183,8 @@ public class SlowBoard extends Board<SlowBoard> {
                 this.field[m.getTo()] = 5 * getActivePlayer();
             }
         }
+
+
 
         this.changeActivePlayer();
     }
@@ -207,22 +235,51 @@ public class SlowBoard extends Board<SlowBoard> {
         if (field[index + getActivePlayer() * 12] == 0) {
             moves.add(new Move(index, index + getActivePlayer() * 12, getActivePlayer(), (byte) 0));
             if ((j == getActivePlayer() || j == 7 + getActivePlayer()) && field[index + getActivePlayer() * 2 * 12] == 0) {
-                moves.add(new Move(index, index + getActivePlayer() * 24, getActivePlayer(), (byte) 0));
+                Move forward = new Move(index, index + getActivePlayer() * 24, getActivePlayer(),0);
+
+                //if ((board_meta_informtion & (1 << (i+4))) == 0)
+                forward.setMetaInformation((short) (1 << (i+4)));
+
+                moves.add(forward);
             }
         }
         if(getActivePlayer() > 0){
-            if (i > 0 && field[index + 11] < 0) {
-                moves.add(new Move(index, index + 11, this));
+            if (i > 0) {
+                if (field[index + 11] < 0){
+                    moves.add(new Move(index, index + 11, this));
+                }
+
+                if ((board_meta_informtion & ((short)1 << (4+i-1))) > 0 && j == 4){
+                    moves.add(new Move(index, index + 11, 1,0));
+                }
             }
-            if (i < 7 && field[index + 13] < 0) {
-                moves.add(new Move(index, index + 13, this));
+            if (i < 7){
+                if(field[index + 13] < 0) {
+                    moves.add(new Move(index, index + 13, this));
+                }
+
+                if ((board_meta_informtion & ((short)1 << (4+i+1))) > 0 && j == 4){
+                    moves.add(new Move(index, index + 13, 1,0));
+                }
             }
         }else{
-            if (i > 0 && field[index - 13] > 0) {
-                moves.add(new Move(index, index - 13, this));
+            if (i > 0) {
+                if (field[index - 13] < 0){
+                    moves.add(new Move(index, index - 13, this));
+                }
+
+                if ((board_meta_informtion & ((short)1 << (4+i-1))) > 0 && j == 3){
+                    moves.add(new Move(index, index - 13, -1,0));
+                }
             }
-            if (i < 7 && field[index - 11] > 0) {
-                moves.add(new Move(index, index - 11, this));
+            if (i < 7){
+                if(field[index - 11] < 0) {
+                    moves.add(new Move(index, index - 11, this));
+                }
+
+                if ((board_meta_informtion & ((short)1 << (4+i+1))) > 0 && j == 3){
+                    moves.add(new Move(index, index - 11, -1,0));
+                }
             }
         }
 
@@ -343,17 +400,17 @@ public class SlowBoard extends Board<SlowBoard> {
     @Override
     public List<Move> getLegalMoves() {
         List<Move> moves = getPseudoLegalMoves();
-        for(int i = moves.size()-1; i>= 0; i--){;
-            move(moves.get(i));
-            List<Move> opponent = getPseudoLegalMoves();
-            for(Move m:opponent){
-                if(m.getPieceTo() * this.getActivePlayer() == -6){
-                    moves.remove(i);
-                    break;
-                }
-            }
-            undoMove();
-        }
+//        for(int i = moves.size()-1; i>= 0; i--){;
+//            move(moves.get(i));
+//            List<Move> opponent = getPseudoLegalMoves();
+//            for(Move m:opponent){
+//                if(m.getPieceTo() * this.getActivePlayer() == -6){
+//                    moves.remove(i);
+//                    break;
+//                }
+//            }
+//            undoMove();
+//        }
         return moves;
     }
 
@@ -476,6 +533,30 @@ public class SlowBoard extends Board<SlowBoard> {
 
         Move last = this.moveHistory.peek();
         this.board_meta_informtion ^= last.getMetaInformation();
+
+        if(last.getPieceFrom() * getActivePlayer() == -1 &&
+                last.getPieceTo() == 0 &&
+                Math.abs((last.getTo() - last.getFrom())) % 12 != 0) {
+
+            undoMoveSimpleMove();
+
+            if (getActivePlayer() == 1) {
+                if (last.getTo() - last.getFrom() == -13) {
+                    this.field[last.getFrom() - 1] = 1;
+                } else {
+                    this.field[last.getFrom() + 1] = 1;
+                }
+            } else {
+                if (last.getTo() - last.getFrom() == +13) {
+                    this.field[last.getFrom() + 1] = -1;
+                } else {
+                    this.field[last.getFrom() - 1] = -1;
+                }
+            }
+            changeActivePlayer();
+            return;
+        }
+
         undoMoveSimpleMove();
         while(this.moveHistory.size() > 0 && this.moveHistory.peek().getPieceFrom() * last.getPieceFrom() > 0){
             undoMoveSimpleMove();
@@ -500,8 +581,6 @@ public class SlowBoard extends Board<SlowBoard> {
             }
         }
     }
-
-
 
     @Override
     public boolean equals(Object o) {
@@ -582,21 +661,7 @@ public class SlowBoard extends Board<SlowBoard> {
 
     public static void main(String[] args) {
         Board b = new SlowBoard(Setup.DEFAULT);
-        b = IOBoard.read_lichess(b, "7R/8/8/8/3kp3/8/r7/4K3");
-
-
-
-        PVSearch pvSearch1 = new PVSearch(
-                new FinnEvaluator(),
-                new SystematicOrderer(),
-                new SimpleReducer(),
-                PVSearch.FLAG_DEPTH_LIMIT, 8,2);
-        pvSearch1.setUse_killer_heuristic(true);
-        pvSearch1.setUse_iteration(true);
-        pvSearch1.setUse_LMR(true);
-
-
-        System.out.println(IOBoard.algebraicNotation(b, pvSearch1.bestMove(b)));
+        new Frame(b, new Player(){}, new Player(){});
 
     }
 

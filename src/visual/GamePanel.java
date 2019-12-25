@@ -58,7 +58,7 @@ public class GamePanel extends JPanel {
     private Game g;
 
     private int selected = -1;
-    private boolean flippedBoard = true;
+    private boolean flippedBoard = false;
 
 
 
@@ -273,6 +273,7 @@ public class GamePanel extends JPanel {
      */
     public void runMoveInThread(Move z){
         new Thread(() -> g.move(z)).start();
+        System.out.println(z.getMetaInformation());
         this.selected = -1;
         render();
     }
