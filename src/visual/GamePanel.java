@@ -273,7 +273,7 @@ public class GamePanel extends JPanel {
      */
     public void runMoveInThread(Move z){
         new Thread(() -> g.move(z)).start();
-        System.out.println(z.getMetaInformation());
+
         this.selected = -1;
         render();
     }
@@ -288,6 +288,7 @@ public class GamePanel extends JPanel {
         }
         this.selected = -1;
         this.g.getBoard().undoMove();
+
         this.render();
     }
 

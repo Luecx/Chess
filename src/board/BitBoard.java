@@ -13,6 +13,7 @@ public class BitBoard {
     static final long not_a_file = 0xfefefefefefefefeL;
     static final long not_h_file = 0x7f7f7f7f7f7f7f7fL;
 
+    static final long seed = 1123891283;
 
     static final long[][] all_hashes;        //12 * 64
     static final long[][] white_hashes;      //6 * 64
@@ -46,7 +47,7 @@ public class BitBoard {
         }
 
 
-        Random r = new Random((int)(Math.random() * 100000));
+        Random r = new Random(seed);
 
         white_hashes = new long[6][64];
         black_hashes = new long[6][64];
