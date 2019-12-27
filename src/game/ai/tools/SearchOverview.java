@@ -1,5 +1,7 @@
 package game.ai.tools;
 
+import board.moves.Move;
+
 import java.util.ArrayList;
 
 public class SearchOverview {
@@ -8,6 +10,9 @@ public class SearchOverview {
     private int totalTime;
     private int depth;
     private int qDepth;
+
+    private Move move;
+    private double evaluation;
 
     private ArrayList<Integer> depths;
     private ArrayList<Integer> totalNodes;
@@ -41,6 +46,8 @@ public class SearchOverview {
         this.qSearchNodes = new ArrayList<>();
     }
 
+
+
     public void addIteration(int depth, int totalNodes, int fullDepthNodes, int terminal, int qNodes, int time) {
         this.depths.add(depth);
         this.timings.add(time);
@@ -48,6 +55,22 @@ public class SearchOverview {
         this.fullDepthNodes.add(fullDepthNodes);
         this.terminalNodes.add(terminal);
         this.qSearchNodes.add(qNodes);
+    }
+
+    public Move getMove() {
+        return move;
+    }
+
+    public void setMove(Move move) {
+        this.move = move;
+    }
+
+    public double getEvaluation() {
+        return evaluation;
+    }
+
+    public void setEvaluation(double evaluation) {
+        this.evaluation = evaluation;
     }
 
     public String[] getFlags() {

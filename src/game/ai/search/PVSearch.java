@@ -1,11 +1,14 @@
 package game.ai.search;
 
 import board.Board;
+import board.SlowBoard;
 import board.moves.Move;
+import board.repetitions.RepetitionList;
 import game.ai.evaluator.Evaluator;
 import game.ai.ordering.Orderer;
 import game.ai.reducing.Reducer;
 import game.ai.tools.*;
+import io.IOBoard;
 
 import java.util.List;
 
@@ -345,6 +348,7 @@ public class PVSearch implements AI {
     private int _terminalNodes;
     private Board _board;
     private Move _bestMove;
+    private double _bestScore;
 
     private KillerTable _killerTable;
     private TranspositionTable<TranspositionEntry> _transpositionTable;
@@ -367,7 +371,6 @@ public class PVSearch implements AI {
         searchOverview.setqDepth(quiesce_depth);
 
         long time = System.currentTimeMillis();
-
 
         if (use_transposition){
             _transpositionTable = new TranspositionTable<>((int) (50E6));
@@ -403,7 +406,6 @@ public class PVSearch implements AI {
             iteration(limit, null);
         }
 
-
         searchOverview.setDepth(this._depth);
         searchOverview.setTotalTime((int)(System.currentTimeMillis()-time));
 
@@ -435,7 +437,6 @@ public class PVSearch implements AI {
         PVLine pline        = new PVLine(_depth);
         long time           = System.currentTimeMillis();
 
-
         pvSearch(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, 0, depth, 0,pline, lastIteration);
 
 
@@ -446,8 +447,14 @@ public class PVSearch implements AI {
                 _terminalNodes,
                 _quiesceNodes,
                 (int)(System.currentTimeMillis() - time));
+        searchOverview.setEvaluation(_bestScore);
+        searchOverview.setMove(_bestMove);
 
-        if(print_overview) searchOverview.printIterationSummary();
+
+        if(print_overview) {
+            System.out.format("%-15s",IOBoard.algebraicNotation(_board, _bestMove) + "[" + _bestScore + "]: ");
+            searchOverview.printIterationSummary();
+        }
 
         return pline;
     }
@@ -486,9 +493,6 @@ public class PVSearch implements AI {
         }
     }
 
-    static double working = 0;
-    static double not = 0;
-
     /**
      * main search parth
      * @param alpha             lower limit
@@ -521,7 +525,6 @@ public class PVSearch implements AI {
         }
         //</editor-fold>
 
-
         //<editor-fold desc="quiesce search">
         List<Move> allMoves = currentDepth == 0 ? _board.getLegalMoves() : _board.getPseudoLegalMoves();
         if (depthLeft <= 0 || allMoves.size() == 0 || _board.isGameOver()) {
@@ -529,7 +532,6 @@ public class PVSearch implements AI {
             return val;
         }
         //</editor-fold>
-
 
         PVLine line = new PVLine(_depth - currentDepth);
 
@@ -553,11 +555,9 @@ public class PVSearch implements AI {
         }
         //</editor-fold>
 
-
         //<editor-fold desc="move-ordering">
         orderer.sort(allMoves, currentDepth, lastIteration, _board, _killerTable);
         //</editor-fold>
-
 
         //<editor-fold desc="Searching">
         boolean bSearchPv = true;
@@ -565,18 +565,14 @@ public class PVSearch implements AI {
         for(int index = 0; index < allMoves.size(); index++){
             Move m = allMoves.get(index);
 
-
             _board.move(m);
-
 
             //<editor-fold desc="LMR">
             int to_reduce = 0;
             if (use_LMR && reducer != null) {
                 to_reduce = reducer.reduce(m, currentDepth, index, bSearchPv);
             }
-            //to_reduce = 100;
             //</editor-fold>
-
 
             //<editor-fold desc="recursion">
             if (bSearchPv) {
@@ -613,9 +609,7 @@ public class PVSearch implements AI {
             }
             //</editor-fold>
 
-
             _board.undoMove();
-
 
             //<editor-fold desc="beta cutoff">
             if (score >= beta) {
@@ -626,7 +620,6 @@ public class PVSearch implements AI {
                 return beta;
             }
             //</editor-fold>
-
 
             //<editor-fold desc="killer node">
             if (score > alpha) {
@@ -642,6 +635,7 @@ public class PVSearch implements AI {
                 }
                 pLine.setMovesInLine(line.getMovesInLine() + 1);
                 if (currentDepth == 0) {
+                    _bestScore = score;
                     _bestMove = m;
                 }
 
@@ -687,7 +681,6 @@ public class PVSearch implements AI {
             double score = -Quiesce(-beta, -alpha, depth_left - 1);
             _board.undoMove();
             if (score >= beta) {
-                //System.out.println("beta cutoff");
                 return beta;
             }
             if (score > alpha)

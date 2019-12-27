@@ -26,10 +26,10 @@ import java.util.List;
 public class SlowBoard extends Board<SlowBoard> {
 
 
-    private static final int[] TURM_DIRECTIONS = {12, -12, 1, -1};
-    private static final int[] LAEUFER_DIRECTIONS = {13, 11, -11, -13};
-    private static final int[] SPRINGER_OFFSET = {23, 25, 14, 10, -10, -14, -23, -25};
-    private static final int[] KOENIG_OFFSET = {12, 13, 1, -13, -12, -11, -1, 11};
+    private static final int[] TURM_DIRECTIONS                  = {12, -12,   1, - 1};
+    private static final int[] LAEUFER_DIRECTIONS               = {13,  11, -11, -13};
+    private static final int[] SPRINGER_OFFSET                  = {23,  25,  14,  10, -10, -14, -23, -25};
+    private static final int[] KOENIG_OFFSET                    = {12,  13,   1, -13, -12, -11, - 1,  11};
 
 
 
@@ -39,17 +39,16 @@ public class SlowBoard extends Board<SlowBoard> {
     public static final short MASK_BLACK_QUEENSIDE_CASTLING     = (short)1 << 2;
     public static final short MASK_BLACK_KINGSIDE_CASTLING      = (short)1 << 3;
 
-    public static final short MASK_EN_PASSENT_MOVES             = (short) 4080;
+    public static final short MASK_EN_PASSENT_MOVES             = (short)4080;
     public static final short MASK_GAMEOVER                     = (short)1 << 12;
     public static final short MASK_WINNER_WHITE                 = (short)1 << 13;
     public static final short MASK_WINNER_BLACK                 = (short)1 << 14;
 
 
-
-    public static final short INDEX_WHITE_QUEENSIDE_ROOK        = 26;
-    public static final short INDEX_WHITE_KINGSIDE_ROOK         = 26 + 7;
-    public static final short INDEX_BLACK_QUEENSIDE_ROOK        = 26 + 7 * 12;
-    public static final short INDEX_BLACK_KINGSIDE_ROOK         = 26 + 7 * 12 + 7;
+    public static final short INDEX_WHITE_QUEENSIDE_ROOK        = (short)26;
+    public static final short INDEX_WHITE_KINGSIDE_ROOK         = (short)26 + 7;
+    public static final short INDEX_BLACK_QUEENSIDE_ROOK        = (short)26 + 7 * 12;
+    public static final short INDEX_BLACK_KINGSIDE_ROOK         = (short)26 + 7 * 12 + 7;
 
 
     public static final int INVALID = Byte.MIN_VALUE;
@@ -105,6 +104,8 @@ public class SlowBoard extends Board<SlowBoard> {
         SlowBoard board = new SlowBoard();
         if (this.getActivePlayer() != board.getActivePlayer()) board.changeActivePlayer();
         board.field = Arrays.copyOf(field, 144);
+        board.board_meta_informtion = this.board_meta_informtion;
+        board.board_repetition_counter = this.board_repetition_counter.copy();
         for (Move move : moveHistory) {
             board.moveHistory.push(move.copy());
         }
@@ -141,14 +142,19 @@ public class SlowBoard extends Board<SlowBoard> {
 
     @Override
     public void move(Move m) {
+
         //<editor-fold desc="null move">
         if (m.getIsNull()) { // does null move stuff
             this.changeActivePlayer();
+            m.setMetaInformation((short)(m.getMetaInformation() ^
+                    (this.board_meta_informtion & MASK_EN_PASSENT_MOVES)));
+            this.board_meta_informtion ^= m.getMetaInformation();
+
             this.moveHistory.push(m);
             return;
         }
         //</editor-fold>
-        
+
         //<editor-fold desc="en passant">
 
         if(m.getPieceFrom() * getActivePlayer() == 1 &&
@@ -205,6 +211,7 @@ public class SlowBoard extends Board<SlowBoard> {
         if(this.board_repetition_counter.add(this.zobrist())){
             mask ^= MASK_GAMEOVER;
         }
+
         m.setMetaInformation((short)(m.getMetaInformation() ^ mask));
 
         this.board_meta_informtion ^= m.getMetaInformation();
@@ -218,20 +225,26 @@ public class SlowBoard extends Board<SlowBoard> {
     public void undoMove() {
         if (this.moveHistory.size() == 0) return;
 
+        Move last = this.moveHistory.peek();
+        this.board_meta_informtion ^= last.getMetaInformation();
+
+        //<editor-fold desc="threefold repetition">
+        this.board_repetition_counter.sub(this.zobrist());
+        //</editor-fold>
+
+        //<editor-fold desc="null moves">
         if (this.moveHistory.peek().getIsNull()) { // null move stuff
             this.changeActivePlayer();
             this.moveHistory.pop();
             return;
         }
+        //</editor-fold>
 
-        this.board_repetition_counter.sub(this.zobrist());
-
-        Move last = this.moveHistory.peek();
-        this.board_meta_informtion ^= last.getMetaInformation();
-
-        if(last.getPieceFrom() * getActivePlayer() == -1 &&
+        //<editor-fold desc="en passant">
+        if(Math.abs(last.getPieceFrom())== 1 &&
                 last.getPieceTo() == 0 &&
                 Math.abs((last.getTo() - last.getFrom())) % 12 != 0) {
+
 
             undoMoveSimpleMove();
 
@@ -251,11 +264,15 @@ public class SlowBoard extends Board<SlowBoard> {
             changeActivePlayer();
             return;
         }
+        //</editor-fold>
 
         undoMoveSimpleMove();
+
+        //<editor-fold desc="castling">
         while(this.moveHistory.size() > 0 && this.moveHistory.peek().getPieceFrom() * last.getPieceFrom() > 0){
             undoMoveSimpleMove();
         }
+        //</editor-fold>
 
         this.changeActivePlayer();
     }
@@ -308,7 +325,6 @@ public class SlowBoard extends Board<SlowBoard> {
             if ((j == getActivePlayer() || j == 7 + getActivePlayer()) && field[index + getActivePlayer() * 2 * 12] == 0) {
                 Move forward = new Move(index, index + getActivePlayer() * 24, getActivePlayer(),0);
 
-                //if ((board_meta_informtion & (1 << (i+4))) == 0)
                 forward.setMetaInformation((short) (1 << (i+4)));
 
                 moves.add(forward);
@@ -340,7 +356,7 @@ public class SlowBoard extends Board<SlowBoard> {
                 }
 
                 if ((board_meta_informtion & ((short)1 << (4+i-1))) > 0 && j == 3){
-                    moves.add(new Move(index, index - 13, -1,0));
+                    moves.add(new Move(index, index - 13, this));
                 }
             }
             if (i < 7){
@@ -349,7 +365,7 @@ public class SlowBoard extends Board<SlowBoard> {
                 }
 
                 if ((board_meta_informtion & ((short)1 << (4+i+1))) > 0 && j == 3){
-                    moves.add(new Move(index, index - 11, -1,0));
+                    moves.add(new Move(index, index - 11, this));
                 }
             }
         }
@@ -482,6 +498,7 @@ public class SlowBoard extends Board<SlowBoard> {
 //            }
 //            undoMove();
 //        }
+
         return moves;
     }
 
@@ -630,7 +647,16 @@ public class SlowBoard extends Board<SlowBoard> {
                 if (b < -10) {
                     builder.append("#");
                 } else {
-                    builder.append(Math.abs(b));
+                    double offset = b > 0 ? 32:0;
+                    switch (Math.abs(b)){
+                        case 1: builder.append((char)('p' - offset)); break;
+                        case 2: builder.append((char)('r' - offset)); break;
+                        case 3: builder.append((char)('n' - offset)); break;
+                        case 4: builder.append((char)('b' - offset)); break;
+                        case 5: builder.append((char)('q' - offset)); break;
+                        case 6: builder.append((char)('k' - offset)); break;
+                        default:builder.append(" ");
+                    }
                 }
             }
             builder.append("\n");
@@ -640,17 +666,6 @@ public class SlowBoard extends Board<SlowBoard> {
 
     @Override
     public boolean isGameOver() {
-//        boolean whiteKing = false;
-//        boolean blackKing = false;
-//        for (byte i = 0; i < 8; i++) {
-//            for (byte j = 0; j < 8; j++) {
-//                if (getPiece(i, j) == 6) whiteKing = true;
-//                if (getPiece(i, j) == -6) blackKing = true;
-//            }
-//        }
-//        return (!whiteKing || !blackKing);
-
-
         return (MASK_GAMEOVER & board_meta_informtion) > 0;
     }
 
@@ -675,19 +690,6 @@ public class SlowBoard extends Board<SlowBoard> {
 
     @Override
     public int winner() {
-//        boolean whiteKing = false;
-//        boolean blackKing = false;
-//        for (byte i = 0; i < 8; i++) {
-//            for (byte j = 0; j < 8; j++) {
-//                if (getPiece(i, j) == 6) whiteKing = true;
-//                if (getPiece(i, j) == -6) blackKing = true;
-//            }
-//        }
-//        if(whiteKing && blackKing) return 0;
-//        if(whiteKing) return 1;
-//        if(blackKing) return -1;
-//        return 0;
-
         if((MASK_WINNER_BLACK & board_meta_informtion) > 0) return 1;
         if((MASK_WINNER_BLACK & board_meta_informtion) > 0) return -1;
         return 0;
@@ -702,9 +704,26 @@ public class SlowBoard extends Board<SlowBoard> {
     }
 
     public static void main(String[] args) {
-        Board b = new SlowBoard(Setup.DEFAULT);
-        new Frame(b, new Player(){}, new Player(){});
+//        Board b = new SlowBoard(Setup.DEFAULT);
+//        new Frame(b, new Player(){}, new Player(){});
 
+        PVSearch ai = new PVSearch(
+                new FinnEvaluator(),
+                new SystematicOrderer(),
+                new SimpleReducer(),
+                PVSearch.FLAG_DEPTH_LIMIT,
+                14,0);
+
+        ai.setUse_null_moves(true);
+        ai.setUse_iteration(true);
+        Board b = IOBoard.read_lichess(new SlowBoard(), "1k6/1pp3pp/p4r2/2P5/4Bp2/1P5P/P3p1PK/8");
+        b.changeActivePlayer();
+
+
+        //ai.bestMove(b);
+
+        new Frame(b, new Player(){}, ai);
+        //new Frame(b, new Player(){}, new Player(){});
     }
 
 }

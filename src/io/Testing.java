@@ -108,6 +108,7 @@ public class Testing {
                 ais[i].bestMove(board);
                 overviews[i] = ais[i].getSearchOverview();
             }
+            String[] lMove = new String[1 + ais.length * 2];
             String[] lDepth = new String[1 + ais.length * 2];
             String[] lTime = new String[1 + ais.length * 2];
             String[] lNodes = new String[1 + ais.length * 2];
@@ -115,6 +116,7 @@ public class Testing {
             String[] lTerminal = new String[1 + ais.length * 2];
             String[] lfullDepth = new String[1 + ais.length * 2];
 
+            lMove[0] = "";
             lDepth[0] = "";
             lTime[0] = "";
             lNodes[0] = "";
@@ -123,6 +125,12 @@ public class Testing {
             lfullDepth[0] = "";
 
             for(int i = 0; i < ais.length; i++){
+
+                lMove[1 + i * 2] = "move:";
+                lMove[1 + i * 2 + 1] = IOBoard.algebraicNotation(
+                        board, ais[i].getSearchOverview().getMove()) + "[" +
+                        ais[i].getSearchOverview().getEvaluation() + "]";
+
                 lDepth[1 + i * 2] = "depth:";
                 lDepth[1 + i * 2 + 1] = ""+overviews[i].getDepth();
                 lTime[1 + i * 2] = "time[ms]:";
@@ -143,6 +151,7 @@ public class Testing {
                 avgFullDepthNodes[i] += overviews[i].getFullDepthNodesLastIteration();
                 avgQNodes[i] += overviews[i].getQSearchNodesLastIteration();
             }
+            System.out.format(format+"\n", lMove);
             System.out.format(format+"\n", lDepth);
             System.out.format(format+"\n", lTime);
             System.out.format(format+"\n", lNodes);
@@ -175,6 +184,7 @@ public class Testing {
         lTerminal[0] = "";
         lfullDepth[0] = "";
 
+
         for(int i = 0; i < ais.length; i++) {
             lDepth[1 + i * 2] = "avg. depth:";
             lDepth[1 + i * 2 + 1] = "" + avgDepth[i] / FENs.length;
@@ -206,11 +216,11 @@ public class Testing {
                 2,
                 8,
                 4);
-        ai1.setUse_LMR(false);
+        ai1.setUse_LMR(true);
         PVSearch ai2 = new PVSearch(
                 new FinnEvaluator(),
                 new SystematicOrderer(),
-                new SimpleReducer(),
+                new SimpleReducer(1,3,10),
                 2,
                 8,
                 4);

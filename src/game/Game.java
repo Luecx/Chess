@@ -1,6 +1,7 @@
 package game;
 
 import board.Board;
+import board.SlowBoard;
 import board.moves.Move;
 import game.ai.search.AI;
 import io.IOBoard;
@@ -89,6 +90,7 @@ public class Game {
             Move move = AI.bestMove(board.copy());
             if(move == null)
                 return;
+            System.out.println("Moving: " + IOBoard.algebraicNotation(board, move));
             board.move(move);
             listeners.forEach(Runnable::run);
         }

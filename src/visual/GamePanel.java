@@ -273,6 +273,12 @@ public class GamePanel extends JPanel {
      */
     public void runMoveInThread(Move z){
         new Thread(() -> g.move(z)).start();
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        System.out.println(((SlowBoard)g.getBoard()).getBoard_repetition_counter());
 
         this.selected = -1;
         render();

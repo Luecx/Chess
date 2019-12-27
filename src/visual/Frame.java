@@ -84,22 +84,25 @@ public class Frame extends JFrame implements KeyListener {
 
 
 
+
         ArrayList<String> keys = new ArrayList<>();
         for(String s:args){
             keys.add(s);
         }
 
+        keys.add("white");
+        keys.add("black");
 
         PVSearch ai = new PVSearch(
                 new FinnEvaluator(),
                 new SystematicOrderer(),
                 new SimpleReducer(),
-                PVSearch.FLAG_TIME_LIMIT,
-                1500,4);
+                PVSearch.FLAG_DEPTH_LIMIT,
+                8,4);
 
         ai.setUse_killer_heuristic(true);
         ai.setUse_iteration(true);
-        ai.setUse_null_moves(true);
+        ai.setUse_null_moves(false);
         ai.setPrint_overview(true);
         ai.setUse_LMR(true);
 
