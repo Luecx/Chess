@@ -125,13 +125,6 @@ public class RepetitionList {
         return Objects.hash(entries);
     }
 
-    public static void main(String[] args) {
-        RepetitionList list = new RepetitionList();
-        list.add(1L);
-        System.out.println(list);
-        list.sub(1L);
-        System.out.println(list);
-    }
 
 
 }

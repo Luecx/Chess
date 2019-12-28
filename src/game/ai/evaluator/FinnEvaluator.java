@@ -77,6 +77,15 @@ public class FinnEvaluator implements Evaluator {
 
     @Override
     public double evaluate(Board board) {
+
+        if(board.isGameOver()){
+            switch (board.winner()){
+                case 1: return 1000000000;
+                case 0: return 0;
+                case -1: return -100000000;
+            }
+        }
+
         int ev = 0;
         for (int i = 0; i < 8; i++) {
             for (int n = 0; n < 8; n++) {
