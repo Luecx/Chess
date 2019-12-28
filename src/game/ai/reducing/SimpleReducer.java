@@ -9,9 +9,9 @@ public class SimpleReducer implements Reducer{
     private int num_moves_not_reduced;
 
     public SimpleReducer() {
-        this.late_move_reduction = 2;
+        this.late_move_reduction = 1;
         this.depth_to_never_reduce = 2;
-        this.num_moves_not_reduced = 5;
+        this.num_moves_not_reduced = 10;
     }
 
     public SimpleReducer(int late_move_reduction, int depth_to_never_reduce, int num_moves_not_reduced) {
@@ -22,7 +22,10 @@ public class SimpleReducer implements Reducer{
 
     @Override
     public int reduce(Move move, int depth, int moveIndex,boolean pv_node) {
-        if(move.getPieceTo() != 0 || pv_node || moveIndex < num_moves_not_reduced){
+        if(move.getPieceFrom() == 0 ||
+                move.getPieceTo() != 0 ||
+                pv_node ||
+                moveIndex < num_moves_not_reduced){
             return 0;
         }
         if(depth > 3){

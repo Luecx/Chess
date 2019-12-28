@@ -85,6 +85,7 @@ public class Game {
             System.out.println("Moving: " + IOBoard.algebraicNotation(board, m));
             board.move(m);
             listeners.forEach(Runnable::run);
+            System.out.println(board.isGameOver() + "  " + board.winner());
         }while(!humansTurn() && !board.isGameOver() && !isInterrupted){
             AI AI = board.getActivePlayer() == 1 ? (AI) playerWhite: (AI) playerBlack;
             Move move = AI.bestMove(board.copy());

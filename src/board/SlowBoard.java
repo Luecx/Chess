@@ -487,7 +487,7 @@ public class SlowBoard extends Board<SlowBoard> {
     @Override
     public List<Move> getLegalMoves() {
         List<Move> moves = getPseudoLegalMoves();
-        for(int i = moves.size()-1; i>= 0; i--){;
+        for(int i = moves.size()-1; i>= 0; i--){
             move(moves.get(i));
             List<Move> opponent = getPseudoLegalMoves();
             for(Move m:opponent){
@@ -690,7 +690,7 @@ public class SlowBoard extends Board<SlowBoard> {
 
     @Override
     public int winner() {
-        if((MASK_WINNER_BLACK & board_meta_informtion) > 0) return 1;
+        if((MASK_WINNER_WHITE & board_meta_informtion) > 0) return 1;
         if((MASK_WINNER_BLACK & board_meta_informtion) > 0) return -1;
         return 0;
     }
@@ -704,25 +704,29 @@ public class SlowBoard extends Board<SlowBoard> {
     }
 
     public static void main(String[] args) {
-//        Board b = new SlowBoard(Setup.DEFAULT);
+       Board b = new SlowBoard(Setup.DEFAULT);
 //        new Frame(b, new Player(){}, new Player(){});
+
+        b = IOBoard.read_lichess(b, "r2r2k1/ppp4p/3qb1p1/4b1Q1/3p4/1N3B1P/PP3PP1/3RR1K1");
+        b.changeActivePlayer();
 
         PVSearch ai = new PVSearch(
                 new FinnEvaluator(),
                 new SystematicOrderer(),
-                new SimpleReducer(0,0,0),
+                new SimpleReducer(),
                 PVSearch.FLAG_DEPTH_LIMIT,
-                6,2);
+                12,4);
 
+        ai.setUse_LMR(true);
         ai.setUse_null_moves(true);
         ai.setUse_iteration(true);
-        Board b = IOBoard.read_lichess(new SlowBoard(), "6k1/6pp/8/8/1Q6/7q/8/5R1K");
-        //b.changeActivePlayer();
+        ai.setUse_killer_heuristic(true);
+        ai.setPrint_overview(true);
 
 
-        //ai.bestMove(b);
+        ai.bestMove(b);
 
-        new Frame(b, new Player(){}, ai);
+        //new Frame(b, new Player(){}, ai);
         //new Frame(b, new Player(){}, new Player(){});
     }
 

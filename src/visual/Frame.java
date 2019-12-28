@@ -83,27 +83,26 @@ public class Frame extends JFrame implements KeyListener {
         Board b = new SlowBoard(Setup.DEFAULT);
 
 
-
-
         ArrayList<String> keys = new ArrayList<>();
         for(String s:args){
             keys.add(s);
         }
 
-        keys.add("white");
-        keys.add("black");
+        //keys.add("white");
+        //keys.add("black");
 
         PVSearch ai = new PVSearch(
                 new FinnEvaluator(),
                 new SystematicOrderer(),
                 new SimpleReducer(),
                 PVSearch.FLAG_DEPTH_LIMIT,
-                8,4);
+                10,2);
 
-        ai.setUse_killer_heuristic(true);
+
         ai.setUse_iteration(true);
-        ai.setUse_null_moves(false);
+        ai.setUse_null_moves(true);
         ai.setPrint_overview(true);
+        ai.setUse_killer_heuristic(true);
         ai.setUse_LMR(true);
 
         Player hm = new Player(){};
@@ -112,7 +111,6 @@ public class Frame extends JFrame implements KeyListener {
         Player black = keys.contains("black") ? hm : ai;
 
         boolean flip = keys.contains("flip");
-
 
         new Frame(b,white, black).setFlippedBoard(flip);
 
