@@ -3,6 +3,7 @@ package visual;
 import board.SlowBoard;
 import board.moves.Move;
 import game.Game;
+import game.ai.evaluator.FinnEvaluator;
 import game.ai.search.AI;
 
 import javax.swing.*;
@@ -279,7 +280,7 @@ public class GamePanel extends JPanel {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        System.out.println(((SlowBoard)g.getBoard()).getBoard_meta_informtion());
+        System.out.println(new FinnEvaluator().evaluate(g.getBoard()));
 
         this.selected = -1;
         render();

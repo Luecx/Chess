@@ -65,6 +65,15 @@ public class FastBoard extends Board<FastBoard> {
     }
 
     @Override
+    public boolean getEnPassantChance(int file) {
+        return false;
+    }
+
+    @Override
+    public void setEnPassantChance(int file, boolean value) {
+    }
+
+    @Override
     public boolean setCastlingChance(int index, boolean value) {
         return false;
     }

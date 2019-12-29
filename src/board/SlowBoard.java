@@ -8,7 +8,7 @@ import game.ai.evaluator.FinnEvaluator;
 import game.ai.ordering.SystematicOrderer;
 import game.ai.reducing.SimpleReducer;
 import game.ai.search.PVSearch;
-import io.IOBoard;
+import io.IO;
 
 import java.util.*;
 
@@ -129,6 +129,20 @@ public class SlowBoard extends Board<SlowBoard> {
     public boolean setCastlingChance(int index, boolean value) {
         board_meta_informtion |= (1L << index);
         return true;
+    }
+
+    @Override
+    public boolean getEnPassantChance(int file) {
+        return (board_meta_informtion & (1 << (4+file))) > 0;
+    }
+
+    @Override
+    public void setEnPassantChance(int file, boolean value) {
+        if(value){
+            board_meta_informtion |= 1 << (4+file);
+        }else{
+            board_meta_informtion &= ~(1 << (4+file));
+        }
     }
 
     @Override
@@ -742,15 +756,24 @@ public class SlowBoard extends Board<SlowBoard> {
     public static void main(String[] args) {
         SlowBoard b = new SlowBoard(Setup.DEFAULT);
 
-        b = IOBoard.read_lichess(b, "r1bq1rk1/1p2ppbp/p1np1np1/8/3NP3/1BN1B2P/1PP1Q1P1/R4RK1");
-        b.move(b.getPseudoLegalMoves().get(3));
+        b = IO.read_FEN(b, "r1bq1rk1/1p2ppbp/p1np1np1/8/3NP3/1BN1B2P/1PP1Q1P1/R4RK1");
+        PVSearch ai = new PVSearch(
+                new FinnEvaluator(),
+                new SystematicOrderer(),
+                new SimpleReducer(),
+                PVSearch.FLAG_DEPTH_LIMIT,
+                10,6);
 
-        System.out.println(b.zobrist());
-        System.out.println(b.zobristKey);
 
-        b.undoMove();
-        System.out.println(b.zobrist());
-        System.out.println(b.zobristKey);
+        ai.setUse_iteration(true);
+        ai.setUse_null_moves(false);
+        ai.setPrint_overview(true);
+        ai.setUse_killer_heuristic(true);
+        ai.setUse_LMR(true);
+        ai.setUse_transposition(true);
+
+
+        ai.bestMove(b);
 
 
     }

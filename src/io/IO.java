@@ -6,11 +6,11 @@ import board.moves.Move;
 import board.setup.Setup;
 
 /**
- * the IOBoard class implements methods to generate boards encoded
+ * the IO class implements methods to generate boards encoded
  * boards. It can also decode them the other way around.
  *
  */
-public class IOBoard {
+public class IO {
 
     /**
      *
@@ -76,13 +76,31 @@ public class IOBoard {
         }
         //</editor-fold>
 
+        //<editor-fold desc="parsing castling">
         if(split.length >= 3){
+
+            for(int i = 0; i<4; i++){
+                board.setCastlingChance(i, false);
+            }
+
             for(char c:split[2].toCharArray()){
                 switch (c){
-                    
+                    case 'K': board.setCastlingChance(1, true); break;
+                    case 'Q': board.setCastlingChance(0, true); break;
+                    case 'k': board.setCastlingChance(3, true); break;
+                    case 'q': board.setCastlingChance(2, true); break;
                 }
             }
         }
+        //</editor-fold>
+
+        if(split.length >= 4){
+            if(!split[3].equals("-")){
+
+            }
+        }
+
+
         return board;
     }
 

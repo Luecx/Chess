@@ -1,10 +1,9 @@
 package game;
 
 import board.Board;
-import board.SlowBoard;
 import board.moves.Move;
 import game.ai.search.AI;
-import io.IOBoard;
+import io.IO;
 
 import java.util.ArrayList;
 
@@ -82,7 +81,7 @@ public class Game {
     public void move(Move m){
         if(board.isGameOver()) return;
         if (humansTurn()){
-            System.out.println("Moving: " + IOBoard.algebraicNotation(board, m));
+            System.out.println("Moving: " + IO.algebraicNotation(board, m));
             board.move(m);
             listeners.forEach(Runnable::run);
             System.out.println(board.isGameOver() + "  " + board.winner());
@@ -91,7 +90,7 @@ public class Game {
             Move move = AI.bestMove(board.copy());
             if(move == null)
                 return;
-            System.out.println("Moving: " + IOBoard.algebraicNotation(board, move));
+            System.out.println("Moving: " + IO.algebraicNotation(board, move));
             board.move(move);
             listeners.forEach(Runnable::run);
         }

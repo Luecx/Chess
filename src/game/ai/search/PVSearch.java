@@ -3,12 +3,11 @@ package game.ai.search;
 import board.Board;
 import board.SlowBoard;
 import board.moves.Move;
-import board.repetitions.RepetitionList;
 import game.ai.evaluator.Evaluator;
 import game.ai.ordering.Orderer;
 import game.ai.reducing.Reducer;
 import game.ai.tools.*;
-import io.IOBoard;
+import io.IO;
 
 import java.util.List;
 
@@ -452,7 +451,7 @@ public class PVSearch implements AI {
 
 
         if(print_overview) {
-            System.out.format("%-15s",IOBoard.algebraicNotation(_board, _bestMove) + "[" + _bestScore + "]: ");
+            System.out.format("%-15s", IO.algebraicNotation(_board, _bestMove) + "[" + _bestScore + "]: ");
             searchOverview.printIterationSummary();
         }
 

@@ -6,17 +6,10 @@ import board.SlowBoard;
 import board.setup.Setup;
 import game.Game;
 import game.Player;
-import game.ai.evaluator.GeneticEvaluator;
-import game.ai.evaluator.SimpleEvaluator;
-import game.ai.ordering.NoahOrderer;
 import game.ai.ordering.SystematicOrderer;
 import game.ai.reducing.SimpleReducer;
-import game.ai.search.AlphaBeta;
 import game.ai.evaluator.FinnEvaluator;
-import game.ai.ordering.SimpleOrderer;
-import game.ai.search.MiniMax;
 import game.ai.search.PVSearch;
-import io.IOBoard;
 
 import javax.swing.*;
 import java.awt.event.ComponentAdapter;
@@ -24,7 +17,6 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 /**
  * Created by Luecx on 08.08.2017.
@@ -82,8 +74,8 @@ public class Frame extends JFrame implements KeyListener {
     public static void main(String[] args) {
         Board b = new SlowBoard(Setup.DEFAULT);
 
-        //b = IOBoard.read_lichess(new SlowBoard(), "6k1/p4ppp/8/8/1p1K1P1P/1N4P1/r2N4/8");
-        //b = IOBoard.read_lichess(new SlowBoard(), "6k1/6pp/8/8/8/7q/8/5R1K");
+        //b = IO.read_FEN(new SlowBoard(), "6k1/p4ppp/8/8/1p1K1P1P/1N4P1/r2N4/8");
+        //b = IO.read_FEN(new SlowBoard(), "6k1/6pp/8/8/8/7q/8/5R1K");
 
         ArrayList<String> keys = new ArrayList<>();
         for(String s:args){
@@ -91,7 +83,7 @@ public class Frame extends JFrame implements KeyListener {
         }
 
         keys.add("white");
-        keys.add("black");
+        //keys.add("black");
 
         PVSearch ai = new PVSearch(
                 new FinnEvaluator(),
@@ -116,10 +108,6 @@ public class Frame extends JFrame implements KeyListener {
 
 
         boolean flip = keys.contains("flip");
-
-
-        black = ai;
-        flip = false;
 
         new Frame(b, white, black).setFlippedBoard(flip);
     }

@@ -119,14 +119,58 @@ public class NoahEvaluator implements Evaluator{
     public static final Tensor3D W_POSITION_PRICE = new Tensor3D(W_PAWN_VALUES, W_ROOK_VALUES, KNIGHT_VALUES, W_BISHOP_VALUES, QUEEN_VALUES, W_KING_VALUES_MID);
     public static final Tensor3D B_POSITION_PRICE = new Tensor3D(B_PAWN_VALUES, B_ROOK_VALUES, KNIGHT_VALUES, B_BISHOP_VALUES, QUEEN_VALUES, B_KING_VALUES_MID);
 
+    public static final int[] UNSIGNED_COMPLETE_EVALUATE_PRICE = new int[] {
+            EVALUATE_PRICE[6],
+            EVALUATE_PRICE[5],
+            EVALUATE_PRICE[4],
+            EVALUATE_PRICE[3],
+            EVALUATE_PRICE[2],
+            EVALUATE_PRICE[1],
+            EVALUATE_PRICE[0],
+            EVALUATE_PRICE[1],
+            EVALUATE_PRICE[2],
+            EVALUATE_PRICE[3],
+            EVALUATE_PRICE[4],
+            EVALUATE_PRICE[5],
+            EVALUATE_PRICE[6],
+    };
+    public static final int[] COMPLETE_EVALUATE_PRICE = new int[] {
+            -EVALUATE_PRICE[6],
+            -EVALUATE_PRICE[5],
+            -EVALUATE_PRICE[4],
+            -EVALUATE_PRICE[3],
+            -EVALUATE_PRICE[2],
+            -EVALUATE_PRICE[1],
+            -EVALUATE_PRICE[0],
+            EVALUATE_PRICE[1],
+            EVALUATE_PRICE[2],
+            EVALUATE_PRICE[3],
+            EVALUATE_PRICE[4],
+            EVALUATE_PRICE[5],
+            EVALUATE_PRICE[6],
+    };
+    public static final Tensor3D COMPLETE_POSITION_PRICE = new Tensor3D(
+         B_KING_VALUES_MID,
+            QUEEN_VALUES,
+            B_BISHOP_VALUES,
+            KNIGHT_VALUES,
+            B_ROOK_VALUES,
+            B_PAWN_VALUES,
+
+            QUEEN_VALUES,
+
+            W_PAWN_VALUES,
+            W_ROOK_VALUES,
+            KNIGHT_VALUES,
+            W_BISHOP_VALUES,
+            QUEEN_VALUES,
+            W_KING_VALUES_MID
+    );
+
     //will get to this later. For now, I'm using this file to store position values
     @Override
     public double evaluate(Board board) {
         return 0;
-    }
-
-    public static void main(String[] args) {
-        System.out.println(W_POSITION_PRICE.get(5,1,1));
     }
 
 }

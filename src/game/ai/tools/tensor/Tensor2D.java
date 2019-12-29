@@ -66,6 +66,13 @@ public class Tensor2D extends Tensor {
         this.pd2 = partialDimensions[1];
     }
 
+    public static void main(String[] args) {
+        Tensor2D tensor2D = new Tensor2D(new double[][]{{1,2}, {3,4}});
+        System.out.println(tensor2D);
+        tensor2D.scale(-1);
+        System.out.println(tensor2D);
+    }
+
 
 
 }

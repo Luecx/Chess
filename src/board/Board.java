@@ -266,6 +266,19 @@ public abstract class Board<T extends Board<T>> {
      */
     public abstract boolean setCastlingChance(int index, boolean value);
 
+
+    /**
+     * returns true if its possible to en passant towards the given file
+     * @param file      the file
+     */
+    public abstract boolean getEnPassantChance(int file);
+
+    /**
+     * enables/disables en passant in the next move to the given file
+     */
+    public abstract void setEnPassantChance(int file, boolean value);
+
+
     /**
      * the method returns +1 if white is to move next.
      * If black has to move next, it will return -1.

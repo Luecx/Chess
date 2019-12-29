@@ -3,18 +3,13 @@ package io;
 import board.Board;
 import board.SlowBoard;
 import game.ai.evaluator.FinnEvaluator;
-import game.ai.evaluator.GeneticEvaluator;
-import game.ai.evaluator.SimpleEvaluator;
-import game.ai.ordering.NoahOrderer;
 import game.ai.ordering.SystematicOrderer;
 import game.ai.reducing.SimpleReducer;
 import game.ai.search.AI;
-import game.ai.search.AlphaBeta;
 import game.ai.search.PVSearch;
 import game.ai.tools.SearchOverview;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public class Testing {
 
@@ -23,7 +18,7 @@ public class Testing {
         //<editor-fold desc="Preheating">
         System.out.print("preheating...");
         for(int i = 0; i < 2; i++){
-            Board board = IOBoard.read_lichess(template, FENs[0]);
+            Board board = IO.read_FEN(template, FENs[0]);
             for(PVSearch ai:ais){
                 ai.setPrint_overview(false);
                 ai.bestMove(board);
@@ -102,7 +97,7 @@ public class Testing {
 
         //<editor-fold desc="body">
         for(String fen:FENs){
-            Board board = IOBoard.read_lichess(template, fen);
+            Board board = IO.read_FEN(template, fen);
             SearchOverview[] overviews = new SearchOverview[ais.length];
             for(int i = 0; i < overviews.length; i++){
                 ais[i].bestMove(board);
@@ -127,7 +122,7 @@ public class Testing {
             for(int i = 0; i < ais.length; i++){
 
                 lMove[1 + i * 2] = "move:";
-                lMove[1 + i * 2 + 1] = IOBoard.algebraicNotation(
+                lMove[1 + i * 2 + 1] = IO.algebraicNotation(
                         board, ais[i].getSearchOverview().getMove()) + "[" +
                         ais[i].getSearchOverview().getEvaluation() + "]";
 
@@ -209,32 +204,30 @@ public class Testing {
     }
 
     public static void main(String[] args) {
-//        PVSearch ai1 = new PVSearch(
-//                new FinnEvaluator(),
-//                new SystematicOrderer(),
-//                new SimpleReducer(),
-//                2,
-//                8,
-//                4);
-//        ai1.setUse_LMR(true);
-//        PVSearch ai2 = new PVSearch(
-//                new FinnEvaluator(),
-//                new SystematicOrderer(),
-//                new SimpleReducer(1,3,10),
-//                2,
-//                8,
-//                4);
-//        ai2.setUse_LMR(true);
-//
-//        compare(new SlowBoard(), new PVSearch[]{ai1, ai2},
-//                "r2q1rk1/1pp1bppp/p1npbn2/4p1B1/B3P3/2NP1N2/PPPQ1PPP/2KR3R",
-//                "r2q1rk1/ppp2ppp/2n2n2/2b5/2B2Bb1/2NP1N2/PPPQ2PP/R4R1K",
-//                "r1bq1rk1/1p2ppbp/p1np1np1/8/3NP3/1BN1B2P/PPP2PP1/R2Q1RK1",
-//                "r2qk2r/ppp1nppp/1bn1b3/1B6/1P1pP3/5N2/PB3PPP/RN1Q1RK1",
-//                "r2qkb1r/pp1n1pp1/2p1pn1p/8/3P1B1P/3Q1NN1/PPP2PP1/2KR3R");
+        PVSearch ai1 = new PVSearch(
+                new FinnEvaluator(),
+                new SystematicOrderer(),
+                new SimpleReducer(),
+                2,
+                8,
+                4);
+        ai1.setUse_LMR(true);
+        PVSearch ai2 = new PVSearch(
+                new FinnEvaluator(),
+                new SystematicOrderer(),
+                new SimpleReducer(),
+                2,
+                8,
+                4);
+        ai2.setUse_LMR(true);
 
+        compare(new SlowBoard(), new PVSearch[]{ai1, ai2},
+                "r2q1rk1/1pp1bppp/p1npbn2/4p1B1/B3P3/2NP1N2/PPPQ1PPP/2KR3R",
+                "r2q1rk1/ppp2ppp/2n2n2/2b5/2B2Bb1/2NP1N2/PPPQ2PP/R4R1K",
+                "r1bq1rk1/1p2ppbp/p1np1np1/8/3NP3/1BN1B2P/PPP2PP1/R2Q1RK1",
+                "r2qk2r/ppp1nppp/1bn1b3/1B6/1P1pP3/5N2/PB3PPP/RN1Q1RK1",
+                "r2qkb1r/pp1n1pp1/2p1pn1p/8/3P1B1P/3Q1NN1/PPP2PP1/2KR3R");
 
-        SlowBoard b = IOBoard.read_lichess(new SlowBoard(), "r4qk1/p1p2p1p/2Qp2p1/2b1P3/5P2/2P5/P1b3PP/R3KB1R");
 
 
     }

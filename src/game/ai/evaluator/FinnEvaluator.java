@@ -1,8 +1,12 @@
 package game.ai.evaluator;
 
 import board.Board;
+import board.SlowBoard;
+import board.setup.Setup;
+import game.ai.tools.tensor.Tensor;
 import game.ai.tools.tensor.Tensor2D;
 import game.ai.tools.tensor.Tensor3D;
+import io.IO;
 
 public class FinnEvaluator implements Evaluator {
 
@@ -71,8 +75,50 @@ public class FinnEvaluator implements Evaluator {
             {20, 30, 10, 0, 0, 10, 30, 20}
     });
 
+
+    private static Tensor2D addScalarToTensor(Tensor2D tensor2D, double scalar){
+        for (int i = 0; i < 8; i++) {
+            for (int n = 0; n < 8; n++) {
+                tensor2D.add(scalar, i,n);
+            }
+        }
+        return tensor2D;
+    }
+
+    private static Tensor2D negateTensor(Tensor2D tensor2D){
+        Tensor2D tensor2D1 = new Tensor2D(tensor2D);
+        tensor2D1.scale(-1);
+        return tensor2D1;
+    }
+
+    private static Tensor2D flipTensor(Tensor2D tensor2D){
+        Tensor2D res = new Tensor2D(8,8);
+        for (int i = 0; i < 8; i++) {
+            for (int n = 0; n < 8; n++) {
+                res.set(tensor2D.get(7-i, n), i,n);
+            }
+        }
+        return res;
+    }
+
     public static final int[] EVALUATE_PRICE = new int[]{0, 100, 500, 320, 330, 900, 20000};
-    public static final Tensor3D POSITION_PRICE = new Tensor3D(PAWN_VALUES, ROOK_VALUES, KNIGHT_VALUES, BISHOP_VALUES, QUEEN_VALUES);
+    public static final Tensor3D POSITION_PRICE =
+            new Tensor3D(
+                    addScalarToTensor(negateTensor(KING_VALUES_MID), -EVALUATE_PRICE[6]),
+                    addScalarToTensor(negateTensor(QUEEN_VALUES), -EVALUATE_PRICE[5]),
+                    addScalarToTensor(negateTensor(BISHOP_VALUES), -EVALUATE_PRICE[4]),
+                    addScalarToTensor(negateTensor(KNIGHT_VALUES), -EVALUATE_PRICE[3]),
+                    addScalarToTensor(negateTensor(ROOK_VALUES), -EVALUATE_PRICE[2]),
+                    addScalarToTensor(negateTensor(PAWN_VALUES), -EVALUATE_PRICE[1]),
+                    addScalarToTensor(negateTensor(KING_VALUES_MID), 0),
+                    addScalarToTensor(flipTensor(PAWN_VALUES), EVALUATE_PRICE[1]),
+                    addScalarToTensor(flipTensor(ROOK_VALUES), EVALUATE_PRICE[2]),
+                    addScalarToTensor(flipTensor(KNIGHT_VALUES), EVALUATE_PRICE[3]),
+                    addScalarToTensor(flipTensor(BISHOP_VALUES), EVALUATE_PRICE[4]),
+                    addScalarToTensor(flipTensor(QUEEN_VALUES), EVALUATE_PRICE[5]),
+                    addScalarToTensor(flipTensor(KING_VALUES_MID), EVALUATE_PRICE[6]));
+
+
 
 
     @Override
@@ -87,33 +133,36 @@ public class FinnEvaluator implements Evaluator {
         }
 
         int ev = 0;
+        int v;
         for (int i = 0; i < 8; i++) {
             for (int n = 0; n < 8; n++) {
 
-                int v = ((board.getPiece((byte) i, (byte) n)));
-                int b = v > 0 ? 1 : -1;
+                v = board.getPiece(i, n);
+                if(v == 0) continue;
 
-                if (v != 0) {
-                    ev += b * EVALUATE_PRICE[Math.abs(v)];
-//                    if(v > 0){
-//
-//                    }
-                    if (Math.abs(v) < 6) {
-                        if (v > 0) {
-                            ev += (b * POSITION_PRICE.get(Math.abs(v) - 1,7-n,i));
-                        } else {
-                            ev += (b * POSITION_PRICE.get(Math.abs(v) - 1,n,i));
-                        }
-                    } else {
-                        if (v > 0) {
-                            ev += (b * KING_VALUES_MID.get(7-n,i));
-                        } else {
-                            ev += (b * KING_VALUES_MID.get(n,i));
-                        }
-                    }
-                }
+                ev += POSITION_PRICE.get(v+6, n,i);
             }
         }
         return ev;
+    }
+
+
+    public static void main(String[] args) {
+        Board b = new SlowBoard(Setup.DEFAULT);
+        b = IO.read_FEN(new SlowBoard(), "8/8/3p4/8/8/3P4/8/8");
+
+        FinnEvaluator evaluator = new FinnEvaluator();
+
+        System.out.println(evaluator.evaluate(b));
+
+//        for(int i = 0; i < 4; i++){
+//            long t = System.nanoTime();
+//            int index = 0;
+//            while(index ++ < 1E7){
+//                evaluator.evaluate(b);
+//            }
+//            System.out.println((System.nanoTime() - t) / 1E9 + " s");
+//        }
+
     }
 }
