@@ -264,7 +264,7 @@ public abstract class Board<T extends Board<T>> {
      *    index = 2: black long castle
      *    index = 3: black short castle
      */
-    public abstract boolean setCastlingChance(int index, boolean value);
+    public abstract void setCastlingChance(int index, boolean value);
 
 
     /**

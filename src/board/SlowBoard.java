@@ -126,9 +126,13 @@ public class SlowBoard extends Board<SlowBoard> {
     }
 
     @Override
-    public boolean setCastlingChance(int index, boolean value) {
-        board_meta_informtion |= (1L << index);
-        return true;
+    public void setCastlingChance(int index, boolean value) {
+
+        if(value){
+            board_meta_informtion |= (1 << index);
+        }else{
+            board_meta_informtion &= ~(1 << index);
+        }
     }
 
     @Override

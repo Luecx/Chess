@@ -14,12 +14,7 @@ public class IO {
 
     /**
      *
-     * This method will generate a new board using a key
-     * generated on lichess.com. It will not copy the following
-     * things:
-     *  - who has to move next
-     *  - information about Castling
-     *  - information about previous moves (no en passant)
+     * This method will generate a new board using a FEN string.
      *
      * @param template      a template class to create a new board object
      * @param key           the key from lichess.com
@@ -27,6 +22,9 @@ public class IO {
      * @return              a new board of type T
      */
     public static <T extends Board<T>> T read_FEN(T template, String key){
+
+        key = key.trim();
+        key = key.replace("  ", " ");
 
         int x = 0;
         int y = 7;
@@ -103,9 +101,110 @@ public class IO {
         }
         //</editor-fold>
 
-        
-
         return board;
+    }
+
+    /**
+     * generates the FEN string for a given board
+     * @param b
+     * @return
+     */
+    public static String write_FEN(Board b){
+
+        StringBuilder builder = new StringBuilder();
+
+        for(int n = 7; n >= 0; n--){
+            int counting = 0;
+            for(int i = 0; i < 8; i++){
+                int piece = b.getPiece(i,n);
+                if(piece == 0){
+                    counting++;
+                }else{
+                    if (counting != 0){
+                        builder.append(counting);
+                    }
+                    counting = 0;
+                    builder.append(getPieceChar(piece));
+                }
+            }
+            if(counting != 0){
+                builder.append(counting);
+            }
+            if(n != 0) builder.append("/");
+        }
+
+        builder.append(" ");
+        builder.append(b.getActivePlayer() > 0 ? "w":"b");
+        builder.append(" ");
+        if(b.getCastlingChance(0)) builder.append("Q");
+        if(b.getCastlingChance(1)) builder.append("K");
+        if(b.getCastlingChance(2)) builder.append("q");
+        if(b.getCastlingChance(3)) builder.append("k");
+
+        for(int i = 0; i < 8; i++){
+            if(b.getEnPassantChance(i)){
+                char file = (char) ('a'+i);
+                char rank = (char) ('0'+(b.getActivePlayer() > 0 ? 6:3));
+                builder.append(" ");
+                builder.append(file);
+                builder.append(rank);
+                break;
+            }
+            if(i == 7){
+                builder.append(" -");
+            }
+        }
+
+        return builder.toString();
+    }
+
+//    public static void main(String[] args) {
+//        //Board b = IO.read_FEN(new SlowBoard())
+//    }
+
+    /**
+     * returns the char for any given piece
+     * @param piece
+     * @return
+     */
+    public static char getPieceChar(int piece){
+        char c = ' ';
+
+        switch (Math.abs(piece)){
+            case 0: return ' ';
+            case 1: c = 'p'; break;
+            case 2: c = 'r'; break;
+            case 3: c = 'n'; break;
+            case 4: c = 'b'; break;
+            case 5: c = 'q'; break;
+            case 6: c = 'k'; break;
+        }
+
+        if (piece >= 0){
+            return Character.toUpperCase(c);
+        }else{
+            return Character.toLowerCase(c);
+        }
+    }
+
+    /**
+     * returns the index for a given piece represented
+     * by a char.
+     * @param c
+     * @return
+     */
+    public static int getPieceIndex(char c){
+        int black = (c >= 'a') ? -1:1;
+
+        switch (Character.toUpperCase(c)){
+            case 'P': return 1 * black;
+            case 'R': return 2 * black;
+            case 'N': return 3 * black;
+            case 'B': return 4 * black;
+            case 'Q': return 5 * black;
+            case 'K': return 6 * black;
+        }
+        return 0;
     }
 
     /**
@@ -189,7 +288,8 @@ public class IO {
     }
 
     public static void main(String[] args) {
-        SlowBoard board = new SlowBoard(Setup.DEFAULT);
-        System.out.println(algebraicNotation(board, board.getPseudoLegalMoves().get(10)));
+        SlowBoard b = IO.read_FEN(new SlowBoard(), "6k1/p4ppp/8/8/1p1K1P1P/1N4P1/r2N4/8 w Kqk c6");
+        System.out.println(b.getBoard_meta_informtion());
+        System.out.println(IO.write_FEN(b));
     }
 }

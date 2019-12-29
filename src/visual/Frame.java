@@ -82,8 +82,8 @@ public class Frame extends JFrame implements KeyListener {
             keys.add(s);
         }
 
-        keys.add("white");
-        //keys.add("black");
+//        keys.add("white");
+//        keys.add("black");
 
         PVSearch ai = new PVSearch(
                 new FinnEvaluator(),
@@ -94,7 +94,7 @@ public class Frame extends JFrame implements KeyListener {
 
 
         ai.setUse_iteration(true);
-        ai.setUse_null_moves(false);
+        ai.setUse_null_moves(true);
         ai.setPrint_overview(true);
         ai.setUse_killer_heuristic(true);
         ai.setUse_LMR(true);

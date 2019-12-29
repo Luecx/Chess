@@ -74,8 +74,8 @@ public class FastBoard extends Board<FastBoard> {
     }
 
     @Override
-    public boolean setCastlingChance(int index, boolean value) {
-        return false;
+    public void setCastlingChance(int index, boolean value) {
+
     }
 
     public void setPiece(int piece, int index) {
