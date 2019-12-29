@@ -97,8 +97,13 @@ public class Frame extends JFrame implements KeyListener {
                 new FinnEvaluator(),
                 new SystematicOrderer(),
                 new SimpleReducer(),
+<<<<<<< Updated upstream
                 PVSearch.FLAG_TIME_LIMIT,
                 5000,4);
+=======
+                PVSearch.FLAG_DEPTH_LIMIT,
+                20,4);
+>>>>>>> Stashed changes
 
 
         ai.setUse_iteration(true);
@@ -111,6 +116,7 @@ public class Frame extends JFrame implements KeyListener {
         //p1.bestMove(b);
 
 
+<<<<<<< Updated upstream
         new Frame(b, new Player(){},ai);
 
 
@@ -123,6 +129,11 @@ public class Frame extends JFrame implements KeyListener {
 //
 //            new Frame(b,new Player(){}, p1).setFlippedBoard(true);
 //        }
+=======
+        boolean flip = keys.contains("flip");
+
+        new Frame(b,white, black).setFlippedBoard(flip);
+>>>>>>> Stashed changes
     }
 
     @Override

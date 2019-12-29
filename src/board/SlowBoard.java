@@ -1,27 +1,16 @@
 package board;
 
+import board.bitboards.BitBoard;
 import board.moves.Move;
 import board.repetitions.RepetitionList;
 import board.setup.Setup;
-import game.Player;
-import game.ai.evaluator.Evaluator;
 import game.ai.evaluator.FinnEvaluator;
-import game.ai.evaluator.NoahEvaluator;
-import game.ai.evaluator.SimpleEvaluator;
-import game.ai.ordering.NoahOrderer;
-import game.ai.ordering.SimpleOrderer;
 import game.ai.ordering.SystematicOrderer;
 import game.ai.reducing.SimpleReducer;
-import game.ai.search.AlphaBeta;
 import game.ai.search.PVSearch;
-import game.ai.tools.TranspositionTable;
 import io.IOBoard;
-import visual.Frame;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public class SlowBoard extends Board<SlowBoard> {
 
@@ -498,35 +487,45 @@ public class SlowBoard extends Board<SlowBoard> {
             }
             undoMove();
         }
-
         return moves;
     }
 
     @Override
     public List<Move> getPseudoLegalMoves() {
-        ArrayList<Move> moves = new ArrayList<>(50);
+        ArrayList<Move> moves = new ArrayList<>(10);
         //if (isGameOver()) return moves;
-        for (byte i = 0; i < 8; i++) {
-            for (byte j = 0; j < 8; j++) {
-                int index = index(i, j);
-                if (field[index] * getActivePlayer() <= 0) continue;
+        for (int i = 26; i < 118; i++) {
+            if (field[i] == INVALID || field[i] * activePlayer <= 0) continue;
 
-                switch (field[index] * getActivePlayer()){
-                    case 1: pseudeLegalMoves_pawn(index, i,j, moves); break;
-                    case 2: pseudeLegalMoves_rook(index, i,j, moves); break;
-                    case 3: pseudeLegalMoves_knight(index, i,j, moves); break;
-                    case 4: pseudeLegalMoves_bishop(index, i,j, moves); break;
-                    case 5: pseudeLegalMoves_queen(index, i,j, moves); break;
-                    case 6: pseudeLegalMoves_king(index, i,j, moves); break;
-                }
+            //if (field[i+1] == )
+            switch (field[i] * getActivePlayer()) {
+                case 1:
+                    pseudeLegalMoves_pawn(i, x(i), y(i), moves);
+                    break;
+                case 3:
+                    pseudeLegalMoves_knight(i, 0, 0, moves);
+                    break;
+                case 2:
+                    pseudeLegalMoves_rook(i, 0, 0, moves);
+                    break;
+                case 4:
+                    pseudeLegalMoves_bishop(i, 0, 0, moves);
+                    break;
+                case 5:
+                    pseudeLegalMoves_queen(i, 0, 0, moves);
+                    break;
+                case 6:
+                    pseudeLegalMoves_king(i, 0, 0, moves);
+                    break;
             }
         }
+
         return moves;
     }
 
     @Override
     public List<Move> getCaptureMoves() {
-        ArrayList<Move> moves = new ArrayList<>(20);
+        List<Move> moves = new ArrayList<>(40);
         for (byte i = 0; i < 8; i++) {
             for (byte j = 0; j < 8; j++) {
                 int index = index(i, j);
@@ -705,29 +704,35 @@ public class SlowBoard extends Board<SlowBoard> {
 
     public static void main(String[] args) {
        Board b = new SlowBoard(Setup.DEFAULT);
-//        new Frame(b, new Player(){}, new Player(){});
-
-        b = IOBoard.read_lichess(b, "r2r2k1/ppp4p/3qb1p1/4b1Q1/3p4/1N3B1P/PP3PP1/3RR1K1");
-        b.changeActivePlayer();
+       b = IOBoard.read_lichess(b, "r1bq1rk1/1p2ppbp/p1np1np1/8/3NP3/1BN1B2P/1PP1Q1P1/R4RK1");
 
         PVSearch ai = new PVSearch(
                 new FinnEvaluator(),
                 new SystematicOrderer(),
                 new SimpleReducer(),
                 PVSearch.FLAG_DEPTH_LIMIT,
-                12,4);
+                20,4);
 
-        ai.setUse_LMR(true);
-        ai.setUse_null_moves(true);
+
         ai.setUse_iteration(true);
-        ai.setUse_killer_heuristic(true);
+        ai.setUse_null_moves(true);
         ai.setPrint_overview(true);
-
+        ai.setUse_killer_heuristic(true);
+        ai.setUse_LMR(true);
 
         ai.bestMove(b);
 
-        //new Frame(b, new Player(){}, ai);
-        //new Frame(b, new Player(){}, new Player(){});
+        for(int i = 0; i < 5; i++){
+           int counter = 0;
+           long time = System.currentTimeMillis();
+           while(counter ++ < 1E7){
+               b.getPseudoLegalMoves();
+           }
+           System.out.println((System.currentTimeMillis() - time) + " ms");
+
+       }
+
+
     }
 
 }
