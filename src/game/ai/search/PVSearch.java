@@ -468,7 +468,7 @@ public class PVSearch implements AI {
     private TranspositionEntry transpositionLookUp(long zobrist, int depth) {
         if (use_transposition == false || !use_transposition) return null;
         TranspositionEntry en = _transpositionTable.get(zobrist);
-        if (en != null && en.getSkipped_depths() >= (_depth - depth) && _board.getActivePlayer() == en.getColor()) {
+        if (en != null && en.getDepth() >= (_depth - depth) && _board.getActivePlayer() == en.getColor()) {
             return en;
         }
         return null;
@@ -485,9 +485,9 @@ public class PVSearch implements AI {
         if (!use_transposition || _transpositionTable == null || _transpositionTable.isFull()) return;
         TranspositionEntry en = _transpositionTable.get(key);
         if (en == null) {
-            _transpositionTable.put(key, new TranspositionEntry(alpha, _depth - depth, nodeType, _board.getActivePlayer()));
+            _transpositionTable.put(key, new TranspositionEntry(alpha, depth, nodeType, _board.getActivePlayer()));
         } else {
-            if (en.getSkipped_depths() > depth) {
+            if (en.getDepth() > depth) {
                 en.setVal(alpha);
             }
         }
@@ -522,6 +522,23 @@ public class PVSearch implements AI {
         TranspositionEntry transposition = transpositionLookUp(zobrist, currentDepth);
         if (transposition != null) {
             //TODO
+            //need to make sure we're at a lower depth and its the same player to move
+            if (transposition.getDepth() <= currentDepth && _board.getActivePlayer() == transposition.getColor()) {
+                if (transposition.getNode_type() == TranspositionEntry.PV_NODE) {
+                    //System.out.println("PV transposition");
+                    return transposition.getVal();
+                }
+                else if (transposition.getNode_type() == TranspositionEntry.CUT_NODE) {
+                    //System.out.println("CUT transposition");
+                    alpha = transposition.getVal();
+                    if (alpha >= beta) return beta;
+                }
+                else if (transposition.getNode_type() == TranspositionEntry.ALL_NODE) {
+                    //System.out.println("ALL transposition");
+                    beta = transposition.getVal();
+                    if (beta <= alpha) return alpha;
+                }
+            }
         }
         //</editor-fold>
 

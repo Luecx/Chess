@@ -7,13 +7,13 @@ public class TranspositionEntry {
     public static final int ALL_NODE = 3;
 
     private double val;
-    private int skipped_depths;
+    private int depth;
     private int node_type;
     private int color;
 
-    public TranspositionEntry(double val, int skipped_depths, int node_type, int color) {
+    public TranspositionEntry(double val, int depth, int node_type, int color) {
         this.val = val;
-        this.skipped_depths = skipped_depths;
+        this.depth = depth;
         this.node_type = node_type;
         this.color = color;
     }
@@ -42,11 +42,11 @@ public class TranspositionEntry {
         this.val = val;
     }
 
-    public int getSkipped_depths() {
-        return skipped_depths;
+    public int getDepth() {
+        return depth;
     }
 
-    public void setSkipped_depths(int skipped_depths) {
-        this.skipped_depths = skipped_depths;
+    public void setDepth(int depth) {
+        this.depth = depth;
     }
 }

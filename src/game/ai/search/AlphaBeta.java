@@ -277,10 +277,10 @@ public class AlphaBeta implements AI {
     private TranspositionEntry transpositionLookUp(long zobrist, int depth) {
         if (use_transposition == false || !use_transposition) return null;
         TranspositionEntry en = _transpositionTable.get(zobrist);
-        if (en != null && en.getSkipped_depths() >= (_depth - depth) && _board.getActivePlayer() == en.getColor()) {
-            return en;
-        }
-        return null;
+//        if (en != null && en.getDepth() >= (_depth - depth) && _board.getActivePlayer() == en.getColor()) {
+//            return en;
+//        }
+        return en;
     }
 
     private void transpositionPlacement(long key, int depth, double alpha, int nodeType) {
@@ -289,7 +289,7 @@ public class AlphaBeta implements AI {
         if (en == null) {
             _transpositionTable.put(key, new TranspositionEntry(alpha, _depth - depth, nodeType, _board.getActivePlayer()));
         } else {
-            if (en.getSkipped_depths() > depth) {
+            if (en.getDepth() > depth) {
                 en.setVal(alpha);
             }
         }

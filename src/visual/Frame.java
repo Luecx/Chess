@@ -82,6 +82,8 @@ public class Frame extends JFrame implements KeyListener {
     public static void main(String[] args) {
         Board b = new SlowBoard(Setup.DEFAULT);
 
+        //b = IOBoard.read_lichess(new SlowBoard(), "rnb2rk1/p4ppp/2p3q1/2Pppb2/1p1PPnB1/1Q2B1P1/PP1NNP1P/R3K2R");
+        //b = IOBoard.read_lichess(new SlowBoard(), "6k1/6pp/8/8/8/7q/8/5R1K b - - 0 1");
 
         ArrayList<String> keys = new ArrayList<>();
         for(String s:args){
@@ -95,8 +97,8 @@ public class Frame extends JFrame implements KeyListener {
                 new FinnEvaluator(),
                 new SystematicOrderer(),
                 new SimpleReducer(),
-                PVSearch.FLAG_DEPTH_LIMIT,
-                10,2);
+                PVSearch.FLAG_TIME_LIMIT,
+                5000,4);
 
 
         ai.setUse_iteration(true);
@@ -104,15 +106,12 @@ public class Frame extends JFrame implements KeyListener {
         ai.setPrint_overview(true);
         ai.setUse_killer_heuristic(true);
         ai.setUse_LMR(true);
+        ai.setUse_transposition(true);
 
-        Player hm = new Player(){};
+        //p1.bestMove(b);
 
-        Player white = keys.contains("white") ? hm : ai;
-        Player black = keys.contains("black") ? hm : ai;
 
-        boolean flip = keys.contains("flip");
-
-        new Frame(b,white, black).setFlippedBoard(flip);
+        new Frame(b, new Player(){},ai);
 
 
 //        boolean iAmPlayingWhite = false;
