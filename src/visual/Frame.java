@@ -82,7 +82,7 @@ public class Frame extends JFrame implements KeyListener {
     public static void main(String[] args) {
         Board b = new SlowBoard(Setup.DEFAULT);
 
-        b = IOBoard.read_lichess(new SlowBoard(), "rnb2rk1/p4ppp/2p3q1/2Pppb2/1p1PPnB1/1Q2B1P1/PP1NNP1P/R3K2R");
+        //b = IOBoard.read_lichess(new SlowBoard(), "6k1/p4ppp/8/8/1p1K1P1P/1N4P1/r2N4/8");
         //b = IOBoard.read_lichess(new SlowBoard(), "6k1/6pp/8/8/8/7q/8/5R1K");
 
         ArrayList<String> keys = new ArrayList<>();
@@ -90,25 +90,38 @@ public class Frame extends JFrame implements KeyListener {
             keys.add(s);
         }
 
-        //keys.add("white");
-        //keys.add("black");
+        keys.add("white");
+        keys.add("black");
 
         PVSearch ai = new PVSearch(
                 new FinnEvaluator(),
                 new SystematicOrderer(),
                 new SimpleReducer(),
                 PVSearch.FLAG_DEPTH_LIMIT,
-                12,4);
+                8,6);
 
 
         ai.setUse_iteration(true);
-        ai.setUse_null_moves(true);
+        ai.setUse_null_moves(false);
         ai.setPrint_overview(true);
         ai.setUse_killer_heuristic(true);
         ai.setUse_LMR(true);
         ai.setUse_transposition(true);
 
-        new Frame(b, new Player(){},ai);
+        Player hm = new Player(){};
+
+
+        Player white = keys.contains("white") ? hm:ai;
+        Player black = keys.contains("black") ? hm:ai;
+
+
+        boolean flip = keys.contains("flip");
+
+
+        black = ai;
+        flip = false;
+
+        new Frame(b, white, black).setFlippedBoard(flip);
     }
 
     @Override

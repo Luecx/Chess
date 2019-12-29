@@ -209,29 +209,34 @@ public class Testing {
     }
 
     public static void main(String[] args) {
-        PVSearch ai1 = new PVSearch(
-                new FinnEvaluator(),
-                new SystematicOrderer(),
-                new SimpleReducer(),
-                2,
-                8,
-                4);
-        ai1.setUse_LMR(true);
-        PVSearch ai2 = new PVSearch(
-                new FinnEvaluator(),
-                new SystematicOrderer(),
-                new SimpleReducer(1,3,10),
-                2,
-                8,
-                4);
-        ai2.setUse_LMR(true);
+//        PVSearch ai1 = new PVSearch(
+//                new FinnEvaluator(),
+//                new SystematicOrderer(),
+//                new SimpleReducer(),
+//                2,
+//                8,
+//                4);
+//        ai1.setUse_LMR(true);
+//        PVSearch ai2 = new PVSearch(
+//                new FinnEvaluator(),
+//                new SystematicOrderer(),
+//                new SimpleReducer(1,3,10),
+//                2,
+//                8,
+//                4);
+//        ai2.setUse_LMR(true);
+//
+//        compare(new SlowBoard(), new PVSearch[]{ai1, ai2},
+//                "r2q1rk1/1pp1bppp/p1npbn2/4p1B1/B3P3/2NP1N2/PPPQ1PPP/2KR3R",
+//                "r2q1rk1/ppp2ppp/2n2n2/2b5/2B2Bb1/2NP1N2/PPPQ2PP/R4R1K",
+//                "r1bq1rk1/1p2ppbp/p1np1np1/8/3NP3/1BN1B2P/PPP2PP1/R2Q1RK1",
+//                "r2qk2r/ppp1nppp/1bn1b3/1B6/1P1pP3/5N2/PB3PPP/RN1Q1RK1",
+//                "r2qkb1r/pp1n1pp1/2p1pn1p/8/3P1B1P/3Q1NN1/PPP2PP1/2KR3R");
 
-        compare(new SlowBoard(), new PVSearch[]{ai1, ai2},
-                "r2q1rk1/1pp1bppp/p1npbn2/4p1B1/B3P3/2NP1N2/PPPQ1PPP/2KR3R",
-                "r2q1rk1/ppp2ppp/2n2n2/2b5/2B2Bb1/2NP1N2/PPPQ2PP/R4R1K",
-                "r1bq1rk1/1p2ppbp/p1np1np1/8/3NP3/1BN1B2P/PPP2PP1/R2Q1RK1",
-                "r2qk2r/ppp1nppp/1bn1b3/1B6/1P1pP3/5N2/PB3PPP/RN1Q1RK1",
-                "r2qkb1r/pp1n1pp1/2p1pn1p/8/3P1B1P/3Q1NN1/PPP2PP1/2KR3R");
+
+        SlowBoard b = IOBoard.read_lichess(new SlowBoard(), "r4qk1/p1p2p1p/2Qp2p1/2b1P3/5P2/2P5/P1b3PP/R3KB1R");
+
+
     }
 
 

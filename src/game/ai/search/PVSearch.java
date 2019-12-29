@@ -514,7 +514,6 @@ public class PVSearch implements AI {
             PVLine lastIteration) {
         _visitedNodes++;
 
-        //TODO
         //<editor-fold desc="Transposition lookup">
         //used to determine if the node is a PV_Node and has a placed transposition entry.
         boolean transpositionHasBeenPlaced = false;
@@ -582,15 +581,18 @@ public class PVSearch implements AI {
         for(int index = 0; index < allMoves.size(); index++){
             Move m = allMoves.get(index);
 
-            _board.move(m);
+            //<editor-fold desc="Debugging check">
+            long prevMeta = ((SlowBoard)_board).getBoard_meta_informtion();
+            long security = _board.zobrist();
+            //</editor-fold>
 
+            _board.move(m);
             //<editor-fold desc="LMR">
             int to_reduce = 0;
             if (use_LMR && reducer != null) {
                 to_reduce = reducer.reduce(m, currentDepth, index, bSearchPv);
             }
             //</editor-fold>
-
             //<editor-fold desc="recursion">
             if (bSearchPv) {
                 //<editor-fold desc="pv node search">
@@ -625,8 +627,17 @@ public class PVSearch implements AI {
                 //</editor-fold>
             }
             //</editor-fold>
-
             _board.undoMove();
+
+            //<editor-fold desc="Debugging check">
+            //Some security checks. if this exception is thrown, the move generation has a bug!
+            if(security != _board.zobrist() || ((SlowBoard) _board).getBoard_meta_informtion() != prevMeta){
+                throw new RuntimeException();
+            }
+
+            //</editor-fold>
+
+
 
             //<editor-fold desc="beta cutoff">
             if (score >= beta) {
@@ -637,7 +648,6 @@ public class PVSearch implements AI {
                 return beta;
             }
             //</editor-fold>
-
             //<editor-fold desc="killer node">
             if (score > alpha) {
                 alpha = score;
@@ -662,7 +672,6 @@ public class PVSearch implements AI {
         }
         //</editor-fold>
 
-        //TODO
         //<editor-fold desc="Transposition placing">
         if (!transpositionHasBeenPlaced)
             transpositionPlacement(zobrist, currentDepth, alpha, TranspositionEntry.ALL_NODE);

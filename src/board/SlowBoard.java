@@ -192,18 +192,19 @@ public class SlowBoard extends Board<SlowBoard> {
 
         //<editor-fold desc="gameover / en passant masking">
         short mask = (short)(board_meta_informtion & MASK_EN_PASSENT_MOVES);
+        //System.err.println(board_meta_informtion);
         if(Math.abs(m.getPieceTo()) == 6){
             if(m.getPieceTo() > 0){
-                mask ^= MASK_WINNER_BLACK | MASK_GAMEOVER;
+                mask |= MASK_WINNER_BLACK | MASK_GAMEOVER;
             }else{
-                mask ^= MASK_WINNER_WHITE | MASK_GAMEOVER;
+                mask |= MASK_WINNER_WHITE | MASK_GAMEOVER;
             }
         }
         if(this.board_repetition_counter.add(this.zobrist())){
-            mask ^= MASK_GAMEOVER;
+            mask |= MASK_GAMEOVER;
         }
 
-        m.setMetaInformation((short)(m.getMetaInformation() ^ mask));
+        m.setMetaInformation((short)(m.getMetaInformation() | mask));
 
         this.board_meta_informtion ^= m.getMetaInformation();
 
@@ -306,6 +307,23 @@ public class SlowBoard extends Board<SlowBoard> {
             }
             c += direction;
         }
+    }
+
+    public void printBoardIndexing(){
+        StringBuilder builder = new StringBuilder();
+        for (int i = 11; i >= 0; i--) {
+            for (int n = 0; n < 12; n++) {
+                int index = index((byte) (n - 2), (byte) (i - 2));
+                if (field[index] == INVALID) {
+                    builder.append("#");
+                }
+                else{
+                    builder.append(String.format("%03d ", index));
+                }
+            }
+            builder.append("\n");
+        }
+        System.out.println(builder.toString());
     }
 
 
@@ -723,8 +741,9 @@ public class SlowBoard extends Board<SlowBoard> {
 
     public static void main(String[] args) {
         SlowBoard b = new SlowBoard(Setup.DEFAULT);
-       b = IOBoard.read_lichess(b, "r1bq1rk1/1p2ppbp/p1np1np1/8/3NP3/1BN1B2P/1PP1Q1P1/R4RK1");
-       b.move(b.getPseudoLegalMoves().get(3));
+
+        b = IOBoard.read_lichess(b, "r1bq1rk1/1p2ppbp/p1np1np1/8/3NP3/1BN1B2P/1PP1Q1P1/R4RK1");
+        b.move(b.getPseudoLegalMoves().get(3));
 
         System.out.println(b.zobrist());
         System.out.println(b.zobristKey);
