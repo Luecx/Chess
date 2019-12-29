@@ -13,7 +13,7 @@ public class NoahOrderer implements Orderer {
 
     public static void setOrderPriority(Move move, Board tokenSB) {
         int priority = 0;
-        int color = move.getPieceFrom() > 0 ? 1 : -1;
+        //  int color = move.getPieceFrom() > 0 ? 1 : -1;
 
         priority += NoahEvaluator.COMPLETE_EVALUATE_PRICE[move.getPieceTo() + 6];
         //priority += Math.abs(NoahEvaluator.EVALUATE_PRICE[Math.abs(move.getPieceTo())]);

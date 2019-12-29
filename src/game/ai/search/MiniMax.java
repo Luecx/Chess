@@ -3,6 +3,7 @@ package game.ai.search;
 import board.Board;
 import board.moves.Move;
 import board.SlowBoard;
+import board.setup.Setup;
 import game.ai.evaluator.Evaluator;
 import game.ai.evaluator.SimpleEvaluator;
 import game.ai.tools.TranspositionTable;
@@ -43,18 +44,18 @@ public class MiniMax implements AI {
     }
 
     private double minimax(int tiefe){
-        List<Move> moves = _board.getPseudoLegalMoves();
+        List<Move> moves = _board.getLegalMoves();
         _visitedNodes ++;
 
-        long zobrist = _board.zobrist();
-        int[] field = ((SlowBoard)_board).getField();
-        if(_hashed_positions.get(zobrist) != null){
-            if(Arrays.equals((int[])_hashed_positions.get(zobrist), field) == false){
-                System.out.println("Hash collision");
-            }
-        }else{
-            _hashed_positions.put(zobrist, field);
-        }
+//        long zobrist = _board.zobrist();
+//        int[] field = ((SlowBoard)_board).getField();
+//        if(_hashed_positions.get(zobrist) != null){
+//            if(Arrays.equals((int[])_hashed_positions.get(zobrist), field) == false){
+//                System.out.println("Hash collision");
+//            }
+//        }else{
+//            _hashed_positions.put(zobrist, field);
+//        }
 
         if (tiefe == 0 || moves.size() == 0 || _board.isGameOver()){
             _evaluatedNodes++;
@@ -81,8 +82,8 @@ public class MiniMax implements AI {
     }
 
     public static void main(String[] args) {
-        MiniMax m = new MiniMax(new SimpleEvaluator(), 5);
-        SlowBoard board = new SlowBoard();
+        MiniMax m = new MiniMax(new SimpleEvaluator(), 4);
+        SlowBoard board = new SlowBoard(Setup.DEFAULT);
         System.out.println(m.bestMove(board));
     }
 

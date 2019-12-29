@@ -156,19 +156,4 @@ public class Tensor {
                 '}';
     }
 
-    public static void main(String[] args) {
-
-        double[][] ar = new double[][]{
-
-                {1,2},
-                {3,4},
-                {3,4}
-        };
-
-        Tensor2D t1 = new Tensor2D(ar);
-        Tensor3D t2 = new Tensor3D(t1);
-        System.out.println(t2.get(0,1,0));
-
-
-    }
 }

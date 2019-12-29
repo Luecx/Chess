@@ -94,12 +94,16 @@ public class IO {
         }
         //</editor-fold>
 
+        //<editor-fold desc="parsing en passant">
         if(split.length >= 4){
             if(!split[3].equals("-")){
-
+                int rankIndex = split[3].toLowerCase().charAt(0)-'a';
+                board.setEnPassantChance(rankIndex, true);
             }
         }
+        //</editor-fold>
 
+        
 
         return board;
     }
