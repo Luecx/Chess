@@ -19,23 +19,24 @@ public class IOBoard {
      * things:
      *  - who has to move next
      *  - information about Castling
-     *  - information about previous moves (no en passent)
+     *  - information about previous moves (no en passant)
      *
      * @param template      a template class to create a new board object
      * @param key           the key from lichess.com
      * @param <T>           a type argument for the board
      * @return              a new board of type T
      */
-    public static <T extends Board<T>> T read_lichess(T template, String key){
+    public static <T extends Board<T>> T read_FEN(T template, String key){
 
         int x = 0;
         int y = 7;
 
         T board = template.newInstance();
 
+        String[] split = key.split(" ");
 
-
-        for(char c : key.toCharArray()){
+        //<editor-fold desc="parsing pieces">
+        for(char c : split[0].toCharArray()){
 
             int num = getNumber(c);
             if(num > 0){
@@ -64,6 +65,23 @@ public class IOBoard {
 
 
 
+        }
+        //</editor-fold>
+
+        //<editor-fold desc="parsing active player">
+        if(split.length >= 2 && split[1].length() == 1){
+            if(!split[1].equals("w")){
+                board.changeActivePlayer();
+            }
+        }
+        //</editor-fold>
+
+        if(split.length >= 3){
+            for(char c:split[2].toCharArray()){
+                switch (c){
+                    
+                }
+            }
         }
         return board;
     }
