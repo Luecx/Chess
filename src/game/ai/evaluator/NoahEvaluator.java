@@ -119,7 +119,7 @@ public class NoahEvaluator implements Evaluator{
     public static final Tensor3D W_POSITION_PRICE = new Tensor3D(W_PAWN_VALUES, W_ROOK_VALUES, KNIGHT_VALUES, W_BISHOP_VALUES, QUEEN_VALUES, W_KING_VALUES_MID);
     public static final Tensor3D B_POSITION_PRICE = new Tensor3D(B_PAWN_VALUES, B_ROOK_VALUES, KNIGHT_VALUES, B_BISHOP_VALUES, QUEEN_VALUES, B_KING_VALUES_MID);
 
-    public static final int[] UNSIGNED_COMPLETE_EVALUATE_PRICE = new int[] {
+    public static final int[] COMPLETE_EVALUATE_PRICE = new int[] {
             EVALUATE_PRICE[6],
             EVALUATE_PRICE[5],
             EVALUATE_PRICE[4],
@@ -134,7 +134,7 @@ public class NoahEvaluator implements Evaluator{
             EVALUATE_PRICE[5],
             EVALUATE_PRICE[6],
     };
-    public static final int[] COMPLETE_EVALUATE_PRICE = new int[] {
+    public static final int[] SIGNED_COMPLETE_EVALUATE_PRICE = new int[] {
             -EVALUATE_PRICE[6],
             -EVALUATE_PRICE[5],
             -EVALUATE_PRICE[4],

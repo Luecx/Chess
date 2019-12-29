@@ -15,7 +15,7 @@ public class NoahOrderer implements Orderer {
         int priority = 0;
         int color = move.getPieceFrom() > 0 ? 1 : -1;
 
-        priority += NoahEvaluator.UNSIGNED_COMPLETE_EVALUATE_PRICE[move.getPieceTo() + 6];
+        priority += NoahEvaluator.COMPLETE_EVALUATE_PRICE[move.getPieceTo() + 6];
         //priority += Math.abs(NoahEvaluator.EVALUATE_PRICE[Math.abs(move.getPieceTo())]);
 
 //        priority -= NoahEvaluator.UNSIGNED_COMPLETE_EVALUATE_PRICE[move.getPieceFrom() + 6];
