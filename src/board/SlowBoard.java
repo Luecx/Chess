@@ -56,6 +56,7 @@ public class SlowBoard extends Board<SlowBoard> {
      * 12:  en passent G
      */
     protected short board_meta_informtion;
+    protected long zobristKey;
     protected int[] field; //2x2 padding each side
     protected RepetitionList board_repetition_counter;
 
@@ -103,19 +104,20 @@ public class SlowBoard extends Board<SlowBoard> {
 
     @Override
     public long zobrist() {
-        long h = 0;
-        for(int i = 0; i < 8; i++){
-            for(int n = 0; n < 8; n++){
-                int piece = getPiece(i,n);
-                if(piece == 0) continue;
-                if(piece > 0){
-                    h = BitBoard.xor(h, BitBoard.white_hashes[piece-1][i * 8 + n]);
-                }else{
-                    h = BitBoard.xor(h, BitBoard.black_hashes[-piece-1][i * 8 + n]);
-                }
-            }
-        }
-        return h;
+//        long h = 0;
+//        for(int i = 0; i < 8; i++){
+//            for(int n = 0; n < 8; n++){
+//                int piece = getPiece(i,n);
+//                if(piece == 0) continue;
+//                if(piece > 0){
+//                    h = BitBoard.xor(h, BitBoard.white_hashes[piece-1][i * 8 + n]);
+//                }else{
+//                    h = BitBoard.xor(h, BitBoard.black_hashes[-piece-1][i * 8 + n]);
+//                }
+//            }
+//        }
+//        return h;
+        return zobristKey;
     }
 
     @Override
@@ -151,15 +153,15 @@ public class SlowBoard extends Board<SlowBoard> {
                 Math.abs((m.getTo() - m.getFrom())) % 12 != 0) {
             if (getActivePlayer() == 1) {
                 if (m.getTo() - m.getFrom() == 13) {
-                    this.field[m.getFrom() + 1] = 0;
+                    this.setPiece(m.getFrom() + 1, 0);
                 } else {
-                    this.field[m.getFrom() - 1] = 0;
+                    this.setPiece(m.getFrom() - 1, 0);
                 }
             } else {
                 if (m.getTo() - m.getFrom() == -13) {
-                    this.field[m.getFrom() - 1] = 0;
+                    this.setPiece(m.getFrom() - 1, 0);
                 } else {
-                    this.field[m.getFrom() + 1] = 0;
+                    this.setPiece(m.getFrom() + 1, 0);
                 }
             }
         }
@@ -183,7 +185,7 @@ public class SlowBoard extends Board<SlowBoard> {
         if(m.getPieceFrom() * getActivePlayer() == 1){
             if((y(m.getTo()) == 7 && getActivePlayer() == 1) ||
                     (y(m.getTo()) == 0 && getActivePlayer() == -1)){
-                this.field[m.getTo()] = 5 * getActivePlayer();
+                this.setPiece(m.getTo(), 5 * getActivePlayer());
             }
         }
         //</editor-fold>
@@ -239,15 +241,15 @@ public class SlowBoard extends Board<SlowBoard> {
 
             if (getActivePlayer() == 1) {
                 if (last.getTo() - last.getFrom() == -13) {
-                    this.field[last.getFrom() - 1] = 1;
+                    this.setPiece(last.getFrom()-1,1);
                 } else {
-                    this.field[last.getFrom() + 1] = 1;
+                    this.setPiece(last.getFrom()+1,1);
                 }
             } else {
                 if (last.getTo() - last.getFrom() == +13) {
-                    this.field[last.getFrom() + 1] = -1;
+                    this.setPiece(last.getFrom()+1,-1);
                 } else {
-                    this.field[last.getFrom() - 1] = -1;
+                    this.setPiece(last.getFrom()-1,-1);
                 }
             }
             changeActivePlayer();
@@ -267,16 +269,16 @@ public class SlowBoard extends Board<SlowBoard> {
     }
 
     private void moveSimpleMove(Move m) {
-        this.field[m.getFrom()] = 0;
-        this.field[m.getTo()] = m.getPieceFrom();
+        this.setPiece(m.getFrom(), 0);
+        this.setPiece(m.getTo(), m.getPieceFrom());
         this.moveHistory.push(m);
     }
 
     private void undoMoveSimpleMove() {
         if (this.moveHistory.size() == 0) return;
         Move old = this.moveHistory.pop();
-        this.field[old.getFrom()] = old.getPieceFrom();
-        this.field[old.getTo()] = old.getPieceTo();
+        this.setPiece(old.getFrom(), old.getPieceFrom());
+        this.setPiece(old.getTo(), old.getPieceTo());
     }
 
     private void slidingPieces(int pos, int direction, List<Move> list, short mask) {
@@ -679,12 +681,29 @@ public class SlowBoard extends Board<SlowBoard> {
 
     @Override
     public void setPiece(int x, int y, int piece) {
-        this.setPiece(index(x,y),piece);
+        this.setPiece(index(x,y), piece);
     }
 
     @Override
     public void setPiece(int index, int piece) {
+
+        if(this.field[index] != 0 && this.field[index] != INVALID){
+            if(this.field[index] > 0){
+                this.zobristKey ^= BitBoard.white_hashes[this.field[index]-1][x(index) * 8 + y(index)];
+            }else{
+                this.zobristKey ^= BitBoard.black_hashes[-this.field[index]-1][x(index) * 8 + y(index)];
+            }
+        }
+
         field[index] = piece;
+
+        if(field[index] != INVALID && piece != 0){
+            if(piece > 0){
+                this.zobristKey ^= BitBoard.white_hashes[piece-1][x(index) * 8 + y(index)];
+            }else{
+                this.zobristKey ^= BitBoard.black_hashes[-piece-1][x(index) * 8 + y(index)];
+            }
+        }
     }
 
     @Override
@@ -703,34 +722,16 @@ public class SlowBoard extends Board<SlowBoard> {
     }
 
     public static void main(String[] args) {
-       Board b = new SlowBoard(Setup.DEFAULT);
+        SlowBoard b = new SlowBoard(Setup.DEFAULT);
        b = IOBoard.read_lichess(b, "r1bq1rk1/1p2ppbp/p1np1np1/8/3NP3/1BN1B2P/1PP1Q1P1/R4RK1");
+       b.move(b.getPseudoLegalMoves().get(3));
 
-        PVSearch ai = new PVSearch(
-                new FinnEvaluator(),
-                new SystematicOrderer(),
-                new SimpleReducer(),
-                PVSearch.FLAG_DEPTH_LIMIT,
-                20,4);
+        System.out.println(b.zobrist());
+        System.out.println(b.zobristKey);
 
-
-        ai.setUse_iteration(true);
-        ai.setUse_null_moves(true);
-        ai.setPrint_overview(true);
-        ai.setUse_killer_heuristic(true);
-        ai.setUse_LMR(true);
-
-        ai.bestMove(b);
-
-        for(int i = 0; i < 5; i++){
-           int counter = 0;
-           long time = System.currentTimeMillis();
-           while(counter ++ < 1E7){
-               b.getPseudoLegalMoves();
-           }
-           System.out.println((System.currentTimeMillis() - time) + " ms");
-
-       }
+        b.undoMove();
+        System.out.println(b.zobrist());
+        System.out.println(b.zobristKey);
 
 
     }
