@@ -653,6 +653,11 @@ public class PVSearch implements AI {
             //<editor-fold desc="Debugging check">
             //Some security checks. if this exception is thrown, the move generation has a bug!
             if(security != _board.zobrist() || ((SlowBoard) _board).getBoard_meta_informtion() != prevMeta){
+                System.out.println(security + "  "  + _board.zobrist());
+                System.out.println(prevMeta + "  " + ((SlowBoard) _board).getBoard_meta_informtion());
+                System.out.println(m);
+                System.out.println(zobrist);
+                System.out.println(_board);
                 throw new RuntimeException();
             }
 

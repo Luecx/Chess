@@ -96,12 +96,13 @@ public class Move {
         return from == move.from &&
                 to == move.to &&
                 pieceFrom == move.pieceFrom &&
-                pieceTo == move.pieceTo;
+                pieceTo == move.pieceTo &&
+                metaInformation == move.metaInformation;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(from, to, pieceFrom, pieceTo);
+        return Objects.hash(from, to, pieceFrom, pieceTo, metaInformation);
     }
 
     @Override

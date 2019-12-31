@@ -53,9 +53,9 @@ public class SystematicOrderer implements Orderer {
             TranspositionEntry en = (TranspositionEntry) transpositionTable.get(zobrist);
             if (en != null && en.getDepth() <= depth) {
                 Move hashMove = en.getBestMove();
-                int index = collection.indexOf((T)hashMove);
+                int index = collection.indexOf(hashMove);
                 if (hashMove != null && index != -1) {
-                    pvMoves.add((T)hashMove);
+                    pvMoves.add(collection.get(index));
                     collection.remove(index);
                     //System.out.println("hi mom");
                 }

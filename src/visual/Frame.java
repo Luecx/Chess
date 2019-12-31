@@ -109,12 +109,6 @@ public class Frame extends JFrame implements KeyListener {
         ai1.setUse_LMR(true);
         ai1.setUse_transposition(true);
         ai1.setPrint_overview(true);
-        ai.setUse_iteration(true);
-        ai.setUse_null_moves(true);
-        ai.setPrint_overview(true);
-        ai.setUse_killer_heuristic(true);
-        ai.setUse_LMR(true);
-        ai.setUse_transposition(false);
 
         ai2.setUse_iteration(true);
         ai2.setUse_null_moves(true);
