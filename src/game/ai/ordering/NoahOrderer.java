@@ -5,6 +5,7 @@ import board.moves.Move;
 import game.ai.evaluator.NoahEvaluator;
 import game.ai.tools.KillerTable;
 import game.ai.tools.PVLine;
+import game.ai.tools.TranspositionTable;
 
 import java.util.Comparator;
 import java.util.List;
@@ -42,7 +43,8 @@ public class NoahOrderer implements Orderer {
             int depth,
             PVLine lastIteration,
             Board board,
-            KillerTable killerTable) {
+            KillerTable killerTable,
+            TranspositionTable transpositionTable) {
 
         for (Move m:collection){
             setOrderPriority(m, board);

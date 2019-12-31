@@ -4,6 +4,7 @@ import board.Board;
 import board.moves.Move;
 import game.ai.tools.KillerTable;
 import game.ai.tools.PVLine;
+import game.ai.tools.TranspositionTable;
 
 import java.util.List;
 
@@ -33,6 +34,7 @@ public interface Orderer {
             int depth,
             PVLine lastIteration,
             Board board,
-            KillerTable killerTable);
+            KillerTable killerTable,
+            TranspositionTable transpositionTable);
 
 }

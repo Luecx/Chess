@@ -12,7 +12,6 @@ public abstract class Board<T extends Board<T>> {
     protected byte activePlayer = 1;
     protected Stack<Move> moveHistory = new Stack<>();
 
-
     public Board(Setup setup) {
         this.setup(setup);
     }

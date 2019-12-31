@@ -101,7 +101,21 @@ public class SlowBoard extends Board<SlowBoard> {
         }
         return board;
     }
-
+    public long oldZobrist() {
+        long h = 0;
+        for(int i = 0; i < 8; i++){
+            for(int n = 0; n < 8; n++){
+                int piece = getPiece(i,n);
+                if(piece == 0) continue;
+                if(piece > 0){
+                    h = BitBoard.xor(h, BitBoard.white_hashes[piece-1][i * 8 + n]);
+                }else{
+                    h = BitBoard.xor(h, BitBoard.black_hashes[-piece-1][i * 8 + n]);
+                }
+            }
+        }
+        return h;
+    }
     @Override
     public long zobrist() {
 //        long h = 0;

@@ -10,6 +10,7 @@ import game.ai.ordering.SystematicOrderer;
 import game.ai.reducing.SimpleReducer;
 import game.ai.evaluator.FinnEvaluator;
 import game.ai.search.PVSearch;
+import io.IO;
 
 import javax.swing.*;
 import java.awt.event.ComponentAdapter;
@@ -74,8 +75,10 @@ public class Frame extends JFrame implements KeyListener {
     public static void main(String[] args) {
         Board b = new SlowBoard(Setup.DEFAULT);
 
-        //b = IO.read_FEN(new SlowBoard(), "6k1/p4ppp/8/8/1p1K1P1P/1N4P1/r2N4/8");
-        //b = IO.read_FEN(new SlowBoard(), "6k1/6pp/8/8/8/7q/8/5R1K");
+        //b = IOBoard.read_lichess(new SlowBoard(), "6k1/p4ppp/8/8/1p1K1P1P/1N4P1/r2N4/8");
+        //b = IOBoard.read_lichess(new SlowBoard(), "6k1/6pp/8/8/8/7q/8/5R1K");
+        //b = IOBoard.read_lichess(new SlowBoard(),"6k1/p4ppp/8/8/1p1K1P1P/1N4P1/r2N4/8 w - - 0 1");
+        //b = IO.read_FEN(new SlowBoard(), "7k/6pp/8/8/1Q6/7q/8/5R1K w - - 0 1"); //should force draw
 
         ArrayList<String> keys = new ArrayList<>();
         for(String s:args){
@@ -85,14 +88,27 @@ public class Frame extends JFrame implements KeyListener {
 //        keys.add("white");
 //        keys.add("black");
 
-        PVSearch ai = new PVSearch(
+        PVSearch ai1 = new PVSearch(
                 new FinnEvaluator(),
                 new SystematicOrderer(),
                 new SimpleReducer(),
-                PVSearch.FLAG_DEPTH_LIMIT,
-                8,6);
+                PVSearch.FLAG_TIME_LIMIT,
+                5000,4);
 
+        PVSearch ai2 = new PVSearch(
+                new FinnEvaluator(),
+                new SystematicOrderer(),
+                new SimpleReducer(),
+                PVSearch.FLAG_TIME_LIMIT,
+                5000,4);
 
+        ai1.setUse_iteration(true);
+        ai1.setUse_null_moves(true);
+        ai1.setPrint_overview(true);
+        ai1.setUse_killer_heuristic(true);
+        ai1.setUse_LMR(true);
+        ai1.setUse_transposition(true);
+        ai1.setPrint_overview(true);
         ai.setUse_iteration(true);
         ai.setUse_null_moves(true);
         ai.setPrint_overview(true);
@@ -100,16 +116,26 @@ public class Frame extends JFrame implements KeyListener {
         ai.setUse_LMR(true);
         ai.setUse_transposition(true);
 
+        ai2.setUse_iteration(true);
+        ai2.setUse_null_moves(true);
+        ai2.setPrint_overview(true);
+        ai2.setUse_killer_heuristic(true);
+        ai2.setUse_LMR(true);
+        ai2.setUse_transposition(false);
+
         Player hm = new Player(){};
 
 
-        Player white = keys.contains("white") ? hm:ai;
-        Player black = keys.contains("black") ? hm:ai;
+        //Player white = keys.contains("white") ? hm:ai;
+        //Player black = keys.contains("black") ? hm:ai;
 
 
         boolean flip = keys.contains("flip");
 
-        new Frame(b, white, black).setFlippedBoard(flip);
+
+        //new Frame(b,ai1,ai2);
+        new Frame(b,new Player(){},ai1);
+        //new Frame(b, white, black).setFlippedBoard(flip);
     }
 
     @Override

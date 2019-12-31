@@ -30,13 +30,14 @@ public class PVSearch implements AI {
     private boolean print_overview = true;          //flag for output-printing
     private boolean use_null_moves = true;
 
-    private boolean use_killer_heuristic = false;   //flag for killer tables
+    private boolean use_killer_heuristic = true;   //flag for killer tables
     private int killer_count = 2;
     private int null_move_reduction = 2;            //how much to reduce null moves
     private int depth_to_never_reduce = 2;          //how many plies to never reduce
     private int late_move_reduction = 2;            //how many plies to reduce by in LMR
     private boolean use_LMR = true;                 //flag for LMR
     private int num_moves_not_reduced;                  //the number of moves not to reduce (from the beginning of the list)
+    private int transposition_store_depth = 100;          //the depth after which we stop storing transpositions.
 
 
     private SearchOverview searchOverview;
@@ -341,6 +342,22 @@ public class PVSearch implements AI {
         this.reducer = reducer;
     }
 
+    /**
+     * This method sets the use_LMR flag
+     * @return the depth after which we stop storing transpositions
+     */
+    public int getTransposition_store_depth() {
+        return transposition_store_depth;
+    }
+
+    /**
+     * This method sets the use_LMR flag
+     * @param transposition_store_depth     the depth after which we stop storing transpositions
+     */
+    public void setTransposition_store_depth(int transposition_store_depth) {
+        this.transposition_store_depth = transposition_store_depth;
+    }
+
     private int _depth;
     private int _quiesceNodes;
     private int _visitedNodes;
@@ -465,7 +482,7 @@ public class PVSearch implements AI {
      * @return
      */
     private TranspositionEntry transpositionLookUp(long zobrist, int depth) {
-        if (use_transposition == false || !use_transposition) return null;
+        if (use_transposition == false || !use_transposition || depth > transposition_store_depth + 2) return null;
         TranspositionEntry en = _transpositionTable.get(zobrist);
         if (en != null && en.getDepth() >= (_depth - depth) && _board.getActivePlayer() == en.getColor()) {
             return en;
@@ -480,11 +497,13 @@ public class PVSearch implements AI {
      * @param alpha
      * @param nodeType
      */
-    private void transpositionPlacement(long key, int depth, double alpha, int nodeType) {
-        if (!use_transposition || _transpositionTable == null || _transpositionTable.isFull()) return;
+    private void transpositionPlacement(long key, int depth, double alpha, int nodeType, Move bestMove) {
+        if (!use_transposition || _transpositionTable == null || _transpositionTable.isFull() || depth > transposition_store_depth) {
+            return;
+        }
         TranspositionEntry en = _transpositionTable.get(key);
         if (en == null) {
-            _transpositionTable.put(key, new TranspositionEntry(alpha, depth, nodeType, _board.getActivePlayer()));
+            _transpositionTable.put(key, new TranspositionEntry(alpha, depth, nodeType, _board.getActivePlayer(), bestMove));
         } else {
             if (en.getDepth() > depth) {
                 en.setVal(alpha);
@@ -513,13 +532,15 @@ public class PVSearch implements AI {
             PVLine lastIteration) {
         _visitedNodes++;
 
+        double origonalAlpha = alpha;
+
         //<editor-fold desc="Transposition lookup">
         //used to determine if the node is a PV_Node and has a placed transposition entry.
         boolean transpositionHasBeenPlaced = false;
+        //long zobrist = ((SlowBoard) _board).oldZobrist();
         long zobrist = _board.zobrist();
         TranspositionEntry transposition = transpositionLookUp(zobrist, currentDepth);
         if (transposition != null) {
-            //TODO
             //need to make sure we're at a lower depth and its the same player to move
             if (transposition.getDepth() <= currentDepth && _board.getActivePlayer() == transposition.getColor()) {
                 if (transposition.getNode_type() == TranspositionEntry.PV_NODE) {
@@ -551,7 +572,7 @@ public class PVSearch implements AI {
         PVLine line = new PVLine(_depth - currentDepth);
 
         //<editor-fold desc="Null moves">
-        double score;
+        double score = Double.NEGATIVE_INFINITY;
         if(use_null_moves){
             Move nullMove = new Move();
             _board.move(nullMove);
@@ -571,12 +592,13 @@ public class PVSearch implements AI {
         //</editor-fold>
 
         //<editor-fold desc="move-ordering">
-        orderer.sort(allMoves, currentDepth, lastIteration, _board, _killerTable);
+        orderer.sort(allMoves, currentDepth, lastIteration, _board, _killerTable, _transpositionTable);
         //</editor-fold>
 
         //<editor-fold desc="Searching">
         boolean bSearchPv = true;
-
+        Move bestMove = allMoves.get(0);
+        double bestSoFar = Double.NEGATIVE_INFINITY;
         for(int index = 0; index < allMoves.size(); index++){
             Move m = allMoves.get(index);
 
@@ -643,16 +665,24 @@ public class PVSearch implements AI {
                 if (_killerTable != null && m.getPieceTo() == 0){
                     _killerTable.put(currentDepth, m);
                 }
-                transpositionPlacement(zobrist, currentDepth, beta, TranspositionEntry.CUT_NODE);
+                transpositionPlacement(zobrist, currentDepth, beta, TranspositionEntry.CUT_NODE, m);
                 return beta;
             }
             //</editor-fold>
             //<editor-fold desc="killer node">
+
+            if (score > bestSoFar) {
+                bestSoFar = score;
+                bestMove = m;
+            }
+
             if (score > alpha) {
                 alpha = score;
+                bestMove = m;
 
                 transpositionHasBeenPlaced = true;
-                transpositionPlacement(zobrist, currentDepth, alpha, TranspositionEntry.PV_NODE);
+                //shouldn't be in the for loop
+                //transpositionPlacement(zobrist, currentDepth, alpha, TranspositionEntry.PV_NODE, bestMove);
 
 
                 pLine.getLine()[0] = m;
@@ -669,12 +699,13 @@ public class PVSearch implements AI {
             }
             //</editor-fold>
         }
+        if (score > origonalAlpha) {
+            transpositionPlacement(zobrist, currentDepth, alpha, TranspositionEntry.PV_NODE, bestMove);
+        } else {
+            transpositionPlacement(zobrist, currentDepth, alpha, TranspositionEntry.ALL_NODE, bestMove);
+        }
         //</editor-fold>
 
-        //<editor-fold desc="Transposition placing">
-        if (!transpositionHasBeenPlaced)
-            transpositionPlacement(zobrist, currentDepth, alpha, TranspositionEntry.ALL_NODE);
-        //</editor-fold>
 
         return alpha;
     }
@@ -700,7 +731,7 @@ public class PVSearch implements AI {
         if (alpha < stand_pat)
             alpha = stand_pat;
         List<Move> allMoves = _board.getCaptureMoves();
-        orderer.sort(allMoves, 0, null, _board, null);
+        orderer.sort(allMoves, 0, null, _board, null, null);
         for (Move m : allMoves) {
             _board.move(m);
             double score = -Quiesce(-beta, -alpha, depth_left - 1);

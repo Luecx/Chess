@@ -5,6 +5,7 @@ import board.moves.Move;
 import game.ai.evaluator.FinnEvaluator;
 import game.ai.tools.KillerTable;
 import game.ai.tools.PVLine;
+import game.ai.tools.TranspositionTable;
 
 import java.util.Comparator;
 import java.util.List;
@@ -27,7 +28,7 @@ public class SimpleOrderer implements Orderer {
      * @param <T>
      */
     @Override
-    public <T extends Move> void sort(List<T> collection, int depth, PVLine lastIteration, Board board, KillerTable killerTable) {
+    public <T extends Move> void sort(List<T> collection, int depth, PVLine lastIteration, Board board, KillerTable killerTable, TranspositionTable transpositionTable) {
 
         collection.sort((o1, o2) -> {
             int p1 = EVALUATE_PRICE[Math.abs(o1.getPieceTo())] - EVALUATE_PRICE[Math.abs(o1.getPieceFrom())];

@@ -1,5 +1,7 @@
 package game.ai.tools;
 
+import board.moves.Move;
+
 public class TranspositionEntry {
 
     public static final int PV_NODE = 1;
@@ -10,12 +12,14 @@ public class TranspositionEntry {
     private int depth;
     private int node_type;
     private int color;
+    private Move bestMove;
 
-    public TranspositionEntry(double val, int depth, int node_type, int color) {
+    public TranspositionEntry(double val, int depth, int node_type, int color, Move bestMove) {
         this.val = val;
         this.depth = depth;
         this.node_type = node_type;
         this.color = color;
+        this.bestMove = bestMove;
     }
 
     public int getColor() {
@@ -48,5 +52,13 @@ public class TranspositionEntry {
 
     public void setDepth(int depth) {
         this.depth = depth;
+    }
+
+    public Move getBestMove() {
+        return bestMove;
+    }
+
+    public void setBestMove(Move bestMove) {
+        this.bestMove = bestMove;
     }
 }

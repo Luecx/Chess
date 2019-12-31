@@ -4,6 +4,8 @@ import board.Board;
 import board.moves.Move;
 import game.ai.tools.KillerTable;
 import game.ai.tools.PVLine;
+import game.ai.tools.TranspositionEntry;
+import game.ai.tools.TranspositionTable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +18,8 @@ public class SystematicOrderer implements Orderer {
             int depth,
             PVLine lastIteration,
             Board board,
-            KillerTable killerTable){
+            KillerTable killerTable,
+            TranspositionTable transpositionTable){
 
         int initSize = collection.size();
 
@@ -43,6 +46,22 @@ public class SystematicOrderer implements Orderer {
 
 
         //hash moves
+
+        long zobrist = board.zobrist();
+        //TODO: add stuff about the proper depth
+        if (transpositionTable != null && pvMoves.size() == 0) {
+            TranspositionEntry en = (TranspositionEntry) transpositionTable.get(zobrist);
+            if (en != null && en.getDepth() <= depth) {
+                Move hashMove = en.getBestMove();
+                int index = collection.indexOf((T)hashMove);
+                if (hashMove != null && index != -1) {
+                    pvMoves.add((T)hashMove);
+                    collection.remove(index);
+                    //System.out.println("hi mom");
+                }
+            }
+        }
+
 
         //capture moves / non capture / killers
         for(T m:collection){

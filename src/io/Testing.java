@@ -182,7 +182,7 @@ public class Testing {
 
         for(int i = 0; i < ais.length; i++) {
             lDepth[1 + i * 2] = "avg. depth:";
-            lDepth[1 + i * 2 + 1] = "" + avgDepth[i] / FENs.length;
+            lDepth[1 + i * 2 + 1] = "" + (double)avgDepth[i] / FENs.length;
             lTime[1 + i * 2] = "avg. time[ms]:";
             lTime[1 + i * 2 + 1] = "" + avgTime[i] / FENs.length;
             lNodes[1 + i * 2] = "avg. total nodes:";
@@ -208,25 +208,32 @@ public class Testing {
                 new FinnEvaluator(),
                 new SystematicOrderer(),
                 new SimpleReducer(),
-                2,
-                8,
+                1,
+                5000,
                 4);
+        ai1.setUse_killer_heuristic(true);
+        ai1.setUse_null_moves(true);
         ai1.setUse_LMR(true);
+        ai1.setUse_transposition(false);
+        //ai1.setTransposition_store_depth(7);
         PVSearch ai2 = new PVSearch(
                 new FinnEvaluator(),
                 new SystematicOrderer(),
                 new SimpleReducer(),
-                2,
-                8,
+                1,
+                5000,
                 4);
-        ai2.setUse_LMR(true);
+        ai1.setUse_killer_heuristic(true);
+        ai1.setUse_null_moves(true);
+        ai1.setUse_LMR(true);
+        ai2.setUse_transposition(true);
 
         compare(new SlowBoard(), new PVSearch[]{ai1, ai2},
-                "r2q1rk1/1pp1bppp/p1npbn2/4p1B1/B3P3/2NP1N2/PPPQ1PPP/2KR3R",
-                "r2q1rk1/ppp2ppp/2n2n2/2b5/2B2Bb1/2NP1N2/PPPQ2PP/R4R1K",
-                "r1bq1rk1/1p2ppbp/p1np1np1/8/3NP3/1BN1B2P/PPP2PP1/R2Q1RK1",
-                "r2qk2r/ppp1nppp/1bn1b3/1B6/1P1pP3/5N2/PB3PPP/RN1Q1RK1",
-                "r2qkb1r/pp1n1pp1/2p1pn1p/8/3P1B1P/3Q1NN1/PPP2PP1/2KR3R");
+            "r2q1rk1/1pp1bppp/p1npbn2/4p1B1/B3P3/2NP1N2/PPPQ1PPP/2KR3R",
+            "r2q1rk1/ppp2ppp/2n2n2/2b5/2B2Bb1/2NP1N2/PPPQ2PP/R4R1K",
+            "r1bq1rk1/1p2ppbp/p1np1np1/8/3NP3/1BN1B2P/PPP2PP1/R2Q1RK1",
+            "r2qk2r/ppp1nppp/1bn1b3/1B6/1P1pP3/5N2/PB3PPP/RN1Q1RK1",
+            "r2qkb1r/pp1n1pp1/2p1pn1p/8/3P1B1P/3Q1NN1/PPP2PP1/2KR3R");
 
 
 
