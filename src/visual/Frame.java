@@ -114,7 +114,7 @@ public class Frame extends JFrame implements KeyListener {
         ai.setPrint_overview(true);
         ai.setUse_killer_heuristic(true);
         ai.setUse_LMR(true);
-        ai.setUse_transposition(true);
+        ai.setUse_transposition(false);
 
         ai2.setUse_iteration(true);
         ai2.setUse_null_moves(true);
@@ -128,7 +128,6 @@ public class Frame extends JFrame implements KeyListener {
 
         //Player white = keys.contains("white") ? hm:ai;
         //Player black = keys.contains("black") ? hm:ai;
-
 
         boolean flip = keys.contains("flip");
 

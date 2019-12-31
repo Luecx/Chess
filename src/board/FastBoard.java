@@ -78,6 +78,11 @@ public class FastBoard extends Board<FastBoard> {
 
     }
 
+    @Override
+    public int getCurrentRepetitionCount() {
+        return 0;
+    }
+
     public void setPiece(int piece, int index) {
         int p = getPiece(index);
         if (p > 0) {

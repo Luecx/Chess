@@ -265,6 +265,11 @@ public abstract class Board<T extends Board<T>> {
      */
     public abstract void setCastlingChance(int index, boolean value);
 
+    /**
+     * returns the amount of repetitions of the current game state
+     * @return
+     */
+    public abstract int getCurrentRepetitionCount();
 
     /**
      * returns true if its possible to en passant towards the given file

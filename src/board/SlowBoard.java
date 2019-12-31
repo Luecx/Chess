@@ -4,11 +4,13 @@ import board.bitboards.BitBoard;
 import board.moves.Move;
 import board.repetitions.RepetitionList;
 import board.setup.Setup;
+import game.Player;
 import game.ai.evaluator.FinnEvaluator;
 import game.ai.ordering.SystematicOrderer;
 import game.ai.reducing.SimpleReducer;
 import game.ai.search.PVSearch;
 import io.IO;
+import visual.Frame;
 
 import java.util.*;
 
@@ -96,6 +98,7 @@ public class SlowBoard extends Board<SlowBoard> {
         board.field = Arrays.copyOf(field, 144);
         board.board_meta_informtion = this.board_meta_informtion;
         board.board_repetition_counter = this.board_repetition_counter.copy();
+        board.zobristKey = zobristKey;
         for (Move move : moveHistory) {
             board.moveHistory.push(move.copy());
         }
@@ -152,6 +155,11 @@ public class SlowBoard extends Board<SlowBoard> {
     @Override
     public boolean getEnPassantChance(int file) {
         return (board_meta_informtion & (1 << (4+file))) > 0;
+    }
+
+    @Override
+    public int getCurrentRepetitionCount() {
+        return this.board_repetition_counter.get(this.zobrist());
     }
 
     @Override
@@ -233,6 +241,7 @@ public class SlowBoard extends Board<SlowBoard> {
             }
         }
         if(this.board_repetition_counter.add(this.zobrist())){
+            System.err.println(this);
             mask |= MASK_GAMEOVER;
         }
 
@@ -774,24 +783,27 @@ public class SlowBoard extends Board<SlowBoard> {
     public static void main(String[] args) {
         SlowBoard b = new SlowBoard(Setup.DEFAULT);
 
-        b = IO.read_FEN(b, "r1bq1rk1/1p2ppbp/p1np1np1/8/3NP3/1BN1B2P/1PP1Q1P1/R4RK1");
+
         PVSearch ai = new PVSearch(
                 new FinnEvaluator(),
                 new SystematicOrderer(),
                 new SimpleReducer(),
                 PVSearch.FLAG_DEPTH_LIMIT,
-                10,6);
+                10,0);
 
 
         ai.setUse_iteration(true);
-        ai.setUse_null_moves(false);
+        ai.setUse_null_moves(true);
         ai.setPrint_overview(true);
         ai.setUse_killer_heuristic(true);
         ai.setUse_LMR(true);
         ai.setUse_transposition(true);
 
+//        System.out.println(ai.bestMove(b));
+//
 
-        ai.bestMove(b);
+        new Frame(b, new Player(){}, ai);
+
 
 
     }

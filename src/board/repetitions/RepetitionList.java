@@ -86,6 +86,15 @@ public class RepetitionList {
         this.sub(board.zobrist());
     }
 
+    public int get(long zobrist){
+        for(Entry e:entries){
+            if(e.zobrist == zobrist){
+                return e.count;
+            }
+        }
+        return 0;
+    }
+
     public RepetitionList copy(){
         LinkedList<Entry> new_entries = new LinkedList<>();
         for(Entry e:entries){
