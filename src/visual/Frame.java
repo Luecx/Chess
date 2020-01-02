@@ -102,7 +102,7 @@ public class Frame extends JFrame implements KeyListener {
                 new SystematicOrderer(),
                 new SimpleReducer(),
                 PVSearch.FLAG_TIME_LIMIT,
-                200,4);
+                500,4);
 
         ai1.setUse_iteration(true);
         ai1.setUse_null_moves(true);
@@ -117,11 +117,11 @@ public class Frame extends JFrame implements KeyListener {
         ai2.setPrint_overview(true);
         ai2.setUse_killer_heuristic(true);
         ai2.setUse_LMR(true);
-        ai2.setUse_transposition(true);
+        ai2.setUse_transposition(false);
 
         Player hm = new Player(){};
 
-        new Frame(b,new Player(){},ai1);
+        //new Frame(b,new Player(){},ai1);
 
 
         //Player white = keys.contains("white") ? hm:ai;
@@ -130,7 +130,7 @@ public class Frame extends JFrame implements KeyListener {
         boolean flip = keys.contains("flip");
 
 
-        //new Frame(b,ai1,ai2);
+        new Frame(b,ai1,ai2);
         //new Frame(b,new Player(){},ai1);
         //new Frame(b, white, black).setFlippedBoard(flip);
     }

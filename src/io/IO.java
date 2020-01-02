@@ -4,6 +4,17 @@ import board.Board;
 import board.SlowBoard;
 import board.moves.Move;
 import board.setup.Setup;
+import game.Game;
+import game.ai.evaluator.FinnEvaluator;
+import game.ai.ordering.SystematicOrderer;
+import game.ai.reducing.SimpleReducer;
+import game.ai.search.AI;
+import game.ai.search.PVSearch;
+import visual.GamePanel;
+
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * the IO class implements methods to generate boards encoded
@@ -136,10 +147,26 @@ public class IO {
         builder.append(" ");
         builder.append(b.getActivePlayer() > 0 ? "w":"b");
         builder.append(" ");
-        if(b.getCastlingChance(0)) builder.append("Q");
-        if(b.getCastlingChance(1)) builder.append("K");
-        if(b.getCastlingChance(2)) builder.append("q");
-        if(b.getCastlingChance(3)) builder.append("k");
+        boolean anyCastling = false;
+        if(b.getCastlingChance(0)) {
+            anyCastling = true;
+            builder.append("Q");
+        }
+        if(b.getCastlingChance(1)) {
+            anyCastling = true;
+            builder.append("K");
+        }
+        if(b.getCastlingChance(2)) {
+            anyCastling = true;
+            builder.append("q");
+        }
+        if(b.getCastlingChance(3)) {
+            anyCastling = true;
+            builder.append("k");
+        }
+        if(anyCastling == false){
+            builder.append("-");
+        }
 
         for(int i = 0; i < 8; i++){
             if(b.getEnPassantChance(i)){
@@ -157,10 +184,6 @@ public class IO {
 
         return builder.toString();
     }
-
-//    public static void main(String[] args) {
-//        //Board b = IO.read_FEN(new SlowBoard())
-//    }
 
     /**
      * returns the char for any given piece
@@ -218,6 +241,21 @@ public class IO {
             if (c >= '0' && c <= '9'){
                 return c - '0';
             }
+        }catch (Exception e){
+
+        }
+        return -1;
+    }
+
+    /**
+     * if the string represents a number, the number will be returned.
+     * If the string represents something else, -1 will be returned.
+     * @param c     the number represented by the string
+     * @return
+     */
+    public static double getNumber(String c){
+        try{
+            return Double.parseDouble(c);
         }catch (Exception e){
 
         }
@@ -291,9 +329,226 @@ public class IO {
         return result.toString();
     }
 
+    public static HashMap<String, Object> parseCommands(String[] commands){
+        String currentCommand = "";
+        HashMap<String, List<String>> temp = new HashMap<>();
+        for(String s:commands){
+            if(s.length() == 0) continue;
+            if(s.startsWith("-")){
+                s = s.toLowerCase();
+                if(s.length() == 1) temp.get(currentCommand).add("-");
+                else{
+                    currentCommand = s.substring(1);
+                    temp.put(currentCommand, new LinkedList<>());
+                }
+            }else{
+                temp.get(currentCommand).add(s);
+            }
+        }
+
+        HashMap<String, Object> map = new HashMap<>();
+        for(String key:temp.keySet()){
+            List<String> s = temp.get(key);
+            if(s.size() == 0){
+                map.put(key, true);
+            }
+            else if(s.size() == 1){
+                switch (s.get(0)){
+                    case "true": map.put(key, true);break;
+                    case "false": map.put(key, false);break;
+                    default:{
+                        double val = getNumber(s.get(0));
+                        if(val != -1){
+                            map.put(key, val);
+                        }else{
+                            map.put(key, s.get(0));
+                        }
+                    }
+                }
+            }else{
+                StringBuilder full = new StringBuilder();
+                for(int i = 0; i < s.size(); i++){
+                    full.append(s.get(i));
+                    if(i != s.size()-1){
+                        full.append(" ");
+                    }
+                }
+                map.put(key, full.toString());
+            }
+        }
+
+        return map;
+
+    }
+
+    /**
+     * creates an AI using the following commands.
+     * it uses the SystematicOrderer, SimpleReducer and FinnEvaluator.
+     * available commands:
+     *
+     *
+     *      limit           [Integer]       the search limit (either in ms, or depth)
+     *      mode            (time, depth)   telling the method to use a time limit or depth limit
+     *      qdepth          [Integer]       the quiscence search depth
+     *
+     *      reducing        [3x Integer]    1. reduction value
+     *                                      2. minimum depth at which reduction can occur
+     *                                      3. minimum amount of moves after which reduction can occur
+     *
+     *      transposition   [Boolean]       enables/disables transposition tables
+     *      nulls           [Boolean]       enables/disables null moves
+     *      lmr             [Boolean]       enables/disables late move reduction
+     *      debug           [Boolean]       enables/disables output printing
+     *      iteration       [Boolean]       enables/disables iterative deepening
+     *      killers         [Boolean]       enables/disables killer heuristic
+     *
+     * @param map
+     * @return
+     */
+    public static AI parseAI(HashMap<String, Object> map){
+
+        int limit = 3000;
+        int qDepth = 4;
+        int mode = PVSearch.FLAG_TIME_LIMIT;
+
+        int red_reduction = 1;
+        int red_minDepth = 3;
+        int red_minMoves = 10;
+
+        if(map.containsKey("limit")){
+            limit = (int) ((double) map.get("limit"));
+        }if(map.containsKey("qdepth")){
+            qDepth = (int) ((double) map.get("qdepth"));
+        }if(map.containsKey("mode")){
+            if(map.get("mode").equals("time")){
+                mode = PVSearch.FLAG_TIME_LIMIT;
+            }else{
+                mode = PVSearch.FLAG_DEPTH_LIMIT;
+            }
+        }if(map.containsKey("reducing")){
+            String[] split = ((String)map.get("reducing")).split(" ");
+            red_reduction = Integer.parseInt(split[0]);
+            red_minDepth = Integer.parseInt(split[1]);
+            red_minMoves = Integer.parseInt(split[2]);
+        }
+
+        PVSearch pvSearch = new PVSearch(
+                new FinnEvaluator(),
+                new SystematicOrderer(),
+                new SimpleReducer(red_reduction, red_minDepth, red_minMoves),
+                mode,limit,qDepth);
+
+        if(map.containsKey("transposition")){
+            pvSearch.setUse_transposition((Boolean)map.get("transposition"));
+        }if(map.containsKey("nulls")){
+            pvSearch.setUse_null_moves((Boolean)map.get("nulls"));
+        }if(map.containsKey("iteration")){
+            pvSearch.setUse_iteration((Boolean)map.get("iteration"));
+        }if(map.containsKey("lmr")){
+            pvSearch.setUse_LMR((Boolean)map.get("lmr"));
+        }if(map.containsKey("debug")){
+            pvSearch.setPrint_overview((Boolean)map.get("debug"));
+        }if(map.containsKey("killers")){
+            pvSearch.setUse_killer_heuristic((Boolean)map.get("killers"));
+        }
+
+        return pvSearch;
+    }
+
+    /**
+     * generates a board object using the following commands. it uses
+     * the SlowBoard implementation.
+     *
+     *      fen         [String]            fen-key for the board
+     *
+     * @param map
+     * @return
+     */
+    public static Board parseBoard(HashMap<String, Object> map){
+        if(map.containsKey("fen")){
+            return IO.read_FEN(new SlowBoard(), (String) map.get("fen"));
+        }else{
+            return new SlowBoard(Setup.DEFAULT);
+        }
+    }
+
+    /**
+     * reads the input keys and parses them according to
+     * @link parseBoard
+     * @link parseAI
+     *
+     * It returns the best move as an integer according to the following formula:
+     *      = (x_from + 8 * y_from) * 64 + (y_to + 8 * y_to)
+     *
+     * assuming v is the return value, x_from, y_from, x_to and y_to can be extracted
+     * the following way:
+     *
+     *      t = mod(v,64)
+     *      f = floor(v/64)
+     *
+     *      x_from = mod(f,8)
+     *      y_from = floor(f/8)
+     *      x_to = mod(t,8)
+     *      y_to = floor(t/8)
+     *
+     * @param keys
+     * @return
+     */
+    public static int parseInputForBestMove(String[] keys){
+        HashMap<String, Object> map = parseCommands(keys);
+
+        AI ai = parseAI(map);
+        Board board = IO.parseBoard(map);
+
+        System.out.println(board);
+
+        Move m = ai.bestMove(board);
+
+        int x_from = board.x(m.getFrom());
+        int y_from = board.y(m.getFrom());
+        int x_to = board.x(m.getTo());
+        int y_to = board.y(m.getTo());
+
+        int indexFrom = x_from + 8 * y_from;
+        int indexTo = x_to + 8 * y_to;
+
+        return indexFrom * 64 + indexTo;
+    }
+
+    /**
+     * generates a game object using the following commands:
+     *
+     *
+     *
+     * @param commands
+     * @return
+     */
+    public static Game parseGame(String[] commands){
+        HashMap<String, Object> map = parseCommands(commands);
+
+        Board b = new SlowBoard(Setup.DEFAULT);
+        if(map.containsKey("fen")){
+            String fen = (String) map.get("fen");
+            b = IO.read_FEN(b, fen);
+        }
+
+        int w_qDepth;
+        int b_qDepth;
+
+        int w_limit;
+        int b_limit;
+
+        int w_mode;
+        int b_mode;
+
+        //AI ai1 = new PVSearch();
+
+        return null;
+    }
+
+
+
     public static void main(String[] args) {
-        SlowBoard b = IO.read_FEN(new SlowBoard(), "6k1/p4ppp/8/8/1p1K1P1P/1N4P1/r2N4/8 w Kqk c6");
-        System.out.println(b.getBoard_meta_informtion());
-        System.out.println(IO.write_FEN(b));
+        System.exit(parseInputForBestMove(args));
     }
 }

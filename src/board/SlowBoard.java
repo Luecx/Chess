@@ -805,16 +805,11 @@ public class SlowBoard extends Board<SlowBoard> {
                 new FinnEvaluator(),
                 new SystematicOrderer(),
                 new SimpleReducer(),
-                PVSearch.FLAG_DEPTH_LIMIT,
-                10,0);
+                PVSearch.FLAG_TIME_LIMIT,
+                1000,4);
 
 
-        ai.setUse_iteration(true);
-        ai.setUse_null_moves(true);
-        ai.setPrint_overview(true);
-        ai.setUse_killer_heuristic(true);
-        ai.setUse_LMR(true);
-        ai.setUse_transposition(true);
+
 
 //        System.out.println(ai.bestMove(b));
 //
