@@ -10,6 +10,7 @@ public abstract class Board<T extends Board<T>> {
 
 
     protected byte activePlayer = 1;
+    private boolean isEndgame = false;
     protected Stack<Move> moveHistory = new Stack<>();
 
     public Board(Setup setup) {
@@ -290,5 +291,21 @@ public abstract class Board<T extends Board<T>> {
      */
     public byte getActivePlayer() {
         return activePlayer;
+    }
+
+    /**
+     * returns true if it is the endagme
+     * @return endgame flag
+     */
+    public boolean isEndgame() {
+        return isEndgame;
+    }
+
+    /**
+     * returns sets the isEndgame flag
+     * @param endgame      the flag
+     */
+    public void setEndgame(boolean endgame) {
+        isEndgame = endgame;
     }
 }

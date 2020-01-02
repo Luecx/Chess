@@ -51,7 +51,7 @@ public class SystematicOrderer implements Orderer {
         //TODO: add stuff about the proper depth
         if (transpositionTable != null && pvMoves.size() == 0) {
             TranspositionEntry en = (TranspositionEntry) transpositionTable.get(zobrist);
-            if (en != null && en.getDepth() <= depth) {
+            if (en != null) {
                 Move hashMove = en.getBestMove();
                 int index = collection.indexOf(hashMove);
                 if (hashMove != null && index != -1) {

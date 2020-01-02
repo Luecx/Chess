@@ -238,6 +238,10 @@ public class IO {
     public static String algebraicNotation(Board board, Move move){
         StringBuilder result = new StringBuilder();
 
+        if (move == null) {
+            return "";
+        }
+
         if(Math.abs(move.getPieceFrom()) == 6){
             if(move.getTo() - move.getFrom() == 2){
                 return "O-O";

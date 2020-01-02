@@ -4,6 +4,8 @@ import board.Board;
 import game.ai.tools.tensor.Tensor2D;
 import game.ai.tools.tensor.Tensor3D;
 
+import static game.ai.evaluator.FinnEvaluator.*;
+
 public class LateGameEvaluator implements Evaluator {
 
     public static final Tensor2D PAWN_VALUES = new Tensor2D(new double[][]{
@@ -30,7 +32,7 @@ public class LateGameEvaluator implements Evaluator {
 
     public static final Tensor2D ROOK_VALUES = new Tensor2D(new double[][]{
             {0, 0, 0, 0, 0, 0, 0, 0},
-            {5, 10, 10, 10, 10, 10, 10, 5},
+            {5, 20, 20, 20, 20, 20, 20, 5},
             {-5, 0, 0, 0, 0, 0, 0, -5},
             {-5, 0, 0, 0, 0, 0, 0, -5},
             {-5, 0, 0, 0, 0, 0, 0, -5},
@@ -53,8 +55,8 @@ public class LateGameEvaluator implements Evaluator {
             {-20, -10, -10, -5, -5, -10, -10, -20},
             {-10, 0, 0, 0, 0, 0, 0, -10},
             {-10, 0, 5, 5, 5, 5, 0, -10},
-            {-5, 0, 5, 5, 5, 5, 0, -5},
-            {0, 0, 5, 5, 5, 5, 0, -5},
+            {-5, 0, 5, 10, 10, 5, 0, -5},
+            {0, 0, 5, 10, 10, 5, 0, -5},
             {-10, 5, 5, 5, 5, 5, 0, -10},
             {-10, 0, 5, 0, 0, 0, 0, -10},
             {-20, -10, -10, -5, -5, -10, -10, -20}
@@ -72,8 +74,22 @@ public class LateGameEvaluator implements Evaluator {
     });
 
     public static final int[] EVALUATE_PRICE = new int[]{0, 100, 500, 320, 330, 900, 20000};
-    public static final Tensor3D POSITION_PRICE = new Tensor3D(PAWN_VALUES, ROOK_VALUES, KNIGHT_VALUES, BISHOP_VALUES, QUEEN_VALUES);
-
+    //public static final Tensor3D POSITION_PRICE = new Tensor3D(PAWN_VALUES, ROOK_VALUES, KNIGHT_VALUES, BISHOP_VALUES, QUEEN_VALUES);
+    public static final Tensor3D POSITION_PRICE =
+            new Tensor3D(
+                    addScalarToTensor(negateTensor(KING_VALUES_LATE), -EVALUATE_PRICE[6]),
+                    addScalarToTensor(negateTensor(QUEEN_VALUES), -EVALUATE_PRICE[5]),
+                    addScalarToTensor(negateTensor(BISHOP_VALUES), -EVALUATE_PRICE[4]),
+                    addScalarToTensor(negateTensor(KNIGHT_VALUES), -EVALUATE_PRICE[3]),
+                    addScalarToTensor(negateTensor(ROOK_VALUES), -EVALUATE_PRICE[2]),
+                    addScalarToTensor(negateTensor(PAWN_VALUES), -EVALUATE_PRICE[1]),
+                    addScalarToTensor(negateTensor(KING_VALUES_LATE), 0),
+                    addScalarToTensor(flipTensor(PAWN_VALUES), EVALUATE_PRICE[1]),
+                    addScalarToTensor(flipTensor(ROOK_VALUES), EVALUATE_PRICE[2]),
+                    addScalarToTensor(flipTensor(KNIGHT_VALUES), EVALUATE_PRICE[3]),
+                    addScalarToTensor(flipTensor(BISHOP_VALUES), EVALUATE_PRICE[4]),
+                    addScalarToTensor(flipTensor(QUEEN_VALUES), EVALUATE_PRICE[5]),
+                    addScalarToTensor(flipTensor(KING_VALUES_LATE), EVALUATE_PRICE[6]));
 
     @Override
     public double evaluate(Board board) {

@@ -11,7 +11,7 @@ public class SimpleReducer implements Reducer{
     public SimpleReducer() {
         this.late_move_reduction = 1;
         this.depth_to_never_reduce = 2;
-        this.num_moves_not_reduced = 10;
+        this.num_moves_not_reduced = 12;
     }
 
     public SimpleReducer(int late_move_reduction, int depth_to_never_reduce, int num_moves_not_reduced) {

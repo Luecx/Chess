@@ -4,6 +4,7 @@ import board.Board;
 import board.SlowBoard;
 import board.moves.Move;
 import game.ai.evaluator.Evaluator;
+import game.ai.evaluator.NoahEvaluator;
 import game.ai.ordering.Orderer;
 import game.ai.reducing.Reducer;
 import game.ai.tools.*;
@@ -216,6 +217,9 @@ public class PVSearch implements AI {
      */
     public void setUse_transposition(boolean use_transposition) {
         this.use_transposition = use_transposition;
+//        if (use_transposition){
+//            _transpositionTable = new TranspositionTable<>((int) (50E6));
+//        }
     }
 
     /**
@@ -376,6 +380,19 @@ public class PVSearch implements AI {
             throw new RuntimeException("Cannot limit non iterative deepening on time");
         }
 
+        //to set isEndgame
+        int totalMaterial = 0;
+        int v;
+        for (int i = 0; i < 8; i++) {
+            for (int n = 0; n < 8; n++) {
+                v = board.getPiece(i, n);
+                totalMaterial += NoahEvaluator.COMPLETE_EVALUATE_PRICE[v+6];
+            }
+        }
+        if (totalMaterial < 30000) {
+            _board.setEndgame(true);
+        }
+
         searchOverview = new SearchOverview(
                 use_iteration ? "ITERATIVE_DEEPENING":"",
                 limit_flag == FLAG_TIME_LIMIT ? "TIME_LIMIT":"DEPTH_LIMIT",
@@ -389,7 +406,7 @@ public class PVSearch implements AI {
         long time = System.currentTimeMillis();
 
         if (use_transposition){
-            _transpositionTable = new TranspositionTable<>((int) (50E6));
+            _transpositionTable = new TranspositionTable<>((int) (5E6));//50E6
         }
         if (use_iteration) {
             if(limit_flag == FLAG_TIME_LIMIT){
@@ -484,7 +501,8 @@ public class PVSearch implements AI {
     private TranspositionEntry transpositionLookUp(long zobrist, int depth) {
         if (use_transposition == false || !use_transposition || depth > transposition_store_depth + 2) return null;
         TranspositionEntry en = _transpositionTable.get(zobrist);
-        if (en != null && en.getDepth() >= (_depth - depth) && _board.getActivePlayer() == en.getColor()) {
+        if (en != null && _board.getActivePlayer() == en.getColor()) {
+            //&& en.getDepth() >= (_depth - depth) why is this here? it creates an error if removed
             return en;
         }
         return null;

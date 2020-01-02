@@ -16,6 +16,7 @@ import java.util.*;
 
 public class SlowBoard extends Board<SlowBoard> {
 
+    private boolean isEndgame = false;
 
     private static final int[] TURM_DIRECTIONS                  = {12, -12,   1, - 1};
     private static final int[] LAEUFER_DIRECTIONS               = {13,  11, -11, -13};
@@ -61,6 +62,22 @@ public class SlowBoard extends Board<SlowBoard> {
     protected long zobristKey;
     protected int[] field; //2x2 padding each side
     protected RepetitionList board_repetition_counter;
+
+    /**
+     * returns true if it is the endagme
+     * @return endgame flag
+     */
+    public boolean isEndgame() {
+        return isEndgame;
+    }
+
+    /**
+     * returns sets the isEndgame flag
+     * @param endgame      the flag
+     */
+    public void setEndgame(boolean endgame) {
+        isEndgame = endgame;
+    }
 
     public SlowBoard(Setup setup) {
         super(setup);

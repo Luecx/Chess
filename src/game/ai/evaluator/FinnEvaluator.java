@@ -34,7 +34,7 @@ public class FinnEvaluator implements Evaluator {
 
     public static final Tensor2D ROOK_VALUES = new Tensor2D(new double[][]{
             {0, 0, 0, 0, 0, 0, 0, 0},
-            {5, 10, 10, 10, 10, 10, 10, 5},
+            {5, 20, 20, 20, 20, 20, 20, 5},
             {-5, 0, 0, 0, 0, 0, 0, -5},
             {-5, 0, 0, 0, 0, 0, 0, -5},
             {-5, 0, 0, 0, 0, 0, 0, -5},
@@ -76,7 +76,7 @@ public class FinnEvaluator implements Evaluator {
     });
 
 
-    private static Tensor2D addScalarToTensor(Tensor2D tensor2D, double scalar){
+    public static Tensor2D addScalarToTensor(Tensor2D tensor2D, double scalar){
         for (int i = 0; i < 8; i++) {
             for (int n = 0; n < 8; n++) {
                 tensor2D.add(scalar, i,n);
@@ -85,13 +85,13 @@ public class FinnEvaluator implements Evaluator {
         return tensor2D;
     }
 
-    private static Tensor2D negateTensor(Tensor2D tensor2D){
+    public static Tensor2D negateTensor(Tensor2D tensor2D){
         Tensor2D tensor2D1 = new Tensor2D(tensor2D);
         tensor2D1.scale(-1);
         return tensor2D1;
     }
 
-    private static Tensor2D flipTensor(Tensor2D tensor2D){
+    public static Tensor2D flipTensor(Tensor2D tensor2D){
         Tensor2D res = new Tensor2D(8,8);
         for (int i = 0; i < 8; i++) {
             for (int n = 0; n < 8; n++) {
@@ -101,6 +101,7 @@ public class FinnEvaluator implements Evaluator {
         return res;
     }
 
+    //pawn, rook,knight,bishop,queen,king
     public static final int[] EVALUATE_PRICE = new int[]{0, 100, 500, 320, 330, 900, 20000};
     public static final Tensor3D POSITION_PRICE =
             new Tensor3D(
