@@ -809,9 +809,6 @@ public class SlowBoard extends Board<SlowBoard> {
                 PVSearch.FLAG_TIME_LIMIT,
                 1000,4);
 
-
-
-
 //        System.out.println(ai.bestMove(b));
 //
 

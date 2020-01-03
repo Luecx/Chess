@@ -210,6 +210,8 @@ public class NoahEvaluator implements Evaluator {
 
                 ev += pieceValue.get(v + 6, n, i);
 
+
+
                 switch (v) {
                     case -1:
                         bPawns[i+1] += 1;
@@ -223,31 +225,31 @@ public class NoahEvaluator implements Evaluator {
                     case -4:
                         numBlackBishops += 1;
                         break;
-//                    case 6: //king
-//                        //This is for king safety
-//                        if (!board.isEndgame()) {
-//                            for (int j = -1; i < 2; j++) {
-//                                if (i+j <= -1 || i+j>=8 || n+1<= -1 || n+1 >=8) {
-//                                    continue;
-//                                }
-//                                if (board.getPiece(i + j, n + 1) > 0) ev += 15;
-//                            }
-//                            if (board.getPiece(i - 1, n) > 0) ev += 10;
-//                            if (board.getPiece(i + 1, n) > 0) ev += 10;
-//                        }
-//                        break;
-//                    case -6:
-//                        if (!board.isEndgame()) {
-//                            for (int j = -1; i < 2; j++) {
-//                                if (i+j <= -1 || i+j>=8 || n-1<= -1 || n-1 >=8) {
-//                                    continue;
-//                                }
-//                                if (board.getPiece(i + j, n - 1) < 0) ev -= 15;
-//                            }
-//                            if (board.getPiece(i - 1, n) < 0) ev -= 10;
-//                            if (board.getPiece(i + 1, n) < 0) ev -= 10;
-//                        }
-//                    break;
+                    case 6: //king
+                        //This is for king safety
+                        if (!board.isEndgame()) {
+                            for (int j = -1; j < 2; j++) {
+                                if (i+j <= -1 || i+j>=8 || n+1<= -1 || n+1 >=8) {
+                                    continue;
+                                }
+                                if (board.getPiece(i + j, n + 1) > 0) ev += 15;
+                            }
+                            if (board.getPiece(i - 1, n) > 0) ev += 10;
+                            if (board.getPiece(i + 1, n) > 0) ev += 10;
+                        }
+                        break;
+                    case -6:
+                        if (!board.isEndgame()) {
+                            for (int j = -1; j < 2; j++) {
+                                if (i+j <= -1 || i+j>=8 || n-1<= -1 || n-1 >=8) {
+                                    continue;
+                                }
+                                if (board.getPiece(i + j, n - 1) < 0) ev -= 15;
+                            }
+                            if (board.getPiece(i - 1, n) < 0) ev -= 10;
+                            if (board.getPiece(i + 1, n) < 0) ev -= 10;
+                        }
+                        break;
                 }
             }
         }

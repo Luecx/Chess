@@ -84,14 +84,14 @@ public class Game {
             System.out.println("Moving: " + IO.algebraicNotation(board, m));
             board.move(m);
             listeners.forEach(Runnable::run);
-            System.out.println(board.isGameOver() + "  " + board.winner());
+            //System.out.println(board.isGameOver() + "  " + board.winner());
         }while(!humansTurn() && !board.isGameOver() && !isInterrupted){
             AI AI = board.getActivePlayer() == 1 ? (AI) playerWhite: (AI) playerBlack;
             Move move = AI.bestMove(board.copy());
             if(move == null)
                 return;
             System.out.println("Moving: " + IO.algebraicNotation(board, move));
-            System.out.println("fen: " + IO.write_FEN(board));
+            //System.out.println("fen: " + IO.write_FEN(board));
             board.move(move);
             listeners.forEach(Runnable::run);
         }
