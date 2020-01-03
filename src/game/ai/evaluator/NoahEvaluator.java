@@ -177,8 +177,6 @@ public class NoahEvaluator implements Evaluator {
     public double evaluate(Board board) {
 
         if (board.isGameOver()) {
-            if (board.winner() == 0)
-                System.out.println(board.winner());
             switch (board.winner()) {
                 case 1:
                     return 1000000000;

@@ -87,52 +87,52 @@ public class Frame extends JFrame implements KeyListener {
             keys.add(s);
         }
 
-//        keys.add("white");
-//        keys.add("black");
 
-        PVSearch ai1 = new PVSearch(
+        boolean w = true;
+
+        if(w){
+
+            keys.add("black");
+        }else{
+
+            keys.add("white");
+            keys.add("flip");
+        }
+
+        keys.add("white");
+
+
+
+        PVSearch ai = new PVSearch(
                 new NoahEvaluator(),
                 new SystematicOrderer(),
                 new SimpleReducer(),
                 PVSearch.FLAG_TIME_LIMIT,
-                500,4);
+                3000,4);
 
-        PVSearch ai2 = new PVSearch(
-                new FinnEvaluator(),
-                new SystematicOrderer(),
-                new SimpleReducer(),
-                PVSearch.FLAG_TIME_LIMIT,
-                500,4);
 
-        ai1.setUse_iteration(true);
-        ai1.setUse_null_moves(true);
-        ai1.setPrint_overview(true);
-        ai1.setUse_killer_heuristic(true);
-        ai1.setUse_LMR(true);
-        ai1.setUse_transposition(false);
-        ai1.setPrint_overview(true);
+        ai.setUse_iteration(true);
+        ai.setUse_null_moves(true);
+        ai.setPrint_overview(true);
+        ai.setUse_killer_heuristic(true);
+        ai.setUse_LMR(true);
+        ai.setUse_transposition(true);
+        ai.setPrint_overview(true);
 
-        ai2.setUse_iteration(true);
-        ai2.setUse_null_moves(true);
-        ai2.setPrint_overview(true);
-        ai2.setUse_killer_heuristic(true);
-        ai2.setUse_LMR(true);
-        ai2.setUse_transposition(false);
 
         Player hm = new Player(){};
 
         //new Frame(b,new Player(){},ai1);
 
 
-        //Player white = keys.contains("white") ? hm:ai;
-        //Player black = keys.contains("black") ? hm:ai;
+        Player white = keys.contains("white") ? hm:ai;
+        Player black = keys.contains("black") ? hm:ai;
 
         boolean flip = keys.contains("flip");
 
 
-        new Frame(b,ai1,ai2);
-        //new Frame(b,new Player(){},ai1);
-        //new Frame(b, white, black).setFlippedBoard(flip);
+         //new Frame(b,new Player(){},ai1);
+        new Frame(b, white, black).setFlippedBoard(flip);
     }
 
     @Override

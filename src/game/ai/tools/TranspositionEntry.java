@@ -46,7 +46,7 @@ public class TranspositionEntry {
         this.val = val;
     }
 
-    public int getDepth() {
+    public int getDepthLeft() {
         return depth;
     }
 

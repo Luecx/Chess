@@ -15,7 +15,7 @@ public class GamePanelButton extends JButton {
             Graphics2D g2d = (Graphics2D) g;
             g2d.getRenderingHints().add(new RenderingHints(
                     RenderingHints.KEY_ANTIALIASING,
-                    RenderingHints.VALUE_ANTIALIAS_ON));
+                    RenderingHints.VALUE_ANTIALIAS_OFF));
             g2d.getRenderingHints().add(new RenderingHints(
                     RenderingHints.KEY_ALPHA_INTERPOLATION,
                     RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY));
@@ -24,7 +24,7 @@ public class GamePanelButton extends JButton {
                     RenderingHints.VALUE_DITHER_ENABLE));
             g2d.getRenderingHints().add(new RenderingHints(
                     RenderingHints.KEY_INTERPOLATION,
-                    RenderingHints.VALUE_INTERPOLATION_BICUBIC));
+                    RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR));
             g2d.getRenderingHints().add(new RenderingHints(
                     RenderingHints.KEY_RENDERING,
                     RenderingHints.VALUE_RENDER_QUALITY));

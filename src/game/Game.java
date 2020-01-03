@@ -91,6 +91,7 @@ public class Game {
             if(move == null)
                 return;
             System.out.println("Moving: " + IO.algebraicNotation(board, move));
+            System.out.println("fen: " + IO.write_FEN(board));
             board.move(move);
             listeners.forEach(Runnable::run);
         }

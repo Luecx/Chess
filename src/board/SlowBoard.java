@@ -6,6 +6,7 @@ import board.repetitions.RepetitionList;
 import board.setup.Setup;
 import game.Player;
 import game.ai.evaluator.FinnEvaluator;
+import game.ai.evaluator.NoahEvaluator;
 import game.ai.ordering.SystematicOrderer;
 import game.ai.reducing.SimpleReducer;
 import game.ai.search.PVSearch;
@@ -802,7 +803,7 @@ public class SlowBoard extends Board<SlowBoard> {
 
 
         PVSearch ai = new PVSearch(
-                new FinnEvaluator(),
+                new NoahEvaluator(),
                 new SystematicOrderer(),
                 new SimpleReducer(),
                 PVSearch.FLAG_TIME_LIMIT,
