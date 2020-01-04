@@ -11,6 +11,7 @@ import game.ai.ordering.SystematicOrderer;
 import game.ai.reducing.SimpleReducer;
 import game.ai.search.PVSearch;
 import io.IO;
+import visual.ColorScheme;
 import visual.Frame;
 
 import java.util.*;
@@ -800,20 +801,20 @@ public class SlowBoard extends Board<SlowBoard> {
 
     public static void main(String[] args) {
         SlowBoard b = new SlowBoard(Setup.DEFAULT);
+        b = IO.read_FEN(b, "8/p4k2/5b2/8/8/4RK2/8/8 w - - 0 1");
 
 
-        PVSearch ai = new PVSearch(
-                new NoahEvaluator(),
-                new SystematicOrderer(),
-                new SimpleReducer(),
-                PVSearch.FLAG_TIME_LIMIT,
-                1000,4);
+        NoahEvaluator evaluator = new NoahEvaluator();
+        FinnEvaluator finnEvaluator = new FinnEvaluator();
+        System.out.println(evaluator.evaluate(b));
+        System.out.println(finnEvaluator.evaluate(b));
+
 
 //        System.out.println(ai.bestMove(b));
 //
 
-        new Frame(b, new Player(){}, ai);
-
+//        new Frame(b, new Player(){}, ai);
+        new Frame(b, new Player(){}, new Player(){}, ColorScheme.GRAY);
 
 
     }

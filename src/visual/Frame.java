@@ -65,6 +65,11 @@ public class Frame extends JFrame implements KeyListener {
         this.gamePanel.render();
     }
 
+    public Frame(Board board, Player white, Player black, ColorScheme colorScheme) {
+        this(board, white, black);
+        gamePanel.setColorScheme(colorScheme);
+    }
+
     public boolean isFlippedBoard() {
         return gamePanel.isFlippedBoard();
     }
@@ -88,7 +93,7 @@ public class Frame extends JFrame implements KeyListener {
         }
 
 
-        boolean w = true;
+        boolean w = false;
 
         if(w){
 
@@ -99,16 +104,15 @@ public class Frame extends JFrame implements KeyListener {
             keys.add("flip");
         }
 
-        keys.add("white");
 
 
 
         PVSearch ai = new PVSearch(
-                new NoahEvaluator(),
+                new FinnEvaluator(),
                 new SystematicOrderer(),
                 new SimpleReducer(),
                 PVSearch.FLAG_TIME_LIMIT,
-                3000,4);
+                2500,4);
 
 
         ai.setUse_iteration(true);

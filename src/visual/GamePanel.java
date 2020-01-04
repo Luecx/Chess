@@ -16,25 +16,13 @@ import java.awt.*;
  *
  */
 public class GamePanel extends JPanel {
+    
+    
+    private ColorScheme colorScheme = ColorScheme.GREEN;
 
 
 
-    public static Color color_white = new Color(0xEBECD0);
-    public static Color color_black = new Color(0x779556);
-
-    public static Color color_selected_white = new Color(0xF6F879);
-    public static Color color_selected_black = new Color(0xB9CC36);
-
-    public static Color color_lastMove_white = new Color(0xF6F879);
-    public static Color color_lastMove_black = new Color(0xB9CC36);
-
-    public static Color color_available_white = new Color(0xadb066);
-    public static Color color_available_black = new Color(0xB09F54);
-
-    public static Color color_takeable_white = new Color(0xC8342F);
-    public static Color color_takeable_black = new Color(0xC8342F);
-
-//    public static Color color_white = new Color(0xCCE5FF);
+//    public static Color colorScheme.getColor_white() = new Color(0xCCE5FF);
 //    public static Color color_black = new Color(0x004C99);
 //
 //    public static Color color_selected_white = new Color(0xF6F879);
@@ -79,7 +67,7 @@ public class GamePanel extends JPanel {
 
         for (int i = 7; i >= 0; i--) {
             for (int n = 0; n < 8; n++) {
-                GamePanelButton b = new GamePanelButton();
+                GamePanelButton b = new GamePanelButton(this, n,i);
 
                 b.setLayout(null);
                 b.setBorder(new LineBorder(Color.black, 0));
@@ -120,7 +108,15 @@ public class GamePanel extends JPanel {
             return buttons[7-x][7-y];
         }
     }
-    
+
+    public ColorScheme getColorScheme() {
+        return colorScheme;
+    }
+
+    public void setColorScheme(ColorScheme colorScheme) {
+        this.colorScheme = colorScheme;
+    }
+
     private void renderIcon(int x, int y){
 
         PieceImages img = PieceImages.getImage(g.getBoard().getPiece(x,y));
@@ -145,7 +141,9 @@ public class GamePanel extends JPanel {
     public void renderBackground() {
         for (int i = 0; i < 8; i++) {
             for (int n = 0; n < 8; n++) {
-                getButton(i,n).setBackground((i % 2 == 1 && n % 2 == 0 || i % 2 == 0 && n % 2 == 1 ? color_white : color_black));
+                getButton(i,n).setBackground((i % 2 == 1 && n % 2 == 0 || i % 2 == 0 && n % 2 == 1 ?
+                        colorScheme.getColor_white() :
+                        colorScheme.getColor_black()));
                 renderIcon(i,n);
             }
         }
@@ -181,36 +179,36 @@ public class GamePanel extends JPanel {
     private void renderSquarePrevMove(int i, int n){
         if(!renderLastMove) return;
         if(isWhiteSquare(i,n)){
-            getButton(i,n).setBackground(color_lastMove_white);
+            getButton(i,n).setBackground(colorScheme.getColor_lastMove_white());
         }else{
-            getButton(i,n).setBackground(color_lastMove_black);
+            getButton(i,n).setBackground(colorScheme.getColor_lastMove_black());
         }
     }
 
     private void renderSquareAvailable(int i, int n){
         if(!renderAvailableCells) return;
         if(isWhiteSquare(i,n)){
-            getButton(i,n).setBackground(color_available_white);
+            getButton(i,n).setBackground(colorScheme.getColor_available_white());
         }else{
-            getButton(i,n).setBackground(color_available_black);
+            getButton(i,n).setBackground(colorScheme.getColor_available_black());
         }
     }
 
     private void renderSquareTakeable(int i, int n){
         if(!renderTakeableCells) return;
         if(isWhiteSquare(i,n)){
-            getButton(i,n).setBackground(color_takeable_white);
+            getButton(i,n).setBackground(colorScheme.getColor_takeable_white());
         }else{
-            getButton(i,n).setBackground(color_takeable_black);
+            getButton(i,n).setBackground(colorScheme.getColor_takeable_black());
         }
     }
 
     private void renderSquareSelected(int i, int n){
         if(!renderSelectedCell) return;
         if(isWhiteSquare(i,n)){
-            getButton(i,n).setBackground(color_selected_white);
+            getButton(i,n).setBackground(colorScheme.getColor_selected_white());
         }else{
-            getButton(i,n).setBackground(color_selected_black);
+            getButton(i,n).setBackground(colorScheme.getColor_selected_black());
         }
     }
 
@@ -291,6 +289,8 @@ public class GamePanel extends JPanel {
 
         this.render();
     }
+
+
 
 
 }

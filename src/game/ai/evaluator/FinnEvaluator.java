@@ -152,18 +152,18 @@ public class FinnEvaluator implements Evaluator {
         Board b = new SlowBoard(Setup.DEFAULT);
         b = IO.read_FEN(new SlowBoard(), "8/8/3p4/8/8/3P4/8/8");
 
-        FinnEvaluator evaluator = new FinnEvaluator();
+        Evaluator evaluator = new NoahEvaluator();
 
         System.out.println(evaluator.evaluate(b));
 
-//        for(int i = 0; i < 4; i++){
-//            long t = System.nanoTime();
-//            int index = 0;
-//            while(index ++ < 1E7){
-//                evaluator.evaluate(b);
-//            }
-//            System.out.println((System.nanoTime() - t) / 1E9 + " s");
-//        }
+        for(int i = 0; i < 4; i++){
+            long t = System.nanoTime();
+            int index = 0;
+            while(index ++ < 1E7){
+                evaluator.evaluate(b);
+            }
+            System.out.println((System.nanoTime() - t) / 1E9 + " s");
+        }
 
     }
 }

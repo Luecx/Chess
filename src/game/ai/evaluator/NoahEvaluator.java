@@ -6,6 +6,8 @@ import game.ai.tools.tensor.Tensor3D;
 import game.ai.evaluator.FinnEvaluator;
 import game.ai.evaluator.LateGameEvaluator;
 
+import java.util.Arrays;
+
 public class NoahEvaluator implements Evaluator {
 
     public static final Tensor2D B_PAWN_VALUES = new Tensor2D(new double[][]{
@@ -253,6 +255,7 @@ public class NoahEvaluator implements Evaluator {
                 }
             }
         }
+
 
         //bishop pair
         if (numWhiteBishops > 1) ev += 50;
