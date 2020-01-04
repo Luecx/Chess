@@ -1,8 +1,10 @@
-package game.ai.tools;
+package io;
 
 import board.Board;
 import board.SlowBoard;
+import board.moves.Move;
 import board.setup.Setup;
+import game.ai.search.PVSearch;
 import io.IO;
 
 
@@ -12,7 +14,8 @@ import io.IO;
 
 import java.util.*;
 public class UCI {
-    static String ENGINENAME = ""; // we should decide on a name of the engine
+    static String ENGINENAME = "Waldi"; // we should decide on a name of the engine
+    private static Board b = new SlowBoard(Setup.DEFAULT);;
     public static void uciCommunication() {
         while (true)
         {
@@ -50,7 +53,7 @@ public class UCI {
     }
     public static void inputUCI() {
         System.out.println("id name "+ENGINENAME);
-        System.out.println("id author Jonathan");
+        System.out.println("id author Finn/Noah");
         //options go here
         System.out.println("uciok");
     }
@@ -63,8 +66,7 @@ public class UCI {
     public static void inputUCINewGame() {
         //add code here
     }
-    public static SlowBoard inputPosition(String input) {
-        SlowBoard b = new SlowBoard(Setup.DEFAULT);;
+    public static Board inputPosition(String input) {
         input=input.substring(9).concat(" ");
         if (input.contains("startpos ")) {
             input=input.substring(9);
@@ -76,12 +78,17 @@ public class UCI {
         }
         if (input.contains("moves")) {
             input=input.substring(input.indexOf("moves")+6);
-            //make each of the moves
+            String[] moveArr = input.split("\\s+");
+            for (String uciMove : moveArr) {
+                Move move = IO.uciToMove(uciMove, b);
+                b.move(move);
+            }
         }
         return b;
     }
     public static void inputGo() {
-        //search for best move
+        Move best = PVSearch.bestMove(b);
+        System.out.println(IO.moveToUCI(best,b));
     }
     public static void inputPrint() {
         //BoardGeneration.drawArray(UserInterface.WP,UserInterface.WN,UserInterface.WB,UserInterface.WR,UserInterface.WQ,UserInterface.WK,UserInterface.BP,UserInterface.BN,UserInterface.BB,UserInterface.BR,UserInterface.BQ,UserInterface.BK);

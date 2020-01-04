@@ -546,9 +546,59 @@ public class IO {
         return null;
     }
 
+    //give the rank as a letter, get it back as an int
+    private static int rankToIndex(char rank) {
+        return "abcdefgh".indexOf(rank);
+    }
+    private static char indexToRank(int index) {
+        return "abcdefgh".charAt(index-1);
+    }
+
+    /**
+     * take a move in UCI notation (e2e4) and
+     * transforms it to move object
+     * @param input the UCI notation
+     * @param board the board state
+     * @return the move object
+     */
+    public static Move uciToMove(String input, Board board) {
+        int fromx;
+        int fromy;
+        int tox;
+        int toy;
+        int from;
+        int to;
+        fromx = rankToIndex(input.charAt(0));
+        tox = input.charAt(2);
+        fromy = Character.getNumericValue(input.charAt(1)) - 1;
+        toy = Character.getNumericValue(input.charAt(3)) - 1;
+        from = board.index(fromx,fromy);
+        to = board.index(tox,toy);
+
+        return new Move(from,to,board);
+    }
+
+    //Move object -> e2e4
+    public static String moveToUCI(Move move, Board board) {
+        String toReturn = "";
+        int tox = board.x(move.getTo());
+        int toy = board.y(move.getTo());
+        int fromx = board.x(move.getFrom());
+        int fromy = board.y(move.getFrom());
+
+        toReturn = toReturn + indexToRank(fromx);
+        toReturn = toReturn + Integer.toString(fromy+1);
+        toReturn = toReturn + indexToRank(tox);
+        toReturn = toReturn + Integer.toString(toy+1);
+
+        return toReturn;
+    }
 
 
     public static void main(String[] args) {
-        System.exit(parseInputForBestMove(args));
+        //System.exit(parseInputForBestMove(args));
+        Board b = new SlowBoard();
+        Move move = new Move(32,34,b);
+        System.out.println(moveToUCI(move,b));
     }
 }

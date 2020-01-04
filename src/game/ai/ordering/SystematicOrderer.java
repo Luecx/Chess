@@ -48,7 +48,6 @@ public class SystematicOrderer implements Orderer {
         //hash moves
 
         long zobrist = board.zobrist();
-        //TODO: add stuff about the proper depth
         if (transpositionTable != null && pvMoves.size() == 0) {
             TranspositionEntry en = (TranspositionEntry) transpositionTable.get(zobrist);
             if (en != null) {
