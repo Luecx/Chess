@@ -6,3 +6,5 @@ out/
 javadoc/
 
 Chess.iml
+
+python/lichess-bot/.venv/

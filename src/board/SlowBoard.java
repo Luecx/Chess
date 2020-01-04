@@ -801,20 +801,27 @@ public class SlowBoard extends Board<SlowBoard> {
 
     public static void main(String[] args) {
         SlowBoard b = new SlowBoard(Setup.DEFAULT);
-        b = IO.read_FEN(b, "8/p4k2/5b2/8/8/4RK2/8/8 w - - 0 1");
+        b = IO.read_FEN(b, "1r3r1k/1p4p1/p7/2R1Q2p/5q2/P7/1P4PP/2R3K1 b - - 0 1");
+
+        PVSearch ai = new PVSearch(
+                new FinnEvaluator(),
+                new SystematicOrderer(),
+                new SimpleReducer(),
+                PVSearch.FLAG_DEPTH_LIMIT,
+                12,4);
 
 
-        NoahEvaluator evaluator = new NoahEvaluator();
-        FinnEvaluator finnEvaluator = new FinnEvaluator();
-        System.out.println(evaluator.evaluate(b));
-        System.out.println(finnEvaluator.evaluate(b));
+        ai.setUse_iteration(true);
+        ai.setUse_null_moves(true);
+        ai.setPrint_overview(true);
+        ai.setUse_killer_heuristic(true);
+        ai.setUse_LMR(true);
+        ai.setUse_transposition(true);
 
 
-//        System.out.println(ai.bestMove(b));
-//
+        //System.out.println(ai.bestMove(b));
 
-//        new Frame(b, new Player(){}, ai);
-        new Frame(b, new Player(){}, new Player(){}, ColorScheme.GRAY);
+        new Frame(b, new Player(){}, ai, ColorScheme.GRAY);
 
 
     }

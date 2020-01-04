@@ -34,11 +34,8 @@ public class PVSearch implements AI {
     private boolean use_killer_heuristic = true;   //flag for killer tables
     private int killer_count = 2;
     private int null_move_reduction = 2;            //how much to reduce null moves
-    private int depth_to_never_reduce = 2;          //how many plies to never reduce
-    private int late_move_reduction = 2;            //how many plies to reduce by in LMR
     private boolean use_LMR = true;                 //flag for LMR
-    private int num_moves_not_reduced;                  //the number of moves not to reduce (from the beginning of the list)
-    private int transposition_store_depth = 100;          //the depth after which we stop storing transpositions.
+    private int transposition_store_depth = 100;    //the depth after which we stop storing transpositions.
 
 
     private SearchOverview searchOverview;
@@ -90,42 +87,6 @@ public class PVSearch implements AI {
      */
     public void setPrint_overview(boolean print_overview) {
         this.print_overview = print_overview;
-    }
-
-    /**
-     * getter for the evaluator that is used to evaluate the
-     * board position at leaf-nodes
-     * @return  the evaluator
-     */
-    public Evaluator getEvaluator() {
-        return evaluator;
-    }
-
-    /**
-     * setter for the evaluator that is used to evaluate the
-     * board position at leaf-nodes
-     * @param evaluator the new evaluator
-     */
-    public void setEvaluator(Evaluator evaluator) {
-        this.evaluator = evaluator;
-    }
-
-    /**
-     * getter for the sorter that is used to sort the
-     * moves in order to reduce the search-space
-     * @return  the sorter
-     */
-    public Orderer getOrderer() {
-        return orderer;
-    }
-
-    /**
-     * setter for the sorter that is used to sort the
-     * moves in order to reduce the search-space
-     * @param orderer  the new sorter
-     */
-    public void setOrderer(Orderer orderer) {
-        this.orderer = orderer;
     }
 
     /**
@@ -285,19 +246,19 @@ public class PVSearch implements AI {
     }
 
     /**
-     * this method returns the number of ply null moves are reduced by
-     * @return      the amount of killers
+     * This method gets the use LMR flag
+     * @return the number of plies to reduce by
      */
-    public int getNull_move_reduction() {
-        return null_move_reduction;
+    public boolean isUse_LMR() {
+        return use_LMR;
     }
 
     /**
-     * this methods will set the number of ply null moves are reduced by
-     * @param reduction      the amount to reduce null moves by
+     * This method sets the use_LMR flag
+     * @param use_LMR      a flag for using LMR
      */
-    public void setNull_move_reduction(int reduction) {
-        this.null_move_reduction = reduction;
+    public void setUse_LMR(boolean use_LMR) {
+        this.use_LMR = use_LMR;
     }
 
     /**
@@ -309,26 +270,6 @@ public class PVSearch implements AI {
     public SearchOverview getSearchOverview() {
         return searchOverview;
     }
-
-
-
-
-    /**
-     * This method gets the use LMR flag
-     * @return the number of plies to reduce by
-     */
-    public boolean isUse_LMR() {
-        return use_LMR;
-    }
-    /**
-     * This method sets the use_LMR flag
-     * @param use_LMR      a flag for using LMR
-     */
-    public void setUse_LMR(boolean use_LMR) {
-        this.use_LMR = use_LMR;
-    }
-    
-
 
     /**
      * the reducer is used to determine the amount of depths to reduce a search for a given move
@@ -344,6 +285,42 @@ public class PVSearch implements AI {
      */
     public void setReducer(Reducer reducer) {
         this.reducer = reducer;
+    }
+
+    /**
+     * getter for the evaluator that is used to evaluate the
+     * board position at leaf-nodes
+     * @return  the evaluator
+     */
+    public Evaluator getEvaluator() {
+        return evaluator;
+    }
+
+    /**
+     * setter for the evaluator that is used to evaluate the
+     * board position at leaf-nodes
+     * @param evaluator the new evaluator
+     */
+    public void setEvaluator(Evaluator evaluator) {
+        this.evaluator = evaluator;
+    }
+
+    /**
+     * getter for the sorter that is used to sort the
+     * moves in order to reduce the search-space
+     * @return  the sorter
+     */
+    public Orderer getOrderer() {
+        return orderer;
+    }
+
+    /**
+     * setter for the sorter that is used to sort the
+     * moves in order to reduce the search-space
+     * @param orderer  the new sorter
+     */
+    public void setOrderer(Orderer orderer) {
+        this.orderer = orderer;
     }
 
     /**
@@ -744,6 +721,8 @@ public class PVSearch implements AI {
     private double Quiesce(double alpha, double beta, int depth_left) {
         _quiesceNodes++;
         double stand_pat = evaluator.evaluate(_board) * _board.getActivePlayer();
+        //System.out.println(depth_left);
+
         if (depth_left == 0) {
             _terminalNodes++;
             return stand_pat;
