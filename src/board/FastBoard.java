@@ -2,7 +2,9 @@ package board;
 
 import board.bitboards.BitBoard;
 import board.moves.Move;
+import board.moves.MoveList;
 import board.pieces.PieceList;
+import board.setup.Setup;
 
 import java.util.*;
 
@@ -403,6 +405,20 @@ public class FastBoard extends Board<FastBoard> {
     }
 
 
+    @Override
+    public MoveList getPseudoLegalMoves(MoveList list) {
+        return null;
+    }
+
+    @Override
+    public List<Move> getLegalMoves(MoveList list) {
+        return null;
+    }
+
+    @Override
+    public List<Move> getCaptureMoves(MoveList list) {
+        return null;
+    }
 
     @Override
     public FastBoard newInstance() {
@@ -414,7 +430,8 @@ public class FastBoard extends Board<FastBoard> {
     }
 
     public static void main(String[] args) {
-        FastBoard board = new FastBoard();
+        SlowBoard board = new SlowBoard(Setup.DEFAULT);
+        MoveList list = new MoveList(80);
 
         //System.out.println(board.getPseudoLegalMoves());
 
@@ -422,7 +439,7 @@ public class FastBoard extends Board<FastBoard> {
         long time = System.currentTimeMillis();
         int count = 0;
         while (System.currentTimeMillis()-time < 3E3){
-            board.getPseudoLegalMoves();
+            board.getPseudoLegalMoves(list);
             count ++;
         }
         System.out.println(count / 3);

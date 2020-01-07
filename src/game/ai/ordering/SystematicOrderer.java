@@ -23,11 +23,10 @@ public class SystematicOrderer implements Orderer {
 
         int initSize = collection.size();
 
-        ArrayList<T> pvMoves = new ArrayList<>(5);
-        ArrayList<T> hashMoves = new ArrayList<>(5);
-        ArrayList<T> captureMoves = new ArrayList<>(5);
-        ArrayList<T> killerMoves = new ArrayList<>(5);
-        ArrayList<T> nonCaptureMoves = new ArrayList<>(5);
+        ArrayList<T> pvMoves = new ArrayList<>(10);
+        ArrayList<T> captureMoves = new ArrayList<>(10);
+        ArrayList<T> killerMoves = new ArrayList<>(10);
+        ArrayList<T> nonCaptureMoves = new ArrayList<>(10);
 
         for (Move m:collection){
             NoahOrderer.setOrderPriority(m, board);
@@ -56,7 +55,6 @@ public class SystematicOrderer implements Orderer {
                 if (hashMove != null && index != -1) {
                     pvMoves.add(collection.get(index));
                     collection.remove(index);
-                    //System.out.println("hi mom");
                 }
             }
         }
@@ -66,13 +64,13 @@ public class SystematicOrderer implements Orderer {
         for(T m:collection){
             if(killerTable != null && killerTable.isKillerMove(depth, m)){
                 killerMoves.add(m);
-            }
-            else if(m.getPieceTo() != 0){
+            } else if(m.getPieceTo() != 0){
                 captureMoves.add(m);
             } else{
                 nonCaptureMoves.add(m);
             }
         }
+
 
 
         killerMoves.sort((o1, o2) -> {
@@ -94,11 +92,14 @@ public class SystematicOrderer implements Orderer {
             return -Integer.compare(p1,p2);
         });
 
+
+
         collection.clear();
         collection.addAll(pvMoves);
         collection.addAll(captureMoves);
         collection.addAll(killerMoves);
         collection.addAll(nonCaptureMoves);
+
 
 
         if(collection.size() != initSize){

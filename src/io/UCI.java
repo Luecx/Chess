@@ -43,7 +43,7 @@ public class UCI {
             }
             else if ("go".equals(inputString))
             {
-                inputGo();
+                //inputGo();
             }
             else if ("print".equals(inputString))
             {
@@ -58,6 +58,8 @@ public class UCI {
         System.out.println("uciok");
     }
     public static void inputSetOption(String inputString) {
+
+
         //set options
     }
     public static void inputIsReady() {
@@ -86,9 +88,48 @@ public class UCI {
         }
         return b;
     }
-    public static void inputGo() {
-        Move best = PVSearch.bestMove(b);
-        System.out.println(IO.moveToUCI(best,b));
+    public static void inputGo(String[] split) {
+
+        ArrayList<String> commands = new ArrayList<>();
+        for(String s:split){
+            commands.add(s);
+        }
+
+        int wtime = (int) 60E3;
+        int btime = (int) 60E3;
+
+        int winc = 0;
+        int binc = 0;
+
+        int movestogo = 0;
+
+        int mode = PVSearch.FLAG_TIME_LIMIT;
+        int limit = 5000;
+        int qdepth = 4;
+
+        if(commands.contains("wtime")){
+            wtime = Integer.parseInt(commands.get(commands.indexOf("wtime")+1));
+        }if(commands.contains("btime")){
+            btime = Integer.parseInt(commands.get(commands.indexOf("btime")+1));
+        }if(commands.contains("winc")){
+            winc = Integer.parseInt(commands.get(commands.indexOf("winc")+1));
+        }if(commands.contains("binc")){
+            binc = Integer.parseInt(commands.get(commands.indexOf("binc")+1));
+        }if(commands.contains("movestogo")){
+            movestogo = Integer.parseInt(commands.get(commands.indexOf("movestogo")+1));
+        }if(commands.contains("depth")){
+            mode = PVSearch.FLAG_DEPTH_LIMIT;
+            limit = Integer.parseInt(commands.get(commands.indexOf("depth")+1));
+        }if(commands.contains("movetime")){
+            mode = PVSearch.FLAG_TIME_LIMIT;
+            limit = Integer.parseInt(commands.get(commands.indexOf("movetime")+1));
+        }if(commands.contains("nodes")){
+            throw new RuntimeException("Not yet supported");
+        }if(commands.contains("mate")){
+            throw new RuntimeException("Not yet supported");
+        }
+        //Move best = PVSearch.bestMove(b);
+        //System.out.println(IO.moveToUCI(best,b));
     }
     public static void inputPrint() {
         //BoardGeneration.drawArray(UserInterface.WP,UserInterface.WN,UserInterface.WB,UserInterface.WR,UserInterface.WQ,UserInterface.WK,UserInterface.BP,UserInterface.BN,UserInterface.BB,UserInterface.BR,UserInterface.BQ,UserInterface.BK);

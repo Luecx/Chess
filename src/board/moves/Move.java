@@ -83,7 +83,7 @@ public class Move {
     public boolean getIsNull() { return isNull; }
 
     public Move copy() {
-        return new Move(from, to, pieceFrom, pieceTo);
+        return new Move(from, to, pieceFrom, pieceTo, metaInformation);
     }
 
     public int getOrderPriority() { return orderPriority; }
