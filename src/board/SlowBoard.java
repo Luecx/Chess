@@ -7,6 +7,7 @@ import board.repetitions.RepetitionList;
 import board.setup.Setup;
 import game.Player;
 import game.ai.evaluator.FinnEvaluator;
+import game.ai.evaluator.NoahEvaluator;
 import game.ai.ordering.SystematicOrderer;
 import game.ai.reducing.SimpleReducer;
 import game.ai.search.PVSearch;
@@ -236,7 +237,6 @@ public class SlowBoard extends Board<SlowBoard> {
             }
         }
         if(this.board_repetition_counter.add(this.zobrist())){
-            System.err.println(this);
             mask |= MASK_GAMEOVER;
         }
 
@@ -672,89 +672,7 @@ public class SlowBoard extends Board<SlowBoard> {
 
     @Override
     public List<Move> getCaptureMoves() {
-        return getCaptureMoves(new MoveList(20));
-
-//
-//        for (byte i = 0; i < 8; i++) {
-//            for (byte j = 0; j < 8; j++) {
-//                int index = index(i, j);
-//                if (field[index] * getActivePlayer() <= 0) continue;
-//
-//                if (field[index] == getActivePlayer()) { // Bauern
-//                    if (j == 0 || j == 7) break;
-//                    if (field[index + getActivePlayer() * 11] != INVALID && field[index + getActivePlayer() * 11] * getActivePlayer() < 0) {
-//                        moves.add(new Move(index, index + getActivePlayer() * 11, this));
-//                    }
-//                    if (field[index + getActivePlayer() * 13] != INVALID && field[index + getActivePlayer() * 13] * getActivePlayer() < 0) {
-//                        moves.add(new Move(index, index + getActivePlayer() * 13, this));
-//                    }
-//                } else if (getPiece(i, j) == getActivePlayer() * 3) { // Springer
-//                    for (int ar : SPRINGER_OFFSET) {
-//                        if (this.field[ar + index] != INVALID && field[ar + index] * getActivePlayer() < 0) {
-//                            moves.add(new Move(index, ar + index, this));
-//                        }
-//                    }
-//                } else if (getPiece(i, j) == getActivePlayer() * 2) { // Türme
-//
-//                    short mask = MASK_NONE;
-//                    switch (index){
-//                        case INDEX_WHITE_QUEENSIDE_ROOK:
-//                            if((board_meta_information & MASK_WHITE_QUEENSIDE_CASTLING) > 0)
-//                                mask = MASK_WHITE_QUEENSIDE_CASTLING;
-//                            break;
-//                        case INDEX_WHITE_KINGSIDE_ROOK:
-//                            if((board_meta_information & MASK_WHITE_KINGSIDE_CASTLING) > 0)
-//                                mask = MASK_WHITE_KINGSIDE_CASTLING;
-//                            break;
-//                        case INDEX_BLACK_QUEENSIDE_ROOK:
-//                            if((board_meta_information & MASK_BLACK_QUEENSIDE_CASTLING) > 0)
-//                                mask = MASK_BLACK_QUEENSIDE_CASTLING;
-//                            break;
-//                        case INDEX_BLACK_KINGSIDE_ROOK:
-//                            if((board_meta_information & MASK_BLACK_KINGSIDE_CASTLING) > 0)
-//                                mask = MASK_BLACK_KINGSIDE_CASTLING;
-//                            break;
-//                    }
-//                    for (int dir : TURM_DIRECTIONS) {
-//                        slidingPiecesCapture(index, dir, moves, mask);
-//                    }
-//                }
-//
-//                else if (getPiece(i, j) == getActivePlayer() * 5) { // Dame
-//                    for (int dir : TURM_DIRECTIONS) {
-//                        slidingPiecesCapture(index, dir, moves, MASK_NONE);
-//                    }
-//                    for (int dir : LAEUFER_DIRECTIONS) {
-//                        slidingPiecesCapture(index, dir, moves,MASK_NONE);
-//                    }
-//                }
-//
-//                else if (getPiece(i, j) == getActivePlayer() * 4) { // Läufer
-//                    for (int dir : LAEUFER_DIRECTIONS) {
-//                        slidingPiecesCapture(index, dir, moves,MASK_NONE);
-//                    }
-//                }
-//
-//                else if (getPiece(i, j) == getActivePlayer() * 6) { //König
-//                    for (int ar : KOENIG_OFFSET) {
-//                        if (this.field[ar + index] != INVALID && field[ar + index] * getActivePlayer() < 0) {
-//                            if(this.getActivePlayer() == 1){
-//                                moves.add(new Move(index, ar + index, this, (short)
-//                                        (((board_meta_information & MASK_WHITE_QUEENSIDE_CASTLING) > 0 ? MASK_WHITE_QUEENSIDE_CASTLING:0) |
-//                                                ((board_meta_information & MASK_WHITE_KINGSIDE_CASTLING) > 0 ? MASK_WHITE_KINGSIDE_CASTLING :0))
-//                                ));
-//                            }else{
-//                                moves.add(new Move(index, ar + index, this, (short)
-//                                        (((board_meta_information & MASK_BLACK_QUEENSIDE_CASTLING) > 0 ? MASK_BLACK_QUEENSIDE_CASTLING:0) |
-//                                                ((board_meta_information & MASK_BLACK_KINGSIDE_CASTLING) > 0 ? MASK_BLACK_KINGSIDE_CASTLING:0))
-//                                ));
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//        return moves;
+        return getCaptureMoves(new MoveList(10));
     }
     //</editor-fold>
 
@@ -874,7 +792,6 @@ public class SlowBoard extends Board<SlowBoard> {
 
     public static void main(String[] args) {
         SlowBoard b = new SlowBoard(Setup.DEFAULT);
-        b = IO.read_FEN(b, "r2q1rk1/1pp1bppp/p1npbn2/4p1B1/B3P3/2NP1N2/PPPQ1PPP/2KR3R");
 
         PVSearch ai1 = new PVSearch(
                 new FinnEvaluator(),
@@ -882,13 +799,25 @@ public class SlowBoard extends Board<SlowBoard> {
                 new SimpleReducer(),
                 2,
                 8,
-                0);
-        ai1.setUse_killer_heuristic(false);
+                4);
+        ai1.setUse_killer_heuristic(true);
         ai1.setUse_null_moves(true);
         ai1.setUse_LMR(true);
         ai1.setUse_transposition(true);
 
-        new Frame(b, new Player() {}, ai1);
+        PVSearch ai2 = new PVSearch(
+                new NoahEvaluator(),
+                new SystematicOrderer(),
+                new SimpleReducer(),
+                2,
+                8,
+                4);
+        ai2.setUse_killer_heuristic(true);
+        ai2.setUse_null_moves(true);
+        ai2.setUse_LMR(true);
+        ai2.setUse_transposition(true);
+
+        new Frame(b, ai1,ai2);
     }
 
 }

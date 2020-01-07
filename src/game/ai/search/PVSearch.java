@@ -771,7 +771,6 @@ public class PVSearch implements AI {
     private double Quiesce(double alpha, double beta, int currentDepth, int depth_left) {
         _quiesceNodes++;
         double stand_pat = evaluator.evaluate(_board) * _board.getActivePlayer();
-        //System.out.println(depth_left);
 
         if (depth_left == 0) {
             _terminalNodes++;
@@ -783,6 +782,7 @@ public class PVSearch implements AI {
         }
         if (alpha < stand_pat)
             alpha = stand_pat;
+
         List<Move> allMoves =
                 use_move_lists ?
                         _board.getCaptureMoves(_buffer.get(currentDepth)):
@@ -790,7 +790,6 @@ public class PVSearch implements AI {
 
         orderer.sort(allMoves, 0, null, _board, null, null);
         for (Move m : allMoves) {
-            if(m.getPieceTo() == 0) continue;
             _board.move(m);
             double score = -Quiesce(-beta, -alpha, currentDepth + 1, depth_left - 1);
             _board.undoMove();

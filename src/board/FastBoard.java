@@ -431,7 +431,7 @@ public class FastBoard extends Board<FastBoard> {
 
     public static void main(String[] args) {
         SlowBoard board = new SlowBoard(Setup.DEFAULT);
-        MoveList list = new MoveList(80);
+        MoveList list = new MoveList(5);
 
         //System.out.println(board.getPseudoLegalMoves());
 
@@ -439,7 +439,7 @@ public class FastBoard extends Board<FastBoard> {
         long time = System.currentTimeMillis();
         int count = 0;
         while (System.currentTimeMillis()-time < 3E3){
-            board.getPseudoLegalMoves(list);
+            board.getCaptureMoves(list);
             count ++;
         }
         System.out.println(count / 3);
