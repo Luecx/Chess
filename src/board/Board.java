@@ -1,6 +1,7 @@
 package board;
 
 import board.moves.Move;
+import board.moves.MoveList;
 import board.setup.Setup;
 
 import java.util.List;
@@ -58,6 +59,26 @@ public abstract class Board<T extends Board<T>> {
      */
     public abstract List<Move> getPseudoLegalMoves();
 
+    /**
+     * It returns a list of all moves that are available for the current
+     * active player.
+     * <p>
+     * This method does not check any mate-threats!
+     * <p>
+     * @return All the available moves
+     */
+    public abstract List<Move> getPseudoLegalMoves(MoveList list);
+
+    /**
+     * It returns a list of all moves that are available for the current
+     * active player.
+     * <p>
+     * This method does check mate threats and will return a zero list
+     * if the king is checkmated.
+     *
+     * @return All the available moves
+     */
+    public abstract List<Move> getLegalMoves(MoveList list);
 
     /**
      * It returns a list of all moves that are available for the current
@@ -75,6 +96,12 @@ public abstract class Board<T extends Board<T>> {
      * @return
      */
     public abstract List<Move> getCaptureMoves();
+
+    /**
+     * returns a list off all moves that capture a piece.
+     * @return
+     */
+    public abstract List<Move> getCaptureMoves(MoveList list);
 
     /**
      * The method returns true if one side has won the game

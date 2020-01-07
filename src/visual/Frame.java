@@ -93,42 +93,42 @@ public class Frame extends JFrame implements KeyListener {
         }
 
 
-        PVSearch ai1 = new PVSearch(
-                new NoahEvaluator(),
-                new SystematicOrderer(),
-                new SimpleReducer(),
-                PVSearch.FLAG_TIME_LIMIT,
-                500,4);
+        boolean w = false;
 
-        PVSearch ai2 = new PVSearch(
-                new FinnEvaluator(),
-                new SystematicOrderer(),
-                new SimpleReducer(),
-                PVSearch.FLAG_TIME_LIMIT,
-                5000,4);
+        if(w){
+            keys.add("black");
+        }else{
 
-        ai1.setUse_iteration(true);
-        ai1.setUse_null_moves(true);
-        ai1.setPrint_overview(true);
-        ai1.setUse_killer_heuristic(true);
-        ai1.setUse_LMR(true);
-        ai1.setUse_transposition(false);
-        ai1.setPrint_overview(true);
+            keys.add("white");
+            keys.add("flip");
+        }
+
 
 
         Player hm = new Player(){};
 
-        new Frame(b,hm ,ai1);
+        PVSearch ai = new PVSearch(
+                new NoahEvaluator(),
+                new SystematicOrderer(),
+                new SimpleReducer(),
+                PVSearch.FLAG_TIME_LIMIT,
+                3000,6);
+        ai.setUse_iteration(true);
+        ai.setUse_null_moves(true);
+        ai.setPrint_overview(true);
+        ai.setUse_killer_heuristic(true);
+        ai.setUse_LMR(true);
+        ai.setUse_transposition(true);
+        ai.setPrint_overview(true);
 
 
-       // Player white = keys.contains("white") ? hm:ai;
-        //Player black = keys.contains("black") ? hm:ai;
+
+        Player white = keys.contains("white") ? hm:ai;
+        Player black = keys.contains("black") ? hm:ai;
 
         boolean flip = keys.contains("flip");
 
-
-        //new Frame(b,new Player(){},ai1);
-        //new Frame(b, white, black).setFlippedBoard(flip);
+        new Frame(b, white, black).setFlippedBoard(flip);
     }
 
     @Override

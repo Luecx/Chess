@@ -2,6 +2,8 @@ package board;
 
 import board.bitboards.BitBoard;
 import board.moves.Move;
+import board.moves.MoveList;
+import board.moves.MoveListBuffer;
 import board.repetitions.RepetitionList;
 import board.setup.Setup;
 import game.Player;
@@ -342,19 +344,7 @@ public class SlowBoard extends Board<SlowBoard> {
         this.setPiece(old.getTo(), old.getPieceTo());
     }
 
-    private void slidingPieces(int pos, int direction, List<Move> list, short mask) {
-        int c = pos + direction;
-        while (field[c] != INVALID) {
-            if (field[c] != 0) {
-                if (field[c] * getActivePlayer() < 1) {
-                    list.add(new Move(pos, c, this,mask));
-                }
-                return;
-            }
-            list.add(new Move(pos, c, this,mask));
-            c += direction;
-        }
-    }
+
 
     private void slidingPiecesCapture(int pos, int direction, List<Move> list, short mask) {
         int c = pos + direction;
@@ -387,69 +377,109 @@ public class SlowBoard extends Board<SlowBoard> {
     }
 
 
-    protected void pseudeLegalMoves_pawn(int index, int i, int j, List<Move> moves){
+    //<editor-fold desc="piece attacks">
+    private void slidingPieces(int pos, int direction, MoveList list, short mask) {
+        int c = pos + direction;
+        while (field[c] != INVALID) {
+            if (field[c] != 0) {
+                if (field[c] * getActivePlayer() < 1) {
+                    list.add(pos, c, this,mask);
+                }
+                return;
+            }
+            list.add(pos, c, this,mask);
+            c += direction;
+        }
+    }
+    private void slidingPieces_captures(int pos, int direction, MoveList list, short mask) {
+        int c = pos + direction;
+        while (field[c] != INVALID) {
+            if (field[c] != 0) {
+                if (field[c] * getActivePlayer() < 1) {
+                    list.add(pos, c, this,mask);
+                }
+                return;
+            }
+            c += direction;
+        }
+    }
+
+    protected void pseudeLegalMoves_pawn(int index, int i, int j, MoveList moves){
         if (j == 0 || j == 7) return;
         if (field[index + getActivePlayer() * 12] == 0) {
-            moves.add(new Move(index, index + getActivePlayer() * 12, getActivePlayer(), (byte) 0));
+            moves.add(index, index + getActivePlayer() * 12, getActivePlayer(), (byte) 0);
             if ((j == getActivePlayer() || j == 7 + getActivePlayer()) && field[index + getActivePlayer() * 2 * 12] == 0) {
-                Move forward = new Move(index, index + getActivePlayer() * 24, getActivePlayer(),0);
-
-                forward.setMetaInformation((short) (1 << (i+4)));
-
-                moves.add(forward);
+                moves.add(index, index + getActivePlayer() * 24, getActivePlayer(),0,(short) (1 << (i+4)));
             }
         }
         if(getActivePlayer() > 0){
             if (i > 0) {
                 if (field[index + 11] < 0){
-                    moves.add(new Move(index, index + 11, this));
+                    moves.add(index, index + 11, this);
                 }
 
                 if ((board_meta_informtion & ((short)1 << (4+i-1))) > 0 && j == 4){
-                    moves.add(new Move(index, index + 11, 1,0));
+                    moves.add(index, index + 11, 1,0);
                 }
             }
             if (i < 7){
                 if(field[index + 13] < 0) {
-                    moves.add(new Move(index, index + 13, this));
+                    moves.add(index, index + 13, this);
                 }
 
                 if ((board_meta_informtion & ((short)1 << (4+i+1))) > 0 && j == 4){
-                    moves.add(new Move(index, index + 13, 1,0));
+                    moves.add(index, index + 13, 1,0);
                 }
             }
         }else{
             if (i > 0) {
                 if (field[index - 13] > 0){
-                    moves.add(new Move(index, index - 13, this));
+                    moves.add(index, index - 13, this);
                 }
 
                 if ((board_meta_informtion & ((short)1 << (4+i-1))) > 0 && j == 3){
-                    moves.add(new Move(index, index - 13, this));
+                    moves.add(index, index - 13, this);
                 }
             }
             if (i < 7){
                 if(field[index - 11] > 0) {
-                    moves.add(new Move(index, index - 11, this));
+                    moves.add(index, index - 11, this);
                 }
 
                 if ((board_meta_informtion & ((short)1 << (4+i+1))) > 0 && j == 3){
-                    moves.add(new Move(index, index - 11, this));
+                    moves.add(index, index - 11, this);
                 }
             }
         }
 
     }
+    protected void pseudeLegalMoves_pawn_captures(int index, int i, int j, MoveList moves){
+        if (j == 0 || j == 7) return;
+        if (field[index + getActivePlayer() * 11] != INVALID && field[index + getActivePlayer() * 11] * getActivePlayer() < 0) {
+            moves.add(index, index + getActivePlayer() * 11, this);
+        }
+        if (field[index + getActivePlayer() * 13] != INVALID && field[index + getActivePlayer() * 13] * getActivePlayer() < 0) {
+            moves.add(index, index + getActivePlayer() * 13, this);
+        }
 
-    protected void pseudeLegalMoves_knight(int index, int i, int j, List<Move> moves){
+    }
+
+    protected void pseudeLegalMoves_knight(int index, int i, int j, MoveList moves){
         for (int ar : SPRINGER_OFFSET) {
             if (this.field[ar + index] != INVALID && field[ar + index] * getActivePlayer() <= 0) {
-                moves.add(new Move(index, ar + index, this));
+                moves.add(index, ar + index, this);
+            }
+        }
+    }
+    protected void pseudeLegalMoves_knight_captures(int index, int i, int j, MoveList moves){
+        for (int ar : SPRINGER_OFFSET) {
+            if (this.field[ar + index] != INVALID && field[ar + index] * getActivePlayer() < 0) {
+                moves.add(index, ar + index, this);
             }
         }
     }
 
-    protected void pseudeLegalMoves_rook(int index, int i, int j, List<Move> moves){
+    protected void pseudeLegalMoves_rook(int index, int i, int j, MoveList moves){
         short mask = MASK_NONE;
         switch (index){
             case INDEX_WHITE_QUEENSIDE_ROOK:
@@ -473,15 +503,44 @@ public class SlowBoard extends Board<SlowBoard> {
             slidingPieces(index, dir, moves, mask);
         }
     }
+    protected void pseudeLegalMoves_rook_captures(int index, int i, int j, MoveList moves){
+        short mask = MASK_NONE;
+        switch (index){
+            case INDEX_WHITE_QUEENSIDE_ROOK:
+                if((board_meta_informtion & MASK_WHITE_QUEENSIDE_CASTLING) > 0)
+                    mask = MASK_WHITE_QUEENSIDE_CASTLING;
+                break;
+            case INDEX_WHITE_KINGSIDE_ROOK:
+                if((board_meta_informtion & MASK_WHITE_KINGSIDE_CASTLING) > 0)
+                    mask = MASK_WHITE_KINGSIDE_CASTLING;
+                break;
+            case INDEX_BLACK_QUEENSIDE_ROOK:
+                if((board_meta_informtion & MASK_BLACK_QUEENSIDE_CASTLING) > 0)
+                    mask = MASK_BLACK_QUEENSIDE_CASTLING;
+                break;
+            case INDEX_BLACK_KINGSIDE_ROOK:
+                if((board_meta_informtion & MASK_BLACK_KINGSIDE_CASTLING) > 0)
+                    mask = MASK_BLACK_KINGSIDE_CASTLING;
+                break;
+        }
+        for (int dir : TURM_DIRECTIONS) {
+            slidingPieces_captures(index, dir, moves, mask);
+        }
+    }
 
-    protected void pseudeLegalMoves_bishop(int index, int i, int j, List<Move> moves){
+    protected void pseudeLegalMoves_bishop(int index, int i, int j, MoveList moves){
         for (int dir : LAEUFER_DIRECTIONS) {
             slidingPieces(index, dir, moves, MASK_NONE);
         }
 
     }
+    protected void pseudeLegalMoves_bishop_captures(int index, int i, int j, MoveList moves){
+        for (int dir : LAEUFER_DIRECTIONS) {
+            slidingPieces_captures(index, dir, moves, MASK_NONE);
+        }
+    }
 
-    protected void pseudeLegalMoves_queen(int index, int i, int j, List<Move> moves){
+    protected void pseudeLegalMoves_queen(int index, int i, int j, MoveList moves){
         for (int dir : TURM_DIRECTIONS) {
             slidingPieces(index, dir, moves, MASK_NONE);
         }
@@ -489,20 +548,28 @@ public class SlowBoard extends Board<SlowBoard> {
             slidingPieces(index, dir, moves, MASK_NONE);
         }
     }
+    protected void pseudeLegalMoves_queen_captures(int index, int i, int j, MoveList moves){
+        for (int dir : TURM_DIRECTIONS) {
+            slidingPieces_captures(index, dir, moves, MASK_NONE);
+        }
+        for (int dir : LAEUFER_DIRECTIONS) {
+            slidingPieces_captures(index, dir, moves, MASK_NONE);
+        }
+    }
 
-    protected void pseudeLegalMoves_king(int index, int i, int j, List<Move> moves){
+    protected void pseudeLegalMoves_king(int index, int i, int j, MoveList moves){
         for (int ar : KOENIG_OFFSET) {
             if (this.field[ar + index] != INVALID && field[ar + index] * getActivePlayer() <= 0) {
                 if(this.getActivePlayer() == 1){
-                    moves.add(new Move(index, ar + index, this, (short)
+                    moves.add(index, ar + index, this, (short)
                             (((board_meta_informtion & MASK_WHITE_QUEENSIDE_CASTLING) > 0 ? MASK_WHITE_QUEENSIDE_CASTLING:0) |
                                     ((board_meta_informtion & MASK_WHITE_KINGSIDE_CASTLING) > 0 ? MASK_WHITE_KINGSIDE_CASTLING :0))
-                    ));
+                    );
                 }else{
-                    moves.add(new Move(index, ar + index, this, (short)
+                    moves.add(index, ar + index, this, (short)
                             (((board_meta_informtion & MASK_BLACK_QUEENSIDE_CASTLING) > 0 ? MASK_BLACK_QUEENSIDE_CASTLING:0) |
                                     ((board_meta_informtion & MASK_BLACK_KINGSIDE_CASTLING) > 0 ? MASK_BLACK_KINGSIDE_CASTLING:0))
-                    ));
+                    );
                 }
             }
         }
@@ -518,7 +585,7 @@ public class SlowBoard extends Board<SlowBoard> {
                         && field[index + 1] == 0
                         && field[index + 2] == 0
                         && (board_meta_informtion & MASK_WHITE_KINGSIDE_CASTLING) > 0) {
-                    moves.add(new Move(index, index + 2, 6, 0, (short)3));
+                    moves.add(index, index + 2, 6, 0, (short)3);
                 }
 
                 //-------------------------------- QUEEN SIDE --------------------------------------
@@ -527,7 +594,7 @@ public class SlowBoard extends Board<SlowBoard> {
                         && field[index - 2] == 0
                         && field[index - 3] == 0
                         && (board_meta_informtion & MASK_WHITE_QUEENSIDE_CASTLING) > 0) {
-                    moves.add(new Move(index, index - 2, 6, 0,(short)3));
+                    moves.add(index, index - 2, 6, 0,(short)3);
                 }
             }
             //-------------------------------- BLACK --------------------------------------
@@ -538,7 +605,7 @@ public class SlowBoard extends Board<SlowBoard> {
                         && field[index + 1] == 0
                         && field[index + 2] == 0
                         && (board_meta_informtion & MASK_BLACK_KINGSIDE_CASTLING) > 0) {
-                    moves.add(new Move(index, index + 2, -6, 0,(short)12));
+                    moves.add(index, index + 2, -6, 0,(short)12);
                 }
 
                 //-------------------------------- QUEEN SIDE --------------------------------------
@@ -547,37 +614,43 @@ public class SlowBoard extends Board<SlowBoard> {
                         && field[index - 2] == 0
                         && field[index - 3] == 0
                         && (board_meta_informtion & MASK_BLACK_QUEENSIDE_CASTLING) > 0) {
-                    moves.add(new Move(index, index - 2, -6, 0,(short)12));
+                    moves.add(index, index - 2, -6, 0,(short)12);
                 }
             }
         }
     }
+    protected void pseudeLegalMoves_king_captures(int index, int i, int j, MoveList moves) {
+        for (int ar : KOENIG_OFFSET) {
+            if (this.field[ar + index] != INVALID && field[ar + index] * getActivePlayer() < 0) {
+                if (this.getActivePlayer() == 1) {
+                    moves.add(index, ar + index, this, (short)
+                            (((board_meta_informtion & MASK_WHITE_QUEENSIDE_CASTLING) > 0 ? MASK_WHITE_QUEENSIDE_CASTLING : 0) |
+                                    ((board_meta_informtion & MASK_WHITE_KINGSIDE_CASTLING) > 0 ? MASK_WHITE_KINGSIDE_CASTLING : 0))
+                    );
+                } else {
+                    moves.add(index, ar + index, this, (short)
+                            (((board_meta_informtion & MASK_BLACK_QUEENSIDE_CASTLING) > 0 ? MASK_BLACK_QUEENSIDE_CASTLING : 0) |
+                                    ((board_meta_informtion & MASK_BLACK_KINGSIDE_CASTLING) > 0 ? MASK_BLACK_KINGSIDE_CASTLING : 0))
+                    );
+                }
+            }
+        }
+    }
+    //</editor-fold>
 
-    @Override
-    public List<Move> getLegalMoves() {
-        List<Move> moves = getPseudoLegalMoves();
-        for(int i = moves.size()-1; i>= 0; i--){
-            move(moves.get(i));
-            List<Move> opponent = getPseudoLegalMoves();
-            for(Move m:opponent){
-                if(m.getPieceTo() * this.getActivePlayer() == -6){
-                    moves.remove(i);
-                    break;
-                }
-            }
-            undoMove();
-        }
-        return moves;
-    }
+
 
     @Override
     public List<Move> getPseudoLegalMoves() {
-        ArrayList<Move> moves = new ArrayList<>(10);
-        //if (isGameOver()) return moves;
+        return this.getPseudoLegalMoves(new MoveList(50));
+    }
+
+    @Override
+    public List<Move> getPseudoLegalMoves(MoveList moves) {
+        moves.clear();
         for (int i = 26; i < 118; i++) {
             if (field[i] == INVALID || field[i] * activePlayer <= 0) continue;
 
-            //if (field[i+1] == )
             switch (field[i] * getActivePlayer()) {
                 case 1:
                     pseudeLegalMoves_pawn(i, x(i), y(i), moves);
@@ -604,88 +677,143 @@ public class SlowBoard extends Board<SlowBoard> {
     }
 
     @Override
-    public List<Move> getCaptureMoves() {
-        List<Move> moves = new ArrayList<>(40);
-        for (byte i = 0; i < 8; i++) {
-            for (byte j = 0; j < 8; j++) {
-                int index = index(i, j);
-                if (field[index] * getActivePlayer() <= 0) continue;
+    public List<Move> getLegalMoves() {
+        return this.getLegalMoves(new MoveList(50));
+    }
 
-                if (field[index] == getActivePlayer()) { // Bauern
-                    if (j == 0 || j == 7) continue;
-                    if (field[index + getActivePlayer() * 11] != INVALID && field[index + getActivePlayer() * 11] * getActivePlayer() < 0) {
-                        moves.add(new Move(index, index + getActivePlayer() * 11, this));
-                    }
-                    if (field[index + getActivePlayer() * 13] != INVALID && field[index + getActivePlayer() * 13] * getActivePlayer() < 0) {
-                        moves.add(new Move(index, index + getActivePlayer() * 13, this));
-                    }
-                } else if (getPiece(i, j) == getActivePlayer() * 3) { // Springer
-                    for (int ar : SPRINGER_OFFSET) {
-                        if (this.field[ar + index] != INVALID && field[ar + index] * getActivePlayer() < 0) {
-                            moves.add(new Move(index, ar + index, this));
-                        }
-                    }
-                } else if (getPiece(i, j) == getActivePlayer() * 2) { // Türme
-
-                    short mask = MASK_NONE;
-                    switch (index){
-                        case INDEX_WHITE_QUEENSIDE_ROOK:
-                            if((board_meta_informtion & MASK_WHITE_QUEENSIDE_CASTLING) > 0)
-                                mask = MASK_WHITE_QUEENSIDE_CASTLING;
-                            break;
-                        case INDEX_WHITE_KINGSIDE_ROOK:
-                            if((board_meta_informtion & MASK_WHITE_KINGSIDE_CASTLING) > 0)
-                                mask = MASK_WHITE_KINGSIDE_CASTLING;
-                            break;
-                        case INDEX_BLACK_QUEENSIDE_ROOK:
-                            if((board_meta_informtion & MASK_BLACK_QUEENSIDE_CASTLING) > 0)
-                                mask = MASK_BLACK_QUEENSIDE_CASTLING;
-                            break;
-                        case INDEX_BLACK_KINGSIDE_ROOK:
-                            if((board_meta_informtion & MASK_BLACK_KINGSIDE_CASTLING) > 0)
-                                mask = MASK_BLACK_KINGSIDE_CASTLING;
-                            break;
-                    }
-                    for (int dir : TURM_DIRECTIONS) {
-                        slidingPiecesCapture(index, dir, moves, mask);
-                    }
+    @Override
+    public List<Move> getLegalMoves(MoveList list) {
+        List<Move> moves = getPseudoLegalMoves(list);
+        MoveList ml = new MoveList(50);
+        for(int i = moves.size()-1; i>= 0; i--){
+            move(moves.get(i));
+            List<Move> opponent = getPseudoLegalMoves(ml);
+            for(Move m:opponent){
+                if(m.getPieceTo() * this.getActivePlayer() == -6){
+                    moves.remove(i);
+                    break;
                 }
+            }
+            undoMove();
+        }
+        return moves;
+    }
 
-                else if (getPiece(i, j) == getActivePlayer() * 5) { // Dame
-                    for (int dir : TURM_DIRECTIONS) {
-                        slidingPiecesCapture(index, dir, moves, MASK_NONE);
-                    }
-                    for (int dir : LAEUFER_DIRECTIONS) {
-                        slidingPiecesCapture(index, dir, moves,MASK_NONE);
-                    }
-                }
+    @Override
+    public List<Move> getCaptureMoves(MoveList moves) {
+        moves.clear();
+        for (int i = 26; i < 118; i++) {
+            if (field[i] == INVALID || field[i] * activePlayer <= 0) continue;
 
-                else if (getPiece(i, j) == getActivePlayer() * 4) { // Läufer
-                    for (int dir : LAEUFER_DIRECTIONS) {
-                        slidingPiecesCapture(index, dir, moves,MASK_NONE);
-                    }
-                }
-
-                else if (getPiece(i, j) == getActivePlayer() * 6) { //König
-                    for (int ar : KOENIG_OFFSET) {
-                        if (this.field[ar + index] != INVALID && field[ar + index] * getActivePlayer() < 0) {
-                            if(this.getActivePlayer() == 1){
-                                moves.add(new Move(index, ar + index, this, (short)
-                                        (((board_meta_informtion & MASK_WHITE_QUEENSIDE_CASTLING) > 0 ? MASK_WHITE_QUEENSIDE_CASTLING:0) |
-                                                ((board_meta_informtion & MASK_WHITE_KINGSIDE_CASTLING) > 0 ? MASK_WHITE_KINGSIDE_CASTLING :0))
-                                ));
-                            }else{
-                                moves.add(new Move(index, ar + index, this, (short)
-                                        (((board_meta_informtion & MASK_BLACK_QUEENSIDE_CASTLING) > 0 ? MASK_BLACK_QUEENSIDE_CASTLING:0) |
-                                                ((board_meta_informtion & MASK_BLACK_KINGSIDE_CASTLING) > 0 ? MASK_BLACK_KINGSIDE_CASTLING:0))
-                                ));
-                            }
-                        }
-                    }
-                }
+            switch (field[i] * getActivePlayer()) {
+                case 1:
+                    pseudeLegalMoves_pawn_captures(i, x(i), y(i), moves);
+                    break;
+                case 3:
+                    pseudeLegalMoves_knight_captures(i, 0, 0, moves);
+                    break;
+                case 2:
+                    pseudeLegalMoves_rook_captures(i, 0, 0, moves);
+                    break;
+                case 4:
+                    pseudeLegalMoves_bishop_captures(i, 0, 0, moves);
+                    break;
+                case 5:
+                    pseudeLegalMoves_queen_captures(i, 0, 0, moves);
+                    break;
+                case 6:
+                    pseudeLegalMoves_king_captures(i, 0, 0, moves);
+                    break;
             }
         }
         return moves;
+    }
+
+    @Override
+    public List<Move> getCaptureMoves() {
+        return getCaptureMoves(new MoveList(20));
+
+//
+//        for (byte i = 0; i < 8; i++) {
+//            for (byte j = 0; j < 8; j++) {
+//                int index = index(i, j);
+//                if (field[index] * getActivePlayer() <= 0) continue;
+//
+//                if (field[index] == getActivePlayer()) { // Bauern
+//                    if (j == 0 || j == 7) break;
+//                    if (field[index + getActivePlayer() * 11] != INVALID && field[index + getActivePlayer() * 11] * getActivePlayer() < 0) {
+//                        moves.add(new Move(index, index + getActivePlayer() * 11, this));
+//                    }
+//                    if (field[index + getActivePlayer() * 13] != INVALID && field[index + getActivePlayer() * 13] * getActivePlayer() < 0) {
+//                        moves.add(new Move(index, index + getActivePlayer() * 13, this));
+//                    }
+//                } else if (getPiece(i, j) == getActivePlayer() * 3) { // Springer
+//                    for (int ar : SPRINGER_OFFSET) {
+//                        if (this.field[ar + index] != INVALID && field[ar + index] * getActivePlayer() < 0) {
+//                            moves.add(new Move(index, ar + index, this));
+//                        }
+//                    }
+//                } else if (getPiece(i, j) == getActivePlayer() * 2) { // Türme
+//
+//                    short mask = MASK_NONE;
+//                    switch (index){
+//                        case INDEX_WHITE_QUEENSIDE_ROOK:
+//                            if((board_meta_informtion & MASK_WHITE_QUEENSIDE_CASTLING) > 0)
+//                                mask = MASK_WHITE_QUEENSIDE_CASTLING;
+//                            break;
+//                        case INDEX_WHITE_KINGSIDE_ROOK:
+//                            if((board_meta_informtion & MASK_WHITE_KINGSIDE_CASTLING) > 0)
+//                                mask = MASK_WHITE_KINGSIDE_CASTLING;
+//                            break;
+//                        case INDEX_BLACK_QUEENSIDE_ROOK:
+//                            if((board_meta_informtion & MASK_BLACK_QUEENSIDE_CASTLING) > 0)
+//                                mask = MASK_BLACK_QUEENSIDE_CASTLING;
+//                            break;
+//                        case INDEX_BLACK_KINGSIDE_ROOK:
+//                            if((board_meta_informtion & MASK_BLACK_KINGSIDE_CASTLING) > 0)
+//                                mask = MASK_BLACK_KINGSIDE_CASTLING;
+//                            break;
+//                    }
+//                    for (int dir : TURM_DIRECTIONS) {
+//                        slidingPiecesCapture(index, dir, moves, mask);
+//                    }
+//                }
+//
+//                else if (getPiece(i, j) == getActivePlayer() * 5) { // Dame
+//                    for (int dir : TURM_DIRECTIONS) {
+//                        slidingPiecesCapture(index, dir, moves, MASK_NONE);
+//                    }
+//                    for (int dir : LAEUFER_DIRECTIONS) {
+//                        slidingPiecesCapture(index, dir, moves,MASK_NONE);
+//                    }
+//                }
+//
+//                else if (getPiece(i, j) == getActivePlayer() * 4) { // Läufer
+//                    for (int dir : LAEUFER_DIRECTIONS) {
+//                        slidingPiecesCapture(index, dir, moves,MASK_NONE);
+//                    }
+//                }
+//
+//                else if (getPiece(i, j) == getActivePlayer() * 6) { //König
+//                    for (int ar : KOENIG_OFFSET) {
+//                        if (this.field[ar + index] != INVALID && field[ar + index] * getActivePlayer() < 0) {
+//                            if(this.getActivePlayer() == 1){
+//                                moves.add(new Move(index, ar + index, this, (short)
+//                                        (((board_meta_informtion & MASK_WHITE_QUEENSIDE_CASTLING) > 0 ? MASK_WHITE_QUEENSIDE_CASTLING:0) |
+//                                                ((board_meta_informtion & MASK_WHITE_KINGSIDE_CASTLING) > 0 ? MASK_WHITE_KINGSIDE_CASTLING :0))
+//                                ));
+//                            }else{
+//                                moves.add(new Move(index, ar + index, this, (short)
+//                                        (((board_meta_informtion & MASK_BLACK_QUEENSIDE_CASTLING) > 0 ? MASK_BLACK_QUEENSIDE_CASTLING:0) |
+//                                                ((board_meta_informtion & MASK_BLACK_KINGSIDE_CASTLING) > 0 ? MASK_BLACK_KINGSIDE_CASTLING:0))
+//                                ));
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//        return moves;
     }
 
 
@@ -748,10 +876,6 @@ public class SlowBoard extends Board<SlowBoard> {
         return (MASK_GAMEOVER & board_meta_informtion) > 0;
     }
 
-    public int[] getField() {
-        return field;
-    }
-
     @Override
     public SlowBoard newInstance() {
         return new SlowBoard();
@@ -791,6 +915,13 @@ public class SlowBoard extends Board<SlowBoard> {
         return 0;
     }
 
+
+
+
+    public int[] getField() {
+        return field;
+    }
+
     public short getBoard_meta_informtion() {
         return board_meta_informtion;
     }
@@ -801,29 +932,21 @@ public class SlowBoard extends Board<SlowBoard> {
 
     public static void main(String[] args) {
         SlowBoard b = new SlowBoard(Setup.DEFAULT);
-        b = IO.read_FEN(b, "1r3r1k/1p4p1/p7/2R1Q2p/5q2/P7/1P4PP/2R3K1 b - - 0 1");
+        b = IO.read_FEN(b, "r2q1rk1/1pp1bppp/p1npbn2/4p1B1/B3P3/2NP1N2/PPPQ1PPP/2KR3R");
 
-        PVSearch ai = new PVSearch(
+        PVSearch ai1 = new PVSearch(
                 new FinnEvaluator(),
                 new SystematicOrderer(),
                 new SimpleReducer(),
-                PVSearch.FLAG_DEPTH_LIMIT,
-                12,4);
+                2,
+                8,
+                0);
+        ai1.setUse_killer_heuristic(false);
+        ai1.setUse_null_moves(true);
+        ai1.setUse_LMR(true);
+        ai1.setUse_transposition(true);
 
-
-        ai.setUse_iteration(true);
-        ai.setUse_null_moves(true);
-        ai.setPrint_overview(true);
-        ai.setUse_killer_heuristic(true);
-        ai.setUse_LMR(true);
-        ai.setUse_transposition(true);
-
-
-        //System.out.println(ai.bestMove(b));
-
-        new Frame(b, new Player(){}, ai, ColorScheme.GRAY);
-
-
+        new Frame(b, new Player() {}, ai1);
     }
 
 }
