@@ -785,8 +785,8 @@ public class PVSearch implements AI {
             alpha = stand_pat;
         List<Move> allMoves =
                 use_move_lists ?
-                        _board.getPseudoLegalMoves(_buffer.get(currentDepth)):
-                        _board.getPseudoLegalMoves();
+                        _board.getCaptureMoves(_buffer.get(currentDepth)):
+                        _board.getCaptureMoves();
 
         orderer.sort(allMoves, 0, null, _board, null, null);
         for (Move m : allMoves) {

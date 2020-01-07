@@ -210,7 +210,7 @@ public class Testing {
                 new SystematicOrderer(),
                 new SimpleReducer(),
                 2,
-                10,
+                8,
                 4);
         ai1.setUse_killer_heuristic(true);
         ai1.setUse_null_moves(true);
