@@ -22,6 +22,8 @@ public abstract class Board<T extends Board<T>> {
         this.reset();
     }
 
+
+
     /**
      * The methods returns a Stack of the move history.
      * <p>
@@ -321,7 +323,7 @@ public abstract class Board<T extends Board<T>> {
     }
 
     /**
-     * returns true if it is the endagme
+     * returns true if it is the endgame
      * @return endgame flag
      */
     public boolean isEndgame() {

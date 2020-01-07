@@ -216,7 +216,7 @@ public class Testing {
         ai1.setUse_null_moves(true);
         ai1.setUse_LMR(true);
         ai1.setUse_transposition(true);
-        ai1.setUseMoveLists(true);
+        ai1.setUse_move_lists(true);
 
 
 

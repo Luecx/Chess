@@ -3,24 +3,20 @@ package board;
 import board.bitboards.BitBoard;
 import board.moves.Move;
 import board.moves.MoveList;
-import board.moves.MoveListBuffer;
 import board.repetitions.RepetitionList;
 import board.setup.Setup;
 import game.Player;
 import game.ai.evaluator.FinnEvaluator;
-import game.ai.evaluator.NoahEvaluator;
 import game.ai.ordering.SystematicOrderer;
 import game.ai.reducing.SimpleReducer;
 import game.ai.search.PVSearch;
 import io.IO;
-import visual.ColorScheme;
 import visual.Frame;
 
 import java.util.*;
 
 public class SlowBoard extends Board<SlowBoard> {
 
-    private boolean isEndgame = false;
 
     private static final int[] TURM_DIRECTIONS                  = {12, -12,   1, - 1};
     private static final int[] LAEUFER_DIRECTIONS               = {13,  11, -11, -13};
@@ -62,26 +58,12 @@ public class SlowBoard extends Board<SlowBoard> {
      * ...
      * 12:  en passent G
      */
-    protected short board_meta_informtion;
+    protected short board_meta_information;
     protected long zobristKey;
     protected int[] field; //2x2 padding each side
     protected RepetitionList board_repetition_counter;
 
-    /**
-     * returns true if it is the endagme
-     * @return endgame flag
-     */
-    public boolean isEndgame() {
-        return isEndgame;
-    }
 
-    /**
-     * returns sets the isEndgame flag
-     * @param endgame      the flag
-     */
-    public void setEndgame(boolean endgame) {
-        isEndgame = endgame;
-    }
 
     public SlowBoard(Setup setup) {
         super(setup);
@@ -90,41 +72,25 @@ public class SlowBoard extends Board<SlowBoard> {
     public SlowBoard() {
     }
 
-    @Override
-    public int getPiece(int x, int y) {
-        return field[index(x, y)];
-    }
 
+    //<editor-fold desc="indexing">
+    @Override
     public int index(int x, int y) {
         return (y + 2) * 12 + (x + 2);
     }
 
+    @Override
     public int x(int index) {
         return (index % 12 - 2);
     }
 
+    @Override
     public int y(int index) {
         return (index / 12 - 2);
     }
+    //</editor-fold>
 
-    @Override
-    public int getPiece(int index) {
-        return field[index];
-    }
-
-    @Override
-    public SlowBoard copy() {
-        SlowBoard board = new SlowBoard();
-        if (this.getActivePlayer() != board.getActivePlayer()) board.changeActivePlayer();
-        board.field = Arrays.copyOf(field, 144);
-        board.board_meta_informtion = this.board_meta_informtion;
-        board.board_repetition_counter = this.board_repetition_counter.copy();
-        board.zobristKey = zobristKey;
-        for (Move move : moveHistory) {
-            board.moveHistory.push(move.copy());
-        }
-        return board;
-    }
+    //<editor-fold desc="zobrist">
     public long oldZobrist() {
         long h = 0;
         for(int i = 0; i < 8; i++){
@@ -140,42 +106,16 @@ public class SlowBoard extends Board<SlowBoard> {
         }
         return h;
     }
+
     @Override
     public long zobrist() {
-//        long h = 0;
-//        for(int i = 0; i < 8; i++){
-//            for(int n = 0; n < 8; n++){
-//                int piece = getPiece(i,n);
-//                if(piece == 0) continue;
-//                if(piece > 0){
-//                    h = BitBoard.xor(h, BitBoard.white_hashes[piece-1][i * 8 + n]);
-//                }else{
-//                    h = BitBoard.xor(h, BitBoard.black_hashes[-piece-1][i * 8 + n]);
-//                }
-//            }
-//        }
-//        return h;
         return zobristKey;
     }
+    //</editor-fold>
 
-    @Override
-    public boolean getCastlingChance(int index) {
-        return (board_meta_informtion & (1L << index)) > 0;
-    }
-
-    @Override
-    public void setCastlingChance(int index, boolean value) {
-
-        if(value){
-            board_meta_informtion |= (1 << index);
-        }else{
-            board_meta_informtion &= ~(1 << index);
-        }
-    }
-
-    @Override
-    public boolean getEnPassantChance(int file) {
-        return (board_meta_informtion & (1 << (4+file))) > 0;
+    //<editor-fold desc="meta information stuff">
+    public short getBoard_meta_information() {
+        return board_meta_information;
     }
 
     @Override
@@ -184,14 +124,48 @@ public class SlowBoard extends Board<SlowBoard> {
     }
 
     @Override
-    public void setEnPassantChance(int file, boolean value) {
+    public boolean getCastlingChance(int index) {
+        return (board_meta_information & (1L << index)) > 0;
+    }
+
+    @Override
+    public void setCastlingChance(int index, boolean value) {
+
         if(value){
-            board_meta_informtion |= 1 << (4+file);
+            board_meta_information |= (1 << index);
         }else{
-            board_meta_informtion &= ~(1 << (4+file));
+            board_meta_information &= ~(1 << index);
         }
     }
 
+    @Override
+    public boolean getEnPassantChance(int file) {
+        return (board_meta_information & (1 << (4+file))) > 0;
+    }
+
+    @Override
+    public void setEnPassantChance(int file, boolean value) {
+        if(value){
+            board_meta_information |= 1 << (4+file);
+        }else{
+            board_meta_information &= ~(1 << (4+file));
+        }
+    }
+
+    @Override
+    public int winner() {
+        if((MASK_WINNER_WHITE & board_meta_information) > 0) return 1;
+        if((MASK_WINNER_BLACK & board_meta_information) > 0) return -1;
+        return 0;
+    }
+
+    @Override
+    public boolean isGameOver() {
+        return (MASK_GAMEOVER & board_meta_information) > 0;
+    }
+    //</editor-fold>
+
+    //<editor-fold desc="moving">
     @Override
     public void move(Move m) {
 
@@ -199,8 +173,8 @@ public class SlowBoard extends Board<SlowBoard> {
         if (m.getIsNull()) { // does null move stuff
             this.changeActivePlayer();
             m.setMetaInformation((short)(m.getMetaInformation() ^
-                    (this.board_meta_informtion & MASK_EN_PASSENT_MOVES)));
-            this.board_meta_informtion ^= m.getMetaInformation();
+                    (this.board_meta_information & MASK_EN_PASSENT_MOVES)));
+            this.board_meta_information ^= m.getMetaInformation();
 
             this.moveHistory.push(m);
             return;
@@ -252,8 +226,8 @@ public class SlowBoard extends Board<SlowBoard> {
         //</editor-fold>
 
         //<editor-fold desc="gameover / en passant masking">
-        short mask = (short)(board_meta_informtion & MASK_EN_PASSENT_MOVES);
-        //System.err.println(board_meta_informtion);
+        short mask = (short)(board_meta_information & MASK_EN_PASSENT_MOVES);
+        //System.err.println(board_meta_information);
         if(Math.abs(m.getPieceTo()) == 6){
             if(m.getPieceTo() > 0){
                 mask |= MASK_WINNER_BLACK | MASK_GAMEOVER;
@@ -268,7 +242,7 @@ public class SlowBoard extends Board<SlowBoard> {
 
         m.setMetaInformation((short)(m.getMetaInformation() | mask));
 
-        this.board_meta_informtion ^= m.getMetaInformation();
+        this.board_meta_information ^= m.getMetaInformation();
 
         //</editor-fold>
 
@@ -280,7 +254,7 @@ public class SlowBoard extends Board<SlowBoard> {
         if (this.moveHistory.size() == 0) return;
 
         Move last = this.moveHistory.peek();
-        this.board_meta_informtion ^= last.getMetaInformation();
+        this.board_meta_information ^= last.getMetaInformation();
 
         //<editor-fold desc="threefold repetition">
         this.board_repetition_counter.sub(this.zobrist());
@@ -343,39 +317,7 @@ public class SlowBoard extends Board<SlowBoard> {
         this.setPiece(old.getFrom(), old.getPieceFrom());
         this.setPiece(old.getTo(), old.getPieceTo());
     }
-
-
-
-    private void slidingPiecesCapture(int pos, int direction, List<Move> list, short mask) {
-        int c = pos + direction;
-        while (field[c] != INVALID) {
-            if (field[c] != 0) {
-                if (field[c] * getActivePlayer() < 1) {
-                    list.add(new Move(pos, c, this, mask));
-                }
-                return;
-            }
-            c += direction;
-        }
-    }
-
-    public void printBoardIndexing(){
-        StringBuilder builder = new StringBuilder();
-        for (int i = 11; i >= 0; i--) {
-            for (int n = 0; n < 12; n++) {
-                int index = index((byte) (n - 2), (byte) (i - 2));
-                if (field[index] == INVALID) {
-                    builder.append("#");
-                }
-                else{
-                    builder.append(String.format("%03d ", index));
-                }
-            }
-            builder.append("\n");
-        }
-        System.out.println(builder.toString());
-    }
-
+    //</editor-fold>
 
     //<editor-fold desc="piece attacks">
     private void slidingPieces(int pos, int direction, MoveList list, short mask) {
@@ -418,7 +360,7 @@ public class SlowBoard extends Board<SlowBoard> {
                     moves.add(index, index + 11, this);
                 }
 
-                if ((board_meta_informtion & ((short)1 << (4+i-1))) > 0 && j == 4){
+                if ((board_meta_information & ((short)1 << (4+i-1))) > 0 && j == 4){
                     moves.add(index, index + 11, 1,0);
                 }
             }
@@ -427,7 +369,7 @@ public class SlowBoard extends Board<SlowBoard> {
                     moves.add(index, index + 13, this);
                 }
 
-                if ((board_meta_informtion & ((short)1 << (4+i+1))) > 0 && j == 4){
+                if ((board_meta_information & ((short)1 << (4+i+1))) > 0 && j == 4){
                     moves.add(index, index + 13, 1,0);
                 }
             }
@@ -437,7 +379,7 @@ public class SlowBoard extends Board<SlowBoard> {
                     moves.add(index, index - 13, this);
                 }
 
-                if ((board_meta_informtion & ((short)1 << (4+i-1))) > 0 && j == 3){
+                if ((board_meta_information & ((short)1 << (4+i-1))) > 0 && j == 3){
                     moves.add(index, index - 13, this);
                 }
             }
@@ -446,7 +388,7 @@ public class SlowBoard extends Board<SlowBoard> {
                     moves.add(index, index - 11, this);
                 }
 
-                if ((board_meta_informtion & ((short)1 << (4+i+1))) > 0 && j == 3){
+                if ((board_meta_information & ((short)1 << (4+i+1))) > 0 && j == 3){
                     moves.add(index, index - 11, this);
                 }
             }
@@ -483,19 +425,19 @@ public class SlowBoard extends Board<SlowBoard> {
         short mask = MASK_NONE;
         switch (index){
             case INDEX_WHITE_QUEENSIDE_ROOK:
-                if((board_meta_informtion & MASK_WHITE_QUEENSIDE_CASTLING) > 0)
+                if((board_meta_information & MASK_WHITE_QUEENSIDE_CASTLING) > 0)
                     mask = MASK_WHITE_QUEENSIDE_CASTLING;
                 break;
             case INDEX_WHITE_KINGSIDE_ROOK:
-                if((board_meta_informtion & MASK_WHITE_KINGSIDE_CASTLING) > 0)
+                if((board_meta_information & MASK_WHITE_KINGSIDE_CASTLING) > 0)
                     mask = MASK_WHITE_KINGSIDE_CASTLING;
                 break;
             case INDEX_BLACK_QUEENSIDE_ROOK:
-                if((board_meta_informtion & MASK_BLACK_QUEENSIDE_CASTLING) > 0)
+                if((board_meta_information & MASK_BLACK_QUEENSIDE_CASTLING) > 0)
                     mask = MASK_BLACK_QUEENSIDE_CASTLING;
                 break;
             case INDEX_BLACK_KINGSIDE_ROOK:
-                if((board_meta_informtion & MASK_BLACK_KINGSIDE_CASTLING) > 0)
+                if((board_meta_information & MASK_BLACK_KINGSIDE_CASTLING) > 0)
                     mask = MASK_BLACK_KINGSIDE_CASTLING;
                 break;
         }
@@ -507,19 +449,19 @@ public class SlowBoard extends Board<SlowBoard> {
         short mask = MASK_NONE;
         switch (index){
             case INDEX_WHITE_QUEENSIDE_ROOK:
-                if((board_meta_informtion & MASK_WHITE_QUEENSIDE_CASTLING) > 0)
+                if((board_meta_information & MASK_WHITE_QUEENSIDE_CASTLING) > 0)
                     mask = MASK_WHITE_QUEENSIDE_CASTLING;
                 break;
             case INDEX_WHITE_KINGSIDE_ROOK:
-                if((board_meta_informtion & MASK_WHITE_KINGSIDE_CASTLING) > 0)
+                if((board_meta_information & MASK_WHITE_KINGSIDE_CASTLING) > 0)
                     mask = MASK_WHITE_KINGSIDE_CASTLING;
                 break;
             case INDEX_BLACK_QUEENSIDE_ROOK:
-                if((board_meta_informtion & MASK_BLACK_QUEENSIDE_CASTLING) > 0)
+                if((board_meta_information & MASK_BLACK_QUEENSIDE_CASTLING) > 0)
                     mask = MASK_BLACK_QUEENSIDE_CASTLING;
                 break;
             case INDEX_BLACK_KINGSIDE_ROOK:
-                if((board_meta_informtion & MASK_BLACK_KINGSIDE_CASTLING) > 0)
+                if((board_meta_information & MASK_BLACK_KINGSIDE_CASTLING) > 0)
                     mask = MASK_BLACK_KINGSIDE_CASTLING;
                 break;
         }
@@ -562,13 +504,13 @@ public class SlowBoard extends Board<SlowBoard> {
             if (this.field[ar + index] != INVALID && field[ar + index] * getActivePlayer() <= 0) {
                 if(this.getActivePlayer() == 1){
                     moves.add(index, ar + index, this, (short)
-                            (((board_meta_informtion & MASK_WHITE_QUEENSIDE_CASTLING) > 0 ? MASK_WHITE_QUEENSIDE_CASTLING:0) |
-                                    ((board_meta_informtion & MASK_WHITE_KINGSIDE_CASTLING) > 0 ? MASK_WHITE_KINGSIDE_CASTLING :0))
+                            (((board_meta_information & MASK_WHITE_QUEENSIDE_CASTLING) > 0 ? MASK_WHITE_QUEENSIDE_CASTLING:0) |
+                                    ((board_meta_information & MASK_WHITE_KINGSIDE_CASTLING) > 0 ? MASK_WHITE_KINGSIDE_CASTLING :0))
                     );
                 }else{
                     moves.add(index, ar + index, this, (short)
-                            (((board_meta_informtion & MASK_BLACK_QUEENSIDE_CASTLING) > 0 ? MASK_BLACK_QUEENSIDE_CASTLING:0) |
-                                    ((board_meta_informtion & MASK_BLACK_KINGSIDE_CASTLING) > 0 ? MASK_BLACK_KINGSIDE_CASTLING:0))
+                            (((board_meta_information & MASK_BLACK_QUEENSIDE_CASTLING) > 0 ? MASK_BLACK_QUEENSIDE_CASTLING:0) |
+                                    ((board_meta_information & MASK_BLACK_KINGSIDE_CASTLING) > 0 ? MASK_BLACK_KINGSIDE_CASTLING:0))
                     );
                 }
             }
@@ -584,7 +526,7 @@ public class SlowBoard extends Board<SlowBoard> {
                 if (field[index+3] == 2
                         && field[index + 1] == 0
                         && field[index + 2] == 0
-                        && (board_meta_informtion & MASK_WHITE_KINGSIDE_CASTLING) > 0) {
+                        && (board_meta_information & MASK_WHITE_KINGSIDE_CASTLING) > 0) {
                     moves.add(index, index + 2, 6, 0, (short)3);
                 }
 
@@ -593,7 +535,7 @@ public class SlowBoard extends Board<SlowBoard> {
                         && field[index - 1] == 0
                         && field[index - 2] == 0
                         && field[index - 3] == 0
-                        && (board_meta_informtion & MASK_WHITE_QUEENSIDE_CASTLING) > 0) {
+                        && (board_meta_information & MASK_WHITE_QUEENSIDE_CASTLING) > 0) {
                     moves.add(index, index - 2, 6, 0,(short)3);
                 }
             }
@@ -604,7 +546,7 @@ public class SlowBoard extends Board<SlowBoard> {
                 if (field[index+3] == -2
                         && field[index + 1] == 0
                         && field[index + 2] == 0
-                        && (board_meta_informtion & MASK_BLACK_KINGSIDE_CASTLING) > 0) {
+                        && (board_meta_information & MASK_BLACK_KINGSIDE_CASTLING) > 0) {
                     moves.add(index, index + 2, -6, 0,(short)12);
                 }
 
@@ -613,7 +555,7 @@ public class SlowBoard extends Board<SlowBoard> {
                         && field[index - 1] == 0
                         && field[index - 2] == 0
                         && field[index - 3] == 0
-                        && (board_meta_informtion & MASK_BLACK_QUEENSIDE_CASTLING) > 0) {
+                        && (board_meta_information & MASK_BLACK_QUEENSIDE_CASTLING) > 0) {
                     moves.add(index, index - 2, -6, 0,(short)12);
                 }
             }
@@ -624,13 +566,13 @@ public class SlowBoard extends Board<SlowBoard> {
             if (this.field[ar + index] != INVALID && field[ar + index] * getActivePlayer() < 0) {
                 if (this.getActivePlayer() == 1) {
                     moves.add(index, ar + index, this, (short)
-                            (((board_meta_informtion & MASK_WHITE_QUEENSIDE_CASTLING) > 0 ? MASK_WHITE_QUEENSIDE_CASTLING : 0) |
-                                    ((board_meta_informtion & MASK_WHITE_KINGSIDE_CASTLING) > 0 ? MASK_WHITE_KINGSIDE_CASTLING : 0))
+                            (((board_meta_information & MASK_WHITE_QUEENSIDE_CASTLING) > 0 ? MASK_WHITE_QUEENSIDE_CASTLING : 0) |
+                                    ((board_meta_information & MASK_WHITE_KINGSIDE_CASTLING) > 0 ? MASK_WHITE_KINGSIDE_CASTLING : 0))
                     );
                 } else {
                     moves.add(index, ar + index, this, (short)
-                            (((board_meta_informtion & MASK_BLACK_QUEENSIDE_CASTLING) > 0 ? MASK_BLACK_QUEENSIDE_CASTLING : 0) |
-                                    ((board_meta_informtion & MASK_BLACK_KINGSIDE_CASTLING) > 0 ? MASK_BLACK_KINGSIDE_CASTLING : 0))
+                            (((board_meta_information & MASK_BLACK_QUEENSIDE_CASTLING) > 0 ? MASK_BLACK_QUEENSIDE_CASTLING : 0) |
+                                    ((board_meta_information & MASK_BLACK_KINGSIDE_CASTLING) > 0 ? MASK_BLACK_KINGSIDE_CASTLING : 0))
                     );
                 }
             }
@@ -638,8 +580,7 @@ public class SlowBoard extends Board<SlowBoard> {
     }
     //</editor-fold>
 
-
-
+    //<editor-fold desc="move generation">
     @Override
     public List<Move> getPseudoLegalMoves() {
         return this.getPseudoLegalMoves(new MoveList(50));
@@ -758,19 +699,19 @@ public class SlowBoard extends Board<SlowBoard> {
 //                    short mask = MASK_NONE;
 //                    switch (index){
 //                        case INDEX_WHITE_QUEENSIDE_ROOK:
-//                            if((board_meta_informtion & MASK_WHITE_QUEENSIDE_CASTLING) > 0)
+//                            if((board_meta_information & MASK_WHITE_QUEENSIDE_CASTLING) > 0)
 //                                mask = MASK_WHITE_QUEENSIDE_CASTLING;
 //                            break;
 //                        case INDEX_WHITE_KINGSIDE_ROOK:
-//                            if((board_meta_informtion & MASK_WHITE_KINGSIDE_CASTLING) > 0)
+//                            if((board_meta_information & MASK_WHITE_KINGSIDE_CASTLING) > 0)
 //                                mask = MASK_WHITE_KINGSIDE_CASTLING;
 //                            break;
 //                        case INDEX_BLACK_QUEENSIDE_ROOK:
-//                            if((board_meta_informtion & MASK_BLACK_QUEENSIDE_CASTLING) > 0)
+//                            if((board_meta_information & MASK_BLACK_QUEENSIDE_CASTLING) > 0)
 //                                mask = MASK_BLACK_QUEENSIDE_CASTLING;
 //                            break;
 //                        case INDEX_BLACK_KINGSIDE_ROOK:
-//                            if((board_meta_informtion & MASK_BLACK_KINGSIDE_CASTLING) > 0)
+//                            if((board_meta_information & MASK_BLACK_KINGSIDE_CASTLING) > 0)
 //                                mask = MASK_BLACK_KINGSIDE_CASTLING;
 //                            break;
 //                    }
@@ -799,13 +740,13 @@ public class SlowBoard extends Board<SlowBoard> {
 //                        if (this.field[ar + index] != INVALID && field[ar + index] * getActivePlayer() < 0) {
 //                            if(this.getActivePlayer() == 1){
 //                                moves.add(new Move(index, ar + index, this, (short)
-//                                        (((board_meta_informtion & MASK_WHITE_QUEENSIDE_CASTLING) > 0 ? MASK_WHITE_QUEENSIDE_CASTLING:0) |
-//                                                ((board_meta_informtion & MASK_WHITE_KINGSIDE_CASTLING) > 0 ? MASK_WHITE_KINGSIDE_CASTLING :0))
+//                                        (((board_meta_information & MASK_WHITE_QUEENSIDE_CASTLING) > 0 ? MASK_WHITE_QUEENSIDE_CASTLING:0) |
+//                                                ((board_meta_information & MASK_WHITE_KINGSIDE_CASTLING) > 0 ? MASK_WHITE_KINGSIDE_CASTLING :0))
 //                                ));
 //                            }else{
 //                                moves.add(new Move(index, ar + index, this, (short)
-//                                        (((board_meta_informtion & MASK_BLACK_QUEENSIDE_CASTLING) > 0 ? MASK_BLACK_QUEENSIDE_CASTLING:0) |
-//                                                ((board_meta_informtion & MASK_BLACK_KINGSIDE_CASTLING) > 0 ? MASK_BLACK_KINGSIDE_CASTLING:0))
+//                                        (((board_meta_information & MASK_BLACK_QUEENSIDE_CASTLING) > 0 ? MASK_BLACK_QUEENSIDE_CASTLING:0) |
+//                                                ((board_meta_information & MASK_BLACK_KINGSIDE_CASTLING) > 0 ? MASK_BLACK_KINGSIDE_CASTLING:0))
 //                                ));
 //                            }
 //                        }
@@ -815,14 +756,53 @@ public class SlowBoard extends Board<SlowBoard> {
 //        }
 //        return moves;
     }
+    //</editor-fold>
 
+    //<editor-fold desc="pieces">
+    @Override
+    public void setPiece(int x, int y, int piece) {
+        this.setPiece(index(x,y), piece);
+    }
+
+    @Override
+    public void setPiece(int index, int piece) {
+
+        if(this.field[index] != 0 && this.field[index] != INVALID){
+            if(this.field[index] > 0){
+                this.zobristKey ^= BitBoard.white_hashes[this.field[index]-1][x(index) * 8 + y(index)];
+            }else{
+                this.zobristKey ^= BitBoard.black_hashes[-this.field[index]-1][x(index) * 8 + y(index)];
+            }
+        }
+
+        field[index] = piece;
+
+        if(field[index] != INVALID && piece != 0){
+            if(piece > 0){
+                this.zobristKey ^= BitBoard.white_hashes[piece-1][x(index) * 8 + y(index)];
+            }else{
+                this.zobristKey ^= BitBoard.black_hashes[-piece-1][x(index) * 8 + y(index)];
+            }
+        }
+    }
+
+    @Override
+    public int getPiece(int x, int y) {
+        return field[index(x, y)];
+    }
+
+    @Override
+    public int getPiece(int index) {
+        return field[index];
+    }
+    //</editor-fold>
 
 
     @Override
     public void reset() {
 
         this.field = new int[12 * 12];
-        this.board_meta_informtion = MASK_BLACK_KINGSIDE_CASTLING |
+        this.board_meta_information = MASK_BLACK_KINGSIDE_CASTLING |
                 MASK_WHITE_KINGSIDE_CASTLING |
                 MASK_WHITE_QUEENSIDE_CASTLING|
                 MASK_BLACK_QUEENSIDE_CASTLING;
@@ -872,63 +852,25 @@ public class SlowBoard extends Board<SlowBoard> {
     }
 
     @Override
-    public boolean isGameOver() {
-        return (MASK_GAMEOVER & board_meta_informtion) > 0;
-    }
-
-    @Override
     public SlowBoard newInstance() {
         return new SlowBoard();
     }
 
     @Override
-    public void setPiece(int x, int y, int piece) {
-        this.setPiece(index(x,y), piece);
-    }
-
-    @Override
-    public void setPiece(int index, int piece) {
-
-        if(this.field[index] != 0 && this.field[index] != INVALID){
-            if(this.field[index] > 0){
-                this.zobristKey ^= BitBoard.white_hashes[this.field[index]-1][x(index) * 8 + y(index)];
-            }else{
-                this.zobristKey ^= BitBoard.black_hashes[-this.field[index]-1][x(index) * 8 + y(index)];
-            }
+    public SlowBoard copy() {
+        SlowBoard board = new SlowBoard();
+        if (this.getActivePlayer() != board.getActivePlayer()) board.changeActivePlayer();
+        board.field = Arrays.copyOf(field, 144);
+        board.board_meta_information = this.board_meta_information;
+        board.board_repetition_counter = this.board_repetition_counter.copy();
+        board.zobristKey = zobristKey;
+        for (Move move : moveHistory) {
+            board.moveHistory.push(move.copy());
         }
-
-        field[index] = piece;
-
-        if(field[index] != INVALID && piece != 0){
-            if(piece > 0){
-                this.zobristKey ^= BitBoard.white_hashes[piece-1][x(index) * 8 + y(index)];
-            }else{
-                this.zobristKey ^= BitBoard.black_hashes[-piece-1][x(index) * 8 + y(index)];
-            }
-        }
-    }
-
-    @Override
-    public int winner() {
-        if((MASK_WINNER_WHITE & board_meta_informtion) > 0) return 1;
-        if((MASK_WINNER_BLACK & board_meta_informtion) > 0) return -1;
-        return 0;
+        return board;
     }
 
 
-
-
-    public int[] getField() {
-        return field;
-    }
-
-    public short getBoard_meta_informtion() {
-        return board_meta_informtion;
-    }
-
-    public RepetitionList getBoard_repetition_counter() {
-        return board_repetition_counter;
-    }
 
     public static void main(String[] args) {
         SlowBoard b = new SlowBoard(Setup.DEFAULT);

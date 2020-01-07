@@ -7,7 +7,6 @@ import board.moves.MoveListBuffer;
 import game.ai.evaluator.Evaluator;
 import game.ai.evaluator.NoahEvaluator;
 import game.ai.ordering.Orderer;
-import game.ai.ordering.SystematicOrderer;
 import game.ai.reducing.Reducer;
 import game.ai.tools.*;
 import io.IO;
@@ -24,26 +23,24 @@ public class PVSearch implements AI {
     private Orderer orderer;
     private Reducer reducer;
 
-    private int limit;                              //limit for searching. could be a time in ms or a depth
-    private int limit_flag;                         //limit flag to determine if limit is max depth or time
+    private int limit;                                      //limit for searching. could be a time in ms or a depth
+    private int limit_flag;                                 //limit flag to determine if limit is max depth or time
 
-    private int quiesce_depth;                      //max search depth after the full-search has completed
-    private boolean use_iteration = true;           //flag for iterative deepening
-    private boolean use_transposition = false;      //flag for transposition tables
-    private boolean print_overview = true;          //flag for output-printing
-    private boolean use_null_moves = true;
+    private int quiesce_depth;                              //max search depth after the full-search has completed
+    private boolean use_iteration           = true;         //flag for iterative deepening
+    private boolean use_transposition       = false;        //flag for transposition tables
+    private boolean print_overview          = true;         //flag for output-printing
+    private boolean use_null_moves          = true;         //flag for null moves
+    private boolean use_move_lists          = true;         //flag for move lists
+    private boolean use_LMR                 = true;         //flag for LMR
 
-    private boolean use_killer_heuristic = true;   //flag for killer tables
-    private int killer_count = 2;
-    private int null_move_reduction = 2;            //how much to reduce null moves
-    private boolean use_LMR = true;                 //flag for LMR
 
-    private int transposition_store_depth = 100;    //the depth after which we stop storing transpositions.
-    private boolean useMoveLists = true;
-
+    private boolean use_killer_heuristic    = true;         //flag for killer tables
+    private int killer_count                = 2;            //amount of killer moves
+    private int transposition_store_depth   = 100;          //the depth after which we stop storing transpositions.
+    private int null_move_reduction         = 2;            //how much to reduce null moves
 
     private SearchOverview searchOverview;
-
 
     public PVSearch(Evaluator evaluator, Orderer orderer, Reducer reducer, int limit_flag,  int limit, int quiesce_depth) {
         this.evaluator = evaluator;
@@ -98,8 +95,8 @@ public class PVSearch implements AI {
      *
      * @return
      */
-    public boolean isUseMoveLists() {
-        return useMoveLists;
+    public boolean isUse_move_lists() {
+        return use_move_lists;
     }
 
     /**
@@ -107,8 +104,8 @@ public class PVSearch implements AI {
      *
      * @return
      */
-    public void setUseMoveLists(boolean useMoveLists) {
-        this.useMoveLists = useMoveLists;
+    public void setUse_move_lists(boolean use_move_lists) {
+        this.use_move_lists = use_move_lists;
     }
 
     /**
@@ -611,7 +608,7 @@ public class PVSearch implements AI {
 
         //<editor-fold desc="quiesce search">
         List<Move> allMoves =
-                useMoveLists ?
+                use_move_lists ?
                 currentDepth == 0 ? _board.getLegalMoves() : _board.getPseudoLegalMoves(_buffer.get(currentDepth)):
                         currentDepth == 0 ? _board.getLegalMoves() : _board.getPseudoLegalMoves();
         if (depthLeft <= 0 || allMoves.size() == 0 || _board.isGameOver()) {
@@ -654,7 +651,7 @@ public class PVSearch implements AI {
             Move m = allMoves.get(index);
 
             //<editor-fold desc="Debugging check">
-            long prevMeta = ((SlowBoard)_board).getBoard_meta_informtion();
+            long prevMeta = ((SlowBoard)_board).getBoard_meta_information();
             long security = _board.zobrist();
             //</editor-fold>
 
@@ -706,9 +703,9 @@ public class PVSearch implements AI {
 
             //<editor-fold desc="Debugging check">
             //Some security checks. if this exception is thrown, the move generation has a bug!
-            if(security != _board.zobrist() || ((SlowBoard) _board).getBoard_meta_informtion() != prevMeta){
+            if(security != _board.zobrist() || ((SlowBoard) _board).getBoard_meta_information() != prevMeta){
                 System.out.println(security + "  "  + _board.zobrist());
-                System.out.println(prevMeta + "  " + ((SlowBoard) _board).getBoard_meta_informtion());
+                System.out.println(prevMeta + "  " + ((SlowBoard) _board).getBoard_meta_information());
                 System.out.println(m);
                 System.out.println(zobrist);
                 System.out.println(_board);
@@ -786,7 +783,11 @@ public class PVSearch implements AI {
         }
         if (alpha < stand_pat)
             alpha = stand_pat;
-        List<Move> allMoves = _board.getCaptureMoves(_buffer.get(currentDepth + 10));
+        List<Move> allMoves =
+                use_move_lists ?
+                        _board.getPseudoLegalMoves(_buffer.get(currentDepth)):
+                        _board.getPseudoLegalMoves();
+
         orderer.sort(allMoves, 0, null, _board, null, null);
         for (Move m : allMoves) {
             if(m.getPieceTo() == 0) continue;
