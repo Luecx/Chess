@@ -5,8 +5,10 @@ import board.SlowBoard;
 import board.moves.Move;
 import board.moves.MoveListBuffer;
 import game.ai.evaluator.Evaluator;
+import game.ai.evaluator.LateGameEvaluator;
 import game.ai.evaluator.NoahEvaluator;
 import game.ai.ordering.Orderer;
+import game.ai.ordering.SystematicOrderer;
 import game.ai.reducing.Reducer;
 import game.ai.tools.*;
 import io.IO;
@@ -388,11 +390,14 @@ public class PVSearch implements AI {
         for (int i = 0; i < 8; i++) {
             for (int n = 0; n < 8; n++) {
                 v = board.getPiece(i, n);
-                totalMaterial += NoahEvaluator.COMPLETE_EVALUATE_PRICE[v+6];
+                totalMaterial += NoahEvaluator.COMPLETE_EVALUATE_PRICE[v + 6];
             }
         }
-        if (totalMaterial < 30000) {
+
+        if (totalMaterial < 43000) {
             _board.setEndgame(true);
+        }else{
+            _board.setEndgame(false);
         }
         //</editor-fold>
 
@@ -609,11 +614,14 @@ public class PVSearch implements AI {
         //<editor-fold desc="quiesce search">
         List<Move> allMoves =
                 use_move_lists ?
-                currentDepth == 0 ? _board.getLegalMoves() : _board.getPseudoLegalMoves(_buffer.get(currentDepth)):
-                        currentDepth == 0 ? _board.getLegalMoves() : _board.getPseudoLegalMoves();
+                currentDepth <= 1 ? _board.getLegalMoves() : _board.getPseudoLegalMoves(_buffer.get(currentDepth)):
+                        currentDepth <= 1 ? _board.getLegalMoves() : _board.getPseudoLegalMoves();
         if (depthLeft <= 0 || allMoves.size() == 0 || _board.isGameOver()) {
-            double val = Quiesce(alpha, beta, currentDepth + 1,quiesce_depth);
-            return val;
+            if (allMoves.size() == 0){
+                return _board.getActivePlayer() * -LateGameEvaluator.INFTY;
+            }else{
+                return Quiesce(alpha, beta, currentDepth + 1,quiesce_depth);
+            }
         }
         //</editor-fold>
 

@@ -112,7 +112,7 @@ public class Frame extends JFrame implements KeyListener {
                 new SystematicOrderer(),
                 new SimpleReducer(),
                 PVSearch.FLAG_TIME_LIMIT,
-                3000,6);
+                4000,6);
         ai.setUse_iteration(true);
         ai.setUse_null_moves(true);
         ai.setPrint_overview(true);

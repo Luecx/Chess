@@ -7,6 +7,7 @@ import board.repetitions.RepetitionList;
 import board.setup.Setup;
 import game.Player;
 import game.ai.evaluator.FinnEvaluator;
+import game.ai.evaluator.LateGameEvaluator;
 import game.ai.evaluator.NoahEvaluator;
 import game.ai.ordering.SystematicOrderer;
 import game.ai.reducing.SimpleReducer;
@@ -792,32 +793,21 @@ public class SlowBoard extends Board<SlowBoard> {
 
     public static void main(String[] args) {
         SlowBoard b = new SlowBoard(Setup.DEFAULT);
+        b = IO.read_FEN(b, "6k1/8/3q4/8/8/8/8/1K6 w - - 0 1");
 
         PVSearch ai1 = new PVSearch(
-                new FinnEvaluator(),
+                new NoahEvaluator(),
                 new SystematicOrderer(),
                 new SimpleReducer(),
-                2,
-                8,
+                1,
+                2000,
                 4);
         ai1.setUse_killer_heuristic(true);
         ai1.setUse_null_moves(true);
         ai1.setUse_LMR(true);
         ai1.setUse_transposition(true);
 
-        PVSearch ai2 = new PVSearch(
-                new NoahEvaluator(),
-                new SystematicOrderer(),
-                new SimpleReducer(),
-                2,
-                8,
-                4);
-        ai2.setUse_killer_heuristic(true);
-        ai2.setUse_null_moves(true);
-        ai2.setUse_LMR(true);
-        ai2.setUse_transposition(true);
-
-        new Frame(b, ai1,ai2);
+        new Frame(b, new Player(){}, ai1);
     }
 
 }

@@ -283,10 +283,7 @@ public class NoahEvaluator implements Evaluator {
                 //isolated
                 if (bPawns[rank - 1] == 0 && bPawns[rank + 1] == 0) ev += 15;
             }
-
-
         }
-
 
         return ev;
     }

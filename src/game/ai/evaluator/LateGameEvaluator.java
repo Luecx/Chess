@@ -1,6 +1,7 @@
 package game.ai.evaluator;
 
 import board.Board;
+import game.ai.ordering.SystematicOrderer;
 import game.ai.tools.tensor.Tensor2D;
 import game.ai.tools.tensor.Tensor3D;
 
@@ -73,6 +74,8 @@ public class LateGameEvaluator implements Evaluator {
             {-30, -30, -30, -30, -30, -30, -30, -30}
     });
 
+    public static final double INFTY = 1E8;
+
     public static final int[] EVALUATE_PRICE = new int[]{0, 100, 500, 320, 330, 900, 20000};
     //public static final Tensor3D POSITION_PRICE = new Tensor3D(PAWN_VALUES, ROOK_VALUES, KNIGHT_VALUES, BISHOP_VALUES, QUEEN_VALUES);
     public static final Tensor3D POSITION_PRICE =
@@ -96,9 +99,9 @@ public class LateGameEvaluator implements Evaluator {
 
         if(board.isGameOver()){
             switch (board.winner()){
-                case 1: return 1000000000;
+                case 1: return INFTY;
                 case 0: return 0;
-                case -1: return -100000000;
+                case -1: return -INFTY;
             }
         }
 
