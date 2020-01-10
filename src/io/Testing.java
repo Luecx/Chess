@@ -225,13 +225,6 @@ public class Testing {
     }
 
     public static void main(String[] args) {
-        PVSearch ai2 = new PVSearch(
-                new NoahEvaluator(),
-                new SystematicOrderer(),
-                new SimpleReducer(),
-                1,
-                1000,
-                4);
 
         PVSearch ai1 = new PVSearch(
                 new FinnEvaluator(),
@@ -245,28 +238,21 @@ public class Testing {
         ai1.setUse_LMR(true);
         ai1.setUse_transposition(true);
         ai1.setUse_move_lists(true);
-        SlowBoard board = new SlowBoard(Setup.DEFAULT);
+
+
+        PVSearch ai2 = new PVSearch(
+                new NoahEvaluator(),
+                new SystematicOrderer(),
+                new SimpleReducer(),
+                1,
+                1000,
+                4);
 
         ai2.setUse_killer_heuristic(true);
         ai2.setUse_null_moves(true);
         ai2.setUse_LMR(true);
         ai2.setUse_transposition(true);
         ai2.setUse_move_lists(true);
-        long time = System.currentTimeMillis();
-        System.out.println(perft_pseudo(board, 6,new MoveListBuffer(5)));
-
-        PVSearch ai2 = new PVSearch(
-                new FinnEvaluator(),
-                new SystematicOrderer(),
-                new SimpleReducer(),
-                2,
-                8,
-                2);
-        ai2.setUse_killer_heuristic(true);
-        ai2.setUse_null_moves(true);
-        ai2.setUse_LMR(true);
-        ai2.setUse_transposition(true);
-        ai2.setUse_move_lists(false);
 
         compare(new SlowBoard(), new PVSearch[]{ai1,ai2},
             "r2q1rk1/1pp1bppp/p1npbn2/4p1B1/B3P3/2NP1N2/PPPQ1PPP/2KR3R",
