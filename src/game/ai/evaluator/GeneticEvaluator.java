@@ -12,6 +12,8 @@ import game.ai.search.AlphaBeta;
 import game.ai.search.PVSearch;
 import game.ai.tools.tensor.Tensor2D;
 import game.ai.tools.tensor.Tensor3D;
+import io.IO;
+import io.Testing;
 
 import java.lang.reflect.Array;
 import java.util.*;
@@ -46,12 +48,62 @@ public abstract class GeneticEvaluator<T extends GeneticEvaluator<T>> implements
 
 
     public static void evolve(ArrayList<Object[]> ais, int games, int survivors, double mutationStrength, double crossoverStrength){
+
+
+        //<editor-fold desc="formats">
+        String head =           "┌──────────┬┬";
+        String bottom =         "└──────────┴┴";
+        String seperator =      "├──────────┼┼";
+        String two_entries =         "│ %8s ││ ";
+        String one_entries =         "│ %8s ││ ";
+        String one_entries_string =         "│ %8s ││ ";
+        for(int i = 0; i < ais.size(); i++){
+
+            if(i == ais.size()-1){
+
+                seperator +=        "───────────┤";
+                head +=        "───────────┐";
+                bottom +=        "───────────┘";
+            }else{
+
+                seperator +=        "───────────┼";
+                head +=        "───────────┬";
+                bottom +=        "───────────┴";
+            }
+            one_entries_string += "%-9s │ ";
+            one_entries += " %-+7.2f  │ ";
+            two_entries += "%-2s %6s │ ";
+        }
+        two_entries += "\n";
+        one_entries += "\n";
+        one_entries_string += "\n";
+        System.out.println(head);
+        Object[] ar = new Object[2*ais.size() + 1];
+        ar[0] = "AI";
+        for(int i = 0; i < ais.size(); i++){
+            ar[2*i+1] = i+1;
+            ar[2*i+2] = "";
+        }
+        System.out.format(two_entries, ar);
+        ar[0] = "";
+        for(int i = 0; i < ais.size(); i++){
+            ar[2*i+1] = "vs";
+            ar[2*i+2] = "score";
+        }
+        System.out.println(seperator);
+        System.out.format(two_entries, ar);
+
+        System.out.println(seperator);
+        //</editor-fold>
+
+        //<editor-fold desc="iterations">
+        ArrayList<Object[]> temp = new ArrayList<>(ais);
         for(int i = 0; i < ais.size(); i++){
             ais.get(i)[1] = new Double(0);
         }
         for(int g = 0; g < games; g++){
-            Collections.shuffle(ais);
 
+            Collections.shuffle(ais);
 
             for(int i = 0; i < ais.size(); i+=2){
                 double score = playAMatch((PVSearch)ais.get(i)[0], (PVSearch)ais.get(i + 1)[0]);
@@ -59,21 +111,71 @@ public abstract class GeneticEvaluator<T extends GeneticEvaluator<T>> implements
                 ais.get(i+1)[1] = (Double) ais.get(i + 1)[1] - (double) score;
             }
 
-        }
-        ais.sort(Comparator.comparingDouble(o -> -(double) o[1]));
 
+
+            ar = new Object[ais.size()*2 + 1];
+            ar[0] = "game " + (g+1);
+            for(int i = 0; i < ais.size(); i++){
+                ar[i*2+2] = "["+IO.doubleToString((double)temp.get(i)[1],1)+"]";
+
+                int partnerIndex;
+                if(ais.indexOf(temp.get(i)) % 2 == 0){
+                    partnerIndex = ais.indexOf(temp.get(i)) +1;
+                }else{
+                    partnerIndex = ais.indexOf(temp.get(i)) -1;
+                }
+                int realIndex = temp.indexOf(ais.get(partnerIndex)) + 1;
+
+                ar[i*2+1] =realIndex;
+            }
+            System.out.format("\r" + two_entries, ar);
+        }
+        //</editor-fold>#
+
+        System.out.println(seperator);
+        System.out.println(seperator);
+
+        //<editor-fold desc="crossing">
+        ar = new Object[1+ais.size()];
+        ar[0] = "parent";
+        ais.sort(Comparator.comparingDouble(o -> -(double) o[1]));
+        for(int i = 0; i < ais.size(); i++){
+            ar[i+1] = "   -";
+        }
         for(int i = survivors; i < ais.size(); i++){
+
+
             GeneticEvaluator v = (GeneticEvaluator)((PVSearch)ais.get(i)[0]).getEvaluator();
-            GeneticEvaluator parent = (GeneticEvaluator)((PVSearch)ais.get((int)(Math.random() * survivors))[0]).getEvaluator();
+            Object[] parentArray = ais.get((int)(Math.random() * survivors));
+            GeneticEvaluator parent = (GeneticEvaluator)((PVSearch)parentArray[0]).getEvaluator();
+
+            ar[temp.indexOf(ais.get(i))+1] = "   " + (temp.indexOf(parentArray) + 1);
 
             v.crossover(parent,crossoverStrength);
         }
+        System.out.format(one_entries_string, ar);
+        System.out.println(seperator);
+        //</editor-fold>
+
         for(int i = 0; i < ais.size(); i++){
             GeneticEvaluator v = (GeneticEvaluator)((PVSearch)ais.get(i)[0]).getEvaluator();
-            System.out.println(ais.get(i)[1] + "  " + ais.get(i)[0] + "  " + Arrays.toString(v.getEvolvableValues()));
+            //System.out.println(ais.get(i)[1] + "  " + ais.get(i)[0] + "  " + Arrays.toString(v.getEvolvableValues()));
             v.mutate(mutationStrength);
         }
-        System.out.println();
+
+        //<editor-fold desc="output">
+        for(int i = 0; i < ((GeneticEvaluator)((PVSearch)ais.get(0)[0]).getEvaluator()).getEvolvableValues().length; i++){
+            ar = new Object[ais.size() + 1];
+            ar[0] = "param " + (i+1);
+            for(int n = 0; n < ais.size(); n++){
+                GeneticEvaluator ev = (GeneticEvaluator)((PVSearch)ais.get(n)[0]).getEvaluator();
+                //ar[n+1] = IO.doubleToString(ev.getEvolvableValues()[i],2);
+                ar[n+1] = ev.getEvolvableValues()[i];
+            }
+            System.out.format(one_entries, ar);
+        }
+        System.out.println(bottom);
+        //</editor-fold>
 
     }
 
@@ -111,7 +213,7 @@ public abstract class GeneticEvaluator<T extends GeneticEvaluator<T>> implements
             }
         });
         game.move(null);
-        System.out.println();
+        //System.out.println();
 
         if(game.getBoard().isGameOver()){
             return game.getBoard().winner();
@@ -131,10 +233,11 @@ public abstract class GeneticEvaluator<T extends GeneticEvaluator<T>> implements
 
 
     public static void main(String[] args) {
-        ArrayList<Object[]> population = generatePopulation(20,6,4, new NoahEvaluator());
+        ArrayList<Object[]> population = generatePopulation(14,6,4, new NoahEvaluator());
 
-        evolve(population, 10, 4, 0.1,0.8);
-        for(int i = 0; i < 1; i++)
+        for(int i = 0; i < 5; i++){
+            evolve(population, 6, 2, 0.1,0.8);
+        }
         System.out.println("Finished");
     }
 

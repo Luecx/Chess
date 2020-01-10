@@ -12,9 +12,11 @@ import game.ai.search.AI;
 import game.ai.search.PVSearch;
 import visual.GamePanel;
 
+import java.text.NumberFormat;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * the IO class implements methods to generate boards encoded
@@ -472,6 +474,13 @@ public class IO {
         }
     }
 
+    public static String doubleToString(double s, int fractionDigits){
+        NumberFormat nf = NumberFormat.getNumberInstance(Locale.US);
+        nf.setMaximumFractionDigits(fractionDigits);
+        String rounded = nf.format(s);
+        return rounded;
+    }
+
     /**
      * reads the input keys and parses them according to
      * @link parseBoard
@@ -597,8 +606,6 @@ public class IO {
 
     public static void main(String[] args) {
         //System.exit(parseInputForBestMove(args));
-        Board b = new SlowBoard();
-        Move move = new Move(32,34,b);
-        System.out.println(moveToUCI(move,b));
+        System.out.println(doubleToString(4.13000000001, 5));
     }
 }

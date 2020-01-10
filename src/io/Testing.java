@@ -33,14 +33,12 @@ public class Testing {
         //</editor-fold>
 
         String emptyLine =      "           ";
-        String seperator =      "-----------";
-        String bigSeperator =   "===========";
+        String seperator =      "───────────";
         String format = "%10s";
         for(AI ignored :ais){
-            seperator +=        "|--------------------------------------";
-            bigSeperator +=     "|======================================";
-            emptyLine +=        "|                                      ";
-            format += " | %-25s %-10s";
+            seperator +=        "┼───────────────────────────────────────────";
+            emptyLine +=        "│                                           ";
+            format += " │ %-25s %-15s";
         }
 
 
@@ -87,9 +85,8 @@ public class Testing {
             }
             System.out.format(format+"\n", line);
         }
-        System.out.println(bigSeperator);
-        System.out.println(emptyLine);
-        System.out.println(bigSeperator);
+        System.out.println(seperator);
+        System.out.println(seperator);
         //</editor-fold>
 
         int[] avgDepth = new int[ais.length];
@@ -163,9 +160,8 @@ public class Testing {
                 System.out.println(seperator);
             }
         }
-        System.out.println(bigSeperator);
-        System.out.println(emptyLine);
-        System.out.println(bigSeperator);
+        System.out.println(seperator);
+        System.out.println(seperator);
         //</editor-fold>
 
 
@@ -259,7 +255,18 @@ public class Testing {
         long time = System.currentTimeMillis();
         System.out.println(perft_pseudo(board, 6,new MoveListBuffer(5)));
 
-        System.out.println(System.currentTimeMillis()-time + " ms");
+        PVSearch ai2 = new PVSearch(
+                new FinnEvaluator(),
+                new SystematicOrderer(),
+                new SimpleReducer(),
+                2,
+                8,
+                2);
+        ai2.setUse_killer_heuristic(true);
+        ai2.setUse_null_moves(true);
+        ai2.setUse_LMR(true);
+        ai2.setUse_transposition(true);
+        ai2.setUse_move_lists(false);
 
         compare(new SlowBoard(), new PVSearch[]{ai1,ai2},
             "r2q1rk1/1pp1bppp/p1npbn2/4p1B1/B3P3/2NP1N2/PPPQ1PPP/2KR3R",

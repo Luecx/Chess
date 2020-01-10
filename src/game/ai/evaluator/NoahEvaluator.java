@@ -346,7 +346,9 @@ public class NoahEvaluator extends GeneticEvaluator<NoahEvaluator> implements Ev
                 PARAMATER_DOUBLED_PAWN,
                 PARAMATER_DOUBLE_BISHOP,
                 PARAMETER_KING_SAFETY_1,
-                PARAMETER_KING_SAFETY_2};
+                PARAMETER_KING_SAFETY_2,
+                PARAMETER_ROOK_OPEN,
+                PARAMETER_ROOK_HALF_OPEN};
     }
 
     @Override
@@ -357,6 +359,8 @@ public class NoahEvaluator extends GeneticEvaluator<NoahEvaluator> implements Ev
         PARAMATER_DOUBLE_BISHOP = ar[3];
         PARAMETER_KING_SAFETY_1 = ar[4];
         PARAMETER_KING_SAFETY_2 = ar[5];
+        PARAMETER_ROOK_OPEN = ar[6];
+        PARAMETER_ROOK_HALF_OPEN = ar[7];
     }
 
     @Override
