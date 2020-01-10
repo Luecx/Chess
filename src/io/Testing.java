@@ -6,6 +6,7 @@ import board.moves.Move;
 import board.moves.MoveListBuffer;
 import board.setup.Setup;
 import game.ai.evaluator.FinnEvaluator;
+import game.ai.evaluator.NoahEvaluator;
 import game.ai.ordering.SystematicOrderer;
 import game.ai.reducing.SimpleReducer;
 import game.ai.search.AI;
@@ -228,47 +229,44 @@ public class Testing {
     }
 
     public static void main(String[] args) {
+        PVSearch ai2 = new PVSearch(
+                new NoahEvaluator(),
+                new SystematicOrderer(),
+                new SimpleReducer(),
+                1,
+                1000,
+                4);
 
+        PVSearch ai1 = new PVSearch(
+                new FinnEvaluator(),
+                new SystematicOrderer(),
+                new SimpleReducer(),
+                1,
+                1000,
+                4);
+        ai1.setUse_killer_heuristic(true);
+        ai1.setUse_null_moves(true);
+        ai1.setUse_LMR(true);
+        ai1.setUse_transposition(true);
+        ai1.setUse_move_lists(true);
         SlowBoard board = new SlowBoard(Setup.DEFAULT);
 
+        ai2.setUse_killer_heuristic(true);
+        ai2.setUse_null_moves(true);
+        ai2.setUse_LMR(true);
+        ai2.setUse_transposition(true);
+        ai2.setUse_move_lists(true);
         long time = System.currentTimeMillis();
         System.out.println(perft_pseudo(board, 6,new MoveListBuffer(5)));
 
         System.out.println(System.currentTimeMillis()-time + " ms");
 
-//        PVSearch ai1 = new PVSearch(
-//                new FinnEvaluator(),
-//                new SystematicOrderer(),
-//                new SimpleReducer(),
-//                2,
-//                8,
-//                8);
-//        ai1.setUse_killer_heuristic(true);
-//        ai1.setUse_null_moves(true);
-//        ai1.setUse_LMR(true);
-//        ai1.setUse_transposition(true);
-//        ai1.setUse_move_lists(true);
-//
-//
-//        PVSearch ai2 = new PVSearch(
-//                new FinnEvaluator(),
-//                new SystematicOrderer(),
-//                new SimpleReducer(),
-//                2,
-//                8,
-//                8);
-//        ai2.setUse_killer_heuristic(true);
-//        ai2.setUse_null_moves(true);
-//        ai2.setUse_LMR(true);
-//        ai2.setUse_transposition(true);
-//        ai2.setUse_move_lists(false);
-//
-//        compare(new SlowBoard(), new PVSearch[]{ai1,ai2},
-//            "r2q1rk1/1pp1bppp/p1npbn2/4p1B1/B3P3/2NP1N2/PPPQ1PPP/2KR3R",
-//            "r2q1rk1/ppp2ppp/2n2n2/2b5/2B2Bb1/2NP1N2/PPPQ2PP/R4R1K",
-//            "r1bq1rk1/1p2ppbp/p1np1np1/8/3NP3/1BN1B2P/PPP2PP1/R2Q1RK1",
-//            "r2qk2r/ppp1nppp/1bn1b3/1B6/1P1pP3/5N2/PB3PPP/RN1Q1RK1",
-//            "r2qkb1r/pp1n1pp1/2p1pn1p/8/3P1B1P/3Q1NN1/PPP2PP1/2KR3R");
+        compare(new SlowBoard(), new PVSearch[]{ai1,ai2},
+            "r2q1rk1/1pp1bppp/p1npbn2/4p1B1/B3P3/2NP1N2/PPPQ1PPP/2KR3R",
+            "r2q1rk1/ppp2ppp/2n2n2/2b5/2B2Bb1/2NP1N2/PPPQ2PP/R4R1K",
+            "r1bq1rk1/1p2ppbp/p1np1np1/8/3NP3/1BN1B2P/PPP2PP1/R2Q1RK1",
+            "r2qk2r/ppp1nppp/1bn1b3/1B6/1P1pP3/5N2/PB3PPP/RN1Q1RK1",
+            "r2qkb1r/pp1n1pp1/2p1pn1p/8/3P1B1P/3Q1NN1/PPP2PP1/2KR3R");
 
 
 

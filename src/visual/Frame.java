@@ -87,26 +87,37 @@ public class Frame extends JFrame implements KeyListener {
         //b = IO.read_FEN(new SlowBoard(), "r3k2r/ppp3pp/5p2/3Pp3/2P3PN/1P1b1P1P/4R1K1/2B5 w - - 0 1");
         //b = IO.read_FEN(new SlowBoard(), "r3k2r/ppp3pp/5p2/3Pp3/2P3PN/1P1b1P1P/4R1K1/2B5 w - - 0 1");
         //b = IO.read_FEN(new SlowBoard(), "r1k5/ppp2p1p/6b1/8/r4P2/2P2B2/PP5P/3R2R1 w - - 0 1");
+
+        //b = IO.read_FEN(new SlowBoard(), "8/4k3/8/4K3/4P3/8/8/8 w - - 0 1"); //KvP
+
         ArrayList<String> keys = new ArrayList<>();
         for(String s:args){
             keys.add(s);
         }
 
 
+        PVSearch ai1 = new PVSearch(
+                new NoahEvaluator(),
+                new SystematicOrderer(),
+                new SimpleReducer(),
+                PVSearch.FLAG_TIME_LIMIT,
+                500,6);
         boolean w = true;
 
-        if(w){
-            keys.add("black");
-        }else{
+//        if(w){
+//            keys.add("black");
+//        }else{
+//
+//            keys.add("white");
+//            keys.add("flip");
+//        }
 
-            keys.add("white");
-            keys.add("flip");
-        }
+
 
         Player hm = new Player(){};
 
         PVSearch ai = new PVSearch(
-                new NoahEvaluator(),
+                new FinnEvaluator(),
                 new SystematicOrderer(),
                 new SimpleReducer(),
                 PVSearch.FLAG_TIME_LIMIT,
@@ -116,8 +127,17 @@ public class Frame extends JFrame implements KeyListener {
         ai.setPrint_overview(true);
         ai.setUse_killer_heuristic(true);
         ai.setUse_LMR(true);
-        ai.setUse_transposition(true);
+        ai.setUse_transposition(false);
         ai.setPrint_overview(true);
+
+
+        ai1.setUse_iteration(true);
+        ai1.setUse_null_moves(true);
+        ai1.setPrint_overview(true);
+        ai1.setUse_killer_heuristic(true);
+        ai1.setUse_LMR(true);
+        ai1.setUse_transposition(false);
+        ai1.setPrint_overview(true);
 
 
 
@@ -126,7 +146,7 @@ public class Frame extends JFrame implements KeyListener {
 
         boolean flip = keys.contains("flip");
 
-        new Frame(b, white, black).setFlippedBoard(flip);
+        new Frame(b, ai1, ai).setFlippedBoard(flip);
     }
 
     @Override

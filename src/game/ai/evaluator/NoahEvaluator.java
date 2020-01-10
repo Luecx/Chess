@@ -118,7 +118,7 @@ public class NoahEvaluator extends GeneticEvaluator<NoahEvaluator> implements Ev
             {-30, -40, -40, -50, -50, -40, -40, -30},
     });
 
-    public static final int[] EVALUATE_PRICE = new int[]{0, 100, 500, 320, 330, 900, 20000};
+    public static final int[] EVALUATE_PRICE = new int[]{0, 100, 500, 315, 341, 950, 20000};
 
     public static final Tensor3D W_POSITION_PRICE = new Tensor3D(W_PAWN_VALUES, W_ROOK_VALUES, KNIGHT_VALUES, W_BISHOP_VALUES, QUEEN_VALUES, W_KING_VALUES_MID);
     public static final Tensor3D B_POSITION_PRICE = new Tensor3D(B_PAWN_VALUES, B_ROOK_VALUES, KNIGHT_VALUES, B_BISHOP_VALUES, QUEEN_VALUES, B_KING_VALUES_MID);
@@ -181,6 +181,8 @@ public class NoahEvaluator extends GeneticEvaluator<NoahEvaluator> implements Ev
     private double PARAMATER_DOUBLE_BISHOP      = 50;
     private double PARAMETER_KING_SAFETY_1      = 15;
     private double PARAMETER_KING_SAFETY_2      = 10;
+    private double PARAMETER_ROOK_HALF_OPEN     = 15;
+    private double PARAMETER_ROOK_OPEN          = 20;
 
     //will get to this later. For now, I'm using this file to store position values
     @Override
@@ -204,6 +206,10 @@ public class NoahEvaluator extends GeneticEvaluator<NoahEvaluator> implements Ev
 
         int numWhiteBishops = 0;
         int numBlackBishops = 0;
+
+        //recording the file the rook is on
+        int[] whiteRooks = {-1,-1};
+        int[] blackRooks = {-1,-1};
 
         //pawn rook knight bishop queen king
 
@@ -229,6 +235,18 @@ public class NoahEvaluator extends GeneticEvaluator<NoahEvaluator> implements Ev
                     case 1:
                         wPawns[i+1] += 1;
                         break;
+                    case 2:
+                        if (whiteRooks[0] == -1) {
+                            whiteRooks[0]  = i;
+                        } else if (whiteRooks[1]  == -1) {
+                            whiteRooks[1] = i;
+                        }
+                    case -2:
+                        if (blackRooks[0] == -1) {
+                            blackRooks[0] = i;
+                        } else if (blackRooks[1] == -1) {
+                            blackRooks[1] = i;
+                        }
                     case 4: //bishop
                         numWhiteBishops += 1;
                         break;
@@ -292,6 +310,30 @@ public class NoahEvaluator extends GeneticEvaluator<NoahEvaluator> implements Ev
                 if (bPawns[rank - 1] == 0 && bPawns[rank + 1] == 0) ev -= PARAMATER_ISOLATED_PAWN;
             }
         }
+        /// rooks
+        for (int file : whiteRooks) {
+            if (file == -1) {
+                continue;
+            }
+            if (wPawns[file]  == 0) {
+                ev += 15;
+                if (bPawns[file] == 0) {
+                    ev += 20;
+                }
+            }
+        }
+        for (int file : blackRooks) {
+            if (file == -1) {
+                continue;
+            }
+            if (bPawns[file]  == 0) {
+                ev += PARAMETER_ROOK_HALF_OPEN;
+                if (wPawns[file] == 0) {
+                    ev += PARAMETER_ROOK_OPEN;
+                }
+            }
+        }
+
 
         return ev;
     }
