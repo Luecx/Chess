@@ -156,8 +156,10 @@ public class MoveList implements Iterable<Move>, List<Move> {
     }
 
     public void add() {
+        System.out.println(this.size());
         this.add(0,0,0,0,(short)0);
-        this.moves[size].isNull = true;
+        this.moves[size-1].isNull = true;
+        System.out.println("null move " + (size-1));
     }
 
     public void add(int from, int to, Board board, short metaInformation) {

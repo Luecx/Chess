@@ -2,6 +2,9 @@ package io;
 
 import board.Board;
 import board.SlowBoard;
+import board.moves.Move;
+import board.moves.MoveListBuffer;
+import board.setup.Setup;
 import game.ai.evaluator.FinnEvaluator;
 import game.ai.ordering.SystematicOrderer;
 import game.ai.reducing.SimpleReducer;
@@ -10,6 +13,7 @@ import game.ai.search.PVSearch;
 import game.ai.tools.SearchOverview;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class Testing {
 
@@ -203,41 +207,68 @@ public class Testing {
         //</editor-fold>
     }
 
+    public static int perft_pseudo(Board board, int depth, MoveListBuffer buffer){
+        if(depth == 0) {
+            return 1;
+        }
+        int nodes = 0;
+
+        List<Move> moves = board.getPseudoLegalMoves(buffer.get(depth));
+
+        if(depth == 1){
+            return moves.size();
+        }
+
+        for(Object m:moves){
+            board.move((Move)m);
+            nodes += perft_pseudo(board, depth-1,buffer);
+            board.undoMove();
+        }
+        return nodes;
+    }
+
     public static void main(String[] args) {
 
-        PVSearch ai1 = new PVSearch(
-                new FinnEvaluator(),
-                new SystematicOrderer(),
-                new SimpleReducer(),
-                2,
-                8,
-                8);
-        ai1.setUse_killer_heuristic(true);
-        ai1.setUse_null_moves(true);
-        ai1.setUse_LMR(true);
-        ai1.setUse_transposition(true);
-        ai1.setUse_move_lists(true);
+        SlowBoard board = new SlowBoard(Setup.DEFAULT);
 
+        long time = System.currentTimeMillis();
+        System.out.println(perft_pseudo(board, 6,new MoveListBuffer(5)));
 
-        PVSearch ai2 = new PVSearch(
-                new FinnEvaluator(),
-                new SystematicOrderer(),
-                new SimpleReducer(),
-                2,
-                8,
-                8);
-        ai2.setUse_killer_heuristic(true);
-        ai2.setUse_null_moves(true);
-        ai2.setUse_LMR(true);
-        ai2.setUse_transposition(true);
-        ai2.setUse_move_lists(false);
+        System.out.println(System.currentTimeMillis()-time + " ms");
 
-        compare(new SlowBoard(), new PVSearch[]{ai1,ai2},
-            "r2q1rk1/1pp1bppp/p1npbn2/4p1B1/B3P3/2NP1N2/PPPQ1PPP/2KR3R",
-            "r2q1rk1/ppp2ppp/2n2n2/2b5/2B2Bb1/2NP1N2/PPPQ2PP/R4R1K",
-            "r1bq1rk1/1p2ppbp/p1np1np1/8/3NP3/1BN1B2P/PPP2PP1/R2Q1RK1",
-            "r2qk2r/ppp1nppp/1bn1b3/1B6/1P1pP3/5N2/PB3PPP/RN1Q1RK1",
-            "r2qkb1r/pp1n1pp1/2p1pn1p/8/3P1B1P/3Q1NN1/PPP2PP1/2KR3R");
+//        PVSearch ai1 = new PVSearch(
+//                new FinnEvaluator(),
+//                new SystematicOrderer(),
+//                new SimpleReducer(),
+//                2,
+//                8,
+//                8);
+//        ai1.setUse_killer_heuristic(true);
+//        ai1.setUse_null_moves(true);
+//        ai1.setUse_LMR(true);
+//        ai1.setUse_transposition(true);
+//        ai1.setUse_move_lists(true);
+//
+//
+//        PVSearch ai2 = new PVSearch(
+//                new FinnEvaluator(),
+//                new SystematicOrderer(),
+//                new SimpleReducer(),
+//                2,
+//                8,
+//                8);
+//        ai2.setUse_killer_heuristic(true);
+//        ai2.setUse_null_moves(true);
+//        ai2.setUse_LMR(true);
+//        ai2.setUse_transposition(true);
+//        ai2.setUse_move_lists(false);
+//
+//        compare(new SlowBoard(), new PVSearch[]{ai1,ai2},
+//            "r2q1rk1/1pp1bppp/p1npbn2/4p1B1/B3P3/2NP1N2/PPPQ1PPP/2KR3R",
+//            "r2q1rk1/ppp2ppp/2n2n2/2b5/2B2Bb1/2NP1N2/PPPQ2PP/R4R1K",
+//            "r1bq1rk1/1p2ppbp/p1np1np1/8/3NP3/1BN1B2P/PPP2PP1/R2Q1RK1",
+//            "r2qk2r/ppp1nppp/1bn1b3/1B6/1P1pP3/5N2/PB3PPP/RN1Q1RK1",
+//            "r2qkb1r/pp1n1pp1/2p1pn1p/8/3P1B1P/3Q1NN1/PPP2PP1/2KR3R");
 
 
 

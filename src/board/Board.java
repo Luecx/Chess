@@ -77,6 +77,8 @@ public abstract class Board<T extends Board<T>> {
      * <p>
      * This method does check mate threats and will return a zero list
      * if the king is checkmated.
+     * it should return an empty list if the king is checkmates
+     * if the king is stalemated, the list should contain a single null move
      *
      * @return All the available moves
      */
@@ -88,6 +90,8 @@ public abstract class Board<T extends Board<T>> {
      * <p>
      * This method does check mate threats and will return a zero list
      * if the king is checkmated.
+     * it should return an empty list if the king is checkmates
+     * if the king is stalemated, the list should contain a single null move
      *
      * @return All the available moves
      */

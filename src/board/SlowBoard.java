@@ -627,6 +627,17 @@ public class SlowBoard extends Board<SlowBoard> {
     public List<Move> getLegalMoves(MoveList list) {
         List<Move> moves = getPseudoLegalMoves(list);
         MoveList ml = new MoveList(50);
+//        boolean inCheck = false;
+//        this.changeActivePlayer();
+//        List<Move> opMoves = getPseudoLegalMoves(ml);
+//        for(Move m:opMoves){
+//            if(m.getPieceTo() * this.getActivePlayer() == -6){
+//                inCheck = true;
+//                break;
+//            }
+//        }
+//        this.changeActivePlayer();
+
         for(int i = moves.size()-1; i>= 0; i--){
             move(moves.get(i));
             List<Move> opponent = getPseudoLegalMoves(ml);
@@ -638,6 +649,15 @@ public class SlowBoard extends Board<SlowBoard> {
             }
             undoMove();
         }
+
+
+
+//        if(moves.size() == 0){
+//            if(!inCheck){
+//                moves.add(new Move());
+//            }
+//        }
+
         return moves;
     }
 
@@ -793,14 +813,13 @@ public class SlowBoard extends Board<SlowBoard> {
 
     public static void main(String[] args) {
         SlowBoard b = new SlowBoard(Setup.DEFAULT);
-        b = IO.read_FEN(b, "6k1/8/3q4/8/8/8/8/1K6 w - - 0 1");
 
         PVSearch ai1 = new PVSearch(
                 new NoahEvaluator(),
                 new SystematicOrderer(),
                 new SimpleReducer(),
-                1,
-                2000,
+                2,
+                6,
                 4);
         ai1.setUse_killer_heuristic(true);
         ai1.setUse_null_moves(true);

@@ -82,7 +82,7 @@ public class Frame extends JFrame implements KeyListener {
         Board b = new SlowBoard(Setup.DEFAULT);
 
         //b = IOBoard.read_lichess(new SlowBoard(), "6k1/p4ppp/8/8/1p1K1P1P/1N4P1/r2N4/8");
-        //b = IO.read_FEN(new SlowBoard(),"r1bqkbnr/pppppppp/2n5/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 1");
+        //b = IO.read_FEN(new SlowBoard(),"8/8/8/8/3k4/5q2/3K4/8 w - - 0 1");
         //b = IO.read_FEN(new SlowBoard(), "7k/6pp/8/8/1Q6/7q/8/5R1K w - - 0 1"); //should force draw
         //b = IO.read_FEN(new SlowBoard(), "r3k2r/ppp3pp/5p2/3Pp3/2P3PN/1P1b1P1P/4R1K1/2B5 w - - 0 1");
         //b = IO.read_FEN(new SlowBoard(), "r3k2r/ppp3pp/5p2/3Pp3/2P3PN/1P1b1P1P/4R1K1/2B5 w - - 0 1");
@@ -93,7 +93,7 @@ public class Frame extends JFrame implements KeyListener {
         }
 
 
-        boolean w = false;
+        boolean w = true;
 
         if(w){
             keys.add("black");
@@ -103,8 +103,6 @@ public class Frame extends JFrame implements KeyListener {
             keys.add("flip");
         }
 
-
-
         Player hm = new Player(){};
 
         PVSearch ai = new PVSearch(
@@ -112,7 +110,7 @@ public class Frame extends JFrame implements KeyListener {
                 new SystematicOrderer(),
                 new SimpleReducer(),
                 PVSearch.FLAG_TIME_LIMIT,
-                4000,6);
+                1000,6);
         ai.setUse_iteration(true);
         ai.setUse_null_moves(true);
         ai.setPrint_overview(true);

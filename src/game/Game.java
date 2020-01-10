@@ -81,7 +81,7 @@ public class Game {
     public void move(Move m){
         if(board.isGameOver()) return;
         if (humansTurn()){
-            System.out.println("Moving: " + IO.algebraicNotation(board, m));
+            //System.out.println("Moving: " + IO.algebraicNotation(board, m));
             board.move(m);
             listeners.forEach(Runnable::run);
             //System.out.println(board.isGameOver() + "  " + board.winner());
@@ -90,7 +90,7 @@ public class Game {
             Move move = AI.bestMove(board.copy());
             if(move == null)
                 return;
-            System.out.println("Moving: " + IO.algebraicNotation(board, move));
+            //System.out.println("Moving: " + IO.algebraicNotation(board, move));
             //System.out.println("fen: " + IO.write_FEN(board));
             board.move(move);
             listeners.forEach(Runnable::run);

@@ -273,6 +273,11 @@ public class GamePanel extends JPanel {
     public void runMoveInThread(Move z){
         new Thread(() -> g.move(z)).start();
         this.selected = -1;
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         render();
     }
 

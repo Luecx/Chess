@@ -8,7 +8,7 @@ import game.ai.evaluator.LateGameEvaluator;
 
 import java.util.Arrays;
 
-public class NoahEvaluator implements Evaluator {
+public class NoahEvaluator extends GeneticEvaluator<NoahEvaluator> implements Evaluator {
 
     public static final Tensor2D B_PAWN_VALUES = new Tensor2D(new double[][]{
             {0, 0, 0, 0, 0, 0, 0, 0},
@@ -174,6 +174,14 @@ public class NoahEvaluator implements Evaluator {
     public static final Tensor3D midValue = FinnEvaluator.POSITION_PRICE;
     public static final Tensor3D endValue = LateGameEvaluator.POSITION_PRICE;
 
+
+    private double PARAMATER_PASSED_PAWN        = 25;
+    private double PARAMATER_ISOLATED_PAWN      = -15;
+    private double PARAMATER_DOUBLED_PAWN       = -15;
+    private double PARAMATER_DOUBLE_BISHOP      = 50;
+    private double PARAMETER_KING_SAFETY_1      = 15;
+    private double PARAMETER_KING_SAFETY_2      = 10;
+
     //will get to this later. For now, I'm using this file to store position values
     @Override
     public double evaluate(Board board) {
@@ -234,10 +242,10 @@ public class NoahEvaluator implements Evaluator {
                                 if (i+j <= -1 || i+j>=8 || n+1<= -1 || n+1 >=8) {
                                     continue;
                                 }
-                                if (board.getPiece(i + j, n + 1) > 0) ev += 15;
+                                if (board.getPiece(i + j, n + 1) > 0) ev += PARAMETER_KING_SAFETY_1;
                             }
-                            if (board.getPiece(i - 1, n) > 0) ev += 10;
-                            if (board.getPiece(i + 1, n) > 0) ev += 10;
+                            if (board.getPiece(i - 1, n) > 0) ev += PARAMETER_KING_SAFETY_2;
+                            if (board.getPiece(i + 1, n) > 0) ev += PARAMETER_KING_SAFETY_2;
                         }
                         break;
                     case -6:
@@ -246,10 +254,10 @@ public class NoahEvaluator implements Evaluator {
                                 if (i+j <= -1 || i+j>=8 || n-1<= -1 || n-1 >=8) {
                                     continue;
                                 }
-                                if (board.getPiece(i + j, n - 1) < 0) ev -= 15;
+                                if (board.getPiece(i + j, n - 1) < 0) ev -= PARAMETER_KING_SAFETY_1;
                             }
-                            if (board.getPiece(i - 1, n) < 0) ev -= 10;
-                            if (board.getPiece(i + 1, n) < 0) ev -= 10;
+                            if (board.getPiece(i - 1, n) < 0) ev -= PARAMETER_KING_SAFETY_2;
+                            if (board.getPiece(i + 1, n) < 0) ev -= PARAMETER_KING_SAFETY_2;
                         }
                         break;
                 }
@@ -258,33 +266,61 @@ public class NoahEvaluator implements Evaluator {
 
 
         //bishop pair
-        if (numWhiteBishops > 1) ev += 50;
-        if (numBlackBishops > 1) ev -= 50;
+        if (numWhiteBishops > 1) ev += PARAMATER_DOUBLE_BISHOP;
+        if (numBlackBishops > 1) ev -= PARAMATER_DOUBLE_BISHOP;
 
         //pawns
         for (int rank = 1; rank < 9; rank++) {
             //doubled
-            if (wPawns[rank] > 1) ev -= 15;
-            if (bPawns[rank] > 1) ev += 15;
+            if (wPawns[rank] > 1) ev += PARAMATER_DOUBLED_PAWN;
+            if (bPawns[rank] > 1) ev -= PARAMATER_DOUBLED_PAWN;
 
             if (wPawns[rank] > 0) {
                 //passed
                 if (bPawns[rank - 1] == 0 && bPawns[rank] == 0 && bPawns[rank + 1] == 0) {
-                    ev += 25;
+                    ev += PARAMATER_PASSED_PAWN;
                 }
                 //isolated
-                if (wPawns[rank - 1] == 0 && wPawns[rank + 1] == 0) ev -= 15;
+                if (wPawns[rank - 1] == 0 && wPawns[rank + 1] == 0) ev += PARAMATER_ISOLATED_PAWN;
             }
             if (bPawns[rank] > 0) {
                 //passed
                 if (wPawns[rank - 1] == 0 && wPawns[rank] == 0 && wPawns[rank + 1] == 0) {
-                    ev -= 25;
+                    ev -= PARAMATER_PASSED_PAWN;
                 }
                 //isolated
-                if (bPawns[rank - 1] == 0 && bPawns[rank + 1] == 0) ev += 15;
+                if (bPawns[rank - 1] == 0 && bPawns[rank + 1] == 0) ev -= PARAMATER_ISOLATED_PAWN;
             }
         }
 
         return ev;
+    }
+
+    @Override
+    public double[] getEvolvableValues() {
+        return new double[]{
+                PARAMATER_PASSED_PAWN,
+                PARAMATER_ISOLATED_PAWN,
+                PARAMATER_DOUBLED_PAWN,
+                PARAMATER_DOUBLE_BISHOP,
+                PARAMETER_KING_SAFETY_1,
+                PARAMETER_KING_SAFETY_2};
+    }
+
+    @Override
+    public void setEvolvableValues(double[] ar) {
+        PARAMATER_PASSED_PAWN = ar[0];
+        PARAMATER_ISOLATED_PAWN = ar[1];
+        PARAMATER_DOUBLED_PAWN = ar[2];
+        PARAMATER_DOUBLE_BISHOP = ar[3];
+        PARAMETER_KING_SAFETY_1 = ar[4];
+        PARAMETER_KING_SAFETY_2 = ar[5];
+    }
+
+    @Override
+    public NoahEvaluator copy() {
+        NoahEvaluator evaluator = new NoahEvaluator();
+        evaluator.setEvolvableValues(this.getEvolvableValues());
+        return evaluator;
     }
 }

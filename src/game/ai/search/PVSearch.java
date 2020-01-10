@@ -616,12 +616,20 @@ public class PVSearch implements AI {
                 use_move_lists ?
                 currentDepth <= 1 ? _board.getLegalMoves() : _board.getPseudoLegalMoves(_buffer.get(currentDepth)):
                         currentDepth <= 1 ? _board.getLegalMoves() : _board.getPseudoLegalMoves();
+
+
+//        if(allMoves.size() <= 1){
+//            //System.out.println(allMoves.get(0).getIsNull());
+//            if(allMoves.size() == 0){
+//                return _board.getActivePlayer() * -LateGameEvaluator.INFTY;
+//            }
+//            if (allMoves.get(0).getIsNull()){
+//                return 0;  //stalemate
+//            }
+//        }
+
         if (depthLeft <= 0 || allMoves.size() == 0 || _board.isGameOver()) {
-            if (allMoves.size() == 0){
-                return _board.getActivePlayer() * -LateGameEvaluator.INFTY;
-            }else{
-                return Quiesce(alpha, beta, currentDepth + 1,quiesce_depth);
-            }
+            return Quiesce(alpha, beta, currentDepth + 1,quiesce_depth);
         }
         //</editor-fold>
 
