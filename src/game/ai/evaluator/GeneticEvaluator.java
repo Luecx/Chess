@@ -12,14 +12,27 @@ import game.ai.search.AlphaBeta;
 import game.ai.search.PVSearch;
 import game.ai.tools.tensor.Tensor2D;
 import game.ai.tools.tensor.Tensor3D;
+import game.ai.tools.threads.Pool;
+import game.ai.tools.threads.PoolFunction;
 import io.IO;
 import io.Testing;
 
+import java.io.*;
 import java.lang.reflect.Array;
 import java.util.*;
 
 public abstract class GeneticEvaluator<T extends GeneticEvaluator<T>> implements Evaluator {
 
+
+    private double geneticScore;
+
+    public double getGeneticScore() {
+        return geneticScore;
+    }
+
+    public void setGeneticScore(double geneticScore) {
+        this.geneticScore = geneticScore;
+    }
 
     public void mutate(double mutationStrength){
         double[] vals = this.getEvolvableValues();
@@ -46,9 +59,24 @@ public abstract class GeneticEvaluator<T extends GeneticEvaluator<T>> implements
 
     public abstract T copy();
 
+    public static void evolve(ArrayList<GeneticEvaluator> geneticEvaluators,
+                              PVSearch ai,
+                              int games,
+                              int survivors,
+                              double mutationStrength,
+                              double crossoverStrength,
+                              int threads){
 
-    public static void evolve(ArrayList<Object[]> ais, int games, int survivors, double mutationStrength, double crossoverStrength){
 
+        //<editor-fold desc="generating AIS">
+        ai.setPrint_overview(false);
+        HashMap<GeneticEvaluator, AI> ais = new HashMap<>();
+        for(GeneticEvaluator ev:geneticEvaluators){
+            AI a = duplicateAI(ai);
+            ((PVSearch) a).setEvaluator(ev);
+            ais.put(ev, a);
+        }
+        //</editor-fold>
 
         //<editor-fold desc="formats">
         String head =           "┌──────────┬┬";
@@ -57,9 +85,9 @@ public abstract class GeneticEvaluator<T extends GeneticEvaluator<T>> implements
         String two_entries =         "│ %8s ││ ";
         String one_entries =         "│ %8s ││ ";
         String one_entries_string =         "│ %8s ││ ";
-        for(int i = 0; i < ais.size(); i++){
+        for(int i = 0; i < geneticEvaluators.size(); i++){
 
-            if(i == ais.size()-1){
+            if(i == geneticEvaluators.size()-1){
 
                 seperator +=        "───────────┤";
                 head +=        "───────────┐";
@@ -78,15 +106,15 @@ public abstract class GeneticEvaluator<T extends GeneticEvaluator<T>> implements
         one_entries += "\n";
         one_entries_string += "\n";
         System.out.println(head);
-        Object[] ar = new Object[2*ais.size() + 1];
+        Object[] ar = new Object[2*geneticEvaluators.size() + 1];
         ar[0] = "AI";
-        for(int i = 0; i < ais.size(); i++){
+        for(int i = 0; i < geneticEvaluators.size(); i++){
             ar[2*i+1] = i+1;
             ar[2*i+2] = "";
         }
         System.out.format(two_entries, ar);
         ar[0] = "";
-        for(int i = 0; i < ais.size(); i++){
+        for(int i = 0; i < geneticEvaluators.size(); i++){
             ar[2*i+1] = "vs";
             ar[2*i+2] = "score";
         }
@@ -97,34 +125,36 @@ public abstract class GeneticEvaluator<T extends GeneticEvaluator<T>> implements
         //</editor-fold>
 
         //<editor-fold desc="iterations">
-        ArrayList<Object[]> temp = new ArrayList<>(ais);
-        for(int i = 0; i < ais.size(); i++){
-            ais.get(i)[1] = new Double(0);
+        ArrayList<GeneticEvaluator> temp = new ArrayList<>(geneticEvaluators);
+        for(int i = 0; i < geneticEvaluators.size(); i++){
+            geneticEvaluators.get(i).setGeneticScore(0);
         }
+
+        Pool pool = new Pool(threads);
+
         for(int g = 0; g < games; g++){
 
-            Collections.shuffle(ais);
+            Collections.shuffle(geneticEvaluators);
 
-            for(int i = 0; i < ais.size(); i+=2){
-                double score = playAMatch((PVSearch)ais.get(i)[0], (PVSearch)ais.get(i + 1)[0]);
-                ais.get(i)[1] = (Double)ais.get(i)[1] + (double) score;
-                ais.get(i+1)[1] = (Double) ais.get(i + 1)[1] - (double) score;
-            }
+            PoolFunction function = index -> {
+                double score = playAMatch(ais.get(geneticEvaluators.get(index * 2)), ais.get(geneticEvaluators.get(index * 2 + 1)));
+                geneticEvaluators.get(index*2).geneticScore += score;
+                geneticEvaluators.get(index*2 + 1).geneticScore -= score;
+            };
+            pool.execute(function, geneticEvaluators.size() / 2, true);
 
-
-
-            ar = new Object[ais.size()*2 + 1];
+            ar = new Object[geneticEvaluators.size()*2 + 1];
             ar[0] = "game " + (g+1);
-            for(int i = 0; i < ais.size(); i++){
-                ar[i*2+2] = "["+IO.doubleToString((double)temp.get(i)[1],1)+"]";
+            for(int i = 0; i < geneticEvaluators.size(); i++){
+                ar[i*2+2] = "["+IO.doubleToString((double)temp.get(i).geneticScore,1)+"]";
 
                 int partnerIndex;
-                if(ais.indexOf(temp.get(i)) % 2 == 0){
-                    partnerIndex = ais.indexOf(temp.get(i)) +1;
+                if(geneticEvaluators.indexOf(temp.get(i)) % 2 == 0){
+                    partnerIndex = geneticEvaluators.indexOf(temp.get(i)) +1;
                 }else{
-                    partnerIndex = ais.indexOf(temp.get(i)) -1;
+                    partnerIndex = geneticEvaluators.indexOf(temp.get(i)) -1;
                 }
-                int realIndex = temp.indexOf(ais.get(partnerIndex)) + 1;
+                int realIndex = temp.indexOf(geneticEvaluators.get(partnerIndex)) + 1;
 
                 ar[i*2+1] =realIndex;
             }
@@ -136,20 +166,17 @@ public abstract class GeneticEvaluator<T extends GeneticEvaluator<T>> implements
         System.out.println(seperator);
 
         //<editor-fold desc="crossing">
-        ar = new Object[1+ais.size()];
+        ar = new Object[1+geneticEvaluators.size()];
         ar[0] = "parent";
-        ais.sort(Comparator.comparingDouble(o -> -(double) o[1]));
-        for(int i = 0; i < ais.size(); i++){
+        geneticEvaluators.sort(Comparator.comparingDouble(o -> -(double) o.geneticScore));
+        for(int i = 0; i < geneticEvaluators.size(); i++){
             ar[i+1] = "   -";
         }
-        for(int i = survivors; i < ais.size(); i++){
+        for(int i = survivors; i < geneticEvaluators.size(); i++){
+            GeneticEvaluator v = geneticEvaluators.get(i);
+            GeneticEvaluator parent = geneticEvaluators.get((int)(Math.random() * survivors));
 
-
-            GeneticEvaluator v = (GeneticEvaluator)((PVSearch)ais.get(i)[0]).getEvaluator();
-            Object[] parentArray = ais.get((int)(Math.random() * survivors));
-            GeneticEvaluator parent = (GeneticEvaluator)((PVSearch)parentArray[0]).getEvaluator();
-
-            ar[temp.indexOf(ais.get(i))+1] = "   " + (temp.indexOf(parentArray) + 1);
+            ar[temp.indexOf(geneticEvaluators.get(i))+1] = "   " + (temp.indexOf(parent) + 1);
 
             v.crossover(parent,crossoverStrength);
         }
@@ -157,18 +184,18 @@ public abstract class GeneticEvaluator<T extends GeneticEvaluator<T>> implements
         System.out.println(seperator);
         //</editor-fold>
 
-        for(int i = 0; i < ais.size(); i++){
-            GeneticEvaluator v = (GeneticEvaluator)((PVSearch)ais.get(i)[0]).getEvaluator();
-            //System.out.println(ais.get(i)[1] + "  " + ais.get(i)[0] + "  " + Arrays.toString(v.getEvolvableValues()));
+        for(int i = 0; i < geneticEvaluators.size(); i++){
+            GeneticEvaluator v = geneticEvaluators.get(i);
+            //System.out.println(geneticEvaluators.get(i)[1] + "  " + geneticEvaluators.get(i)[0] + "  " + Arrays.toString(v.getEvolvableValues()));
             v.mutate(mutationStrength);
         }
 
         //<editor-fold desc="output">
-        for(int i = 0; i < ((GeneticEvaluator)((PVSearch)ais.get(0)[0]).getEvaluator()).getEvolvableValues().length; i++){
-            ar = new Object[ais.size() + 1];
+        for(int i = 0; i < geneticEvaluators.get(0).getEvolvableValues().length; i++){
+            ar = new Object[geneticEvaluators.size() + 1];
             ar[0] = "param " + (i+1);
-            for(int n = 0; n < ais.size(); n++){
-                GeneticEvaluator ev = (GeneticEvaluator)((PVSearch)ais.get(n)[0]).getEvaluator();
+            for(int n = 0; n < geneticEvaluators.size(); n++){
+                GeneticEvaluator ev = geneticEvaluators.get(n);
                 //ar[n+1] = IO.doubleToString(ev.getEvolvableValues()[i],2);
                 ar[n+1] = ev.getEvolvableValues()[i];
             }
@@ -179,66 +206,132 @@ public abstract class GeneticEvaluator<T extends GeneticEvaluator<T>> implements
 
     }
 
-    public static ArrayList<Object[]> generatePopulation(int count, int depth, int qDepth, GeneticEvaluator evaluator){
-        ArrayList<Object[]> res = new ArrayList<>();
+    public static ArrayList<GeneticEvaluator> generatePopulation(int count, GeneticEvaluator evaluator){
+        ArrayList<GeneticEvaluator> res = new ArrayList<>();
 
         for(int i = 0; i < count;i ++){
             GeneticEvaluator gen1 = evaluator.copy();
             gen1.mutate(0.1);
-            PVSearch ai1 = new PVSearch(gen1, new SystematicOrderer(), new SimpleReducer(), 2, depth, qDepth);
-            ai1.setUse_null_moves(true);
-            ai1.setUse_LMR(true);
-            ai1.setPrint_overview(false);
-            ai1.setUse_transposition(false);
 
-            res.add(new Object[]{ai1, new Double(0)});
+            res.add(gen1);
         }
 
         return res;
     }
 
     public static double playAGame(AI ai1, AI ai2){
+
+
         Game game = new Game(new SlowBoard(Setup.DEFAULT), ai1, ai2);
-        FinnEvaluator evaluator = new FinnEvaluator();
+        NoahEvaluator evaluator = new NoahEvaluator();
         final int[] moves = {0};
-        game.addBoardChangedListener(new Runnable() {
-            @Override
-            public void run() {
-                moves[0]++;
-                if(moves[0] % 2 == 0)
-                    System.out.print("\r move: " + moves[0] +  "   rated: " + evaluator.evaluate(game.getBoard()));
-                if(moves[0] >= 120){
-                    game.interrupt();
-                }
+        game.addBoardChangedListener(() -> {
+            moves[0]++;
+            if(moves[0] % 2 == 0)
+                //System.out.print("\r move: " + moves[0] +  "   rated: " + evaluator.evaluate(game.getBoard()));
+            if(moves[0] >= 120){
+                game.interrupt();
             }
         });
         game.move(null);
-        //System.out.println();
-
         if(game.getBoard().isGameOver()){
             return game.getBoard().winner();
         }
 
         double evaluation = evaluator.evaluate(game.getBoard());
-
         double score = evaluation > 0 ? 0.2:(evaluation < 0 ? -0.2d:0);
 
-        return score;
+        if(evaluation == 0){
+            return 0;
+        } else if (Math.abs(evaluation) < 1000) {
+            return 0.2 * evaluation / Math.abs(evaluation);
+        } else{
+            return 1 * evaluation / Math.abs(evaluation);
+        }
     }
 
-    public static double playAMatch(PVSearch ai1, PVSearch ai2){
+    public static double playAMatch(AI ai1, AI ai2){
         return playAGame(ai1,ai2) - playAGame(ai2, ai1);
     }
 
+    public static PVSearch duplicateAI(PVSearch ai){
+        PVSearch search = new PVSearch(ai.getEvaluator(), ai.getOrderer(), ai.getReducer(), ai.getLimit_flag(), ai.getLimit(), ai.getQuiesce_depth());
+        search.setPrint_overview(ai.isPrint_overview());
+        search.setUse_LMR(ai.isUse_LMR());
+        search.setUse_move_lists(ai.isUse_move_lists());
+        search.setUse_transposition(ai.isUse_transposition());
+        search.setUse_killer_heuristic(ai.isUse_killer_heuristic());
+        search.setUse_iteration(ai.isUse_iteration());
+        return search;
+    }
 
+    public static GeneticEvaluator getEvaluatorFromEntry(Object[] o){
+        return (GeneticEvaluator) ((PVSearch)o[0]).getEvaluator();
+    }
+
+    public static void writePopulation(String file, ArrayList<GeneticEvaluator> ais){
+        BufferedWriter writer = null;
+        try {
+            writer = new BufferedWriter(new FileWriter(file));
+            for(GeneticEvaluator o:ais){
+                writer.write(Arrays.toString(o.getEvolvableValues()) + "\n");
+            }
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static ArrayList<GeneticEvaluator> readPopulation(String file, GeneticEvaluator template){
+        BufferedReader reader = null;
+        try {
+            reader = new BufferedReader(new FileReader(file));
+            String line;
+
+            ArrayList<GeneticEvaluator> objects = new ArrayList<>();
+
+            while((line=reader.readLine()) != null){
+                String k = line.substring(1,line.indexOf("]")-1);
+                String[] split = k.split(",");
+                double[] out = new double[split.length];
+                for(int i = 0; i < out.length;i++){
+                    out[i] = Double.parseDouble(split[i].trim());
+                }
+                GeneticEvaluator g = template.copy();
+                g.setEvolvableValues(out);
+                objects.add(g);
+            }
+
+            reader.close();
+
+            return objects;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 
     public static void main(String[] args) {
-        ArrayList<Object[]> population = generatePopulation(14,6,4, new NoahEvaluator());
+        ArrayList<GeneticEvaluator> population = generatePopulation(32, new NoahEvaluator());
 
-        for(int i = 0; i < 5; i++){
-            evolve(population, 6, 2, 0.1,0.8);
+//        writePopulation("test.population", population);
+//
+//        population = readPopulation("test.population", new NoahEvaluator());
+//        System.out.println(Arrays.toString(getEvaluatorFromEntry(population.get(0)).getEvolvableValues()));
+
+
+        PVSearch pvSearch = new PVSearch(null, new SystematicOrderer(), new SimpleReducer(), 2,6,4);
+        pvSearch.setUse_null_moves(true);
+        pvSearch.setUse_LMR(true);
+        pvSearch.setUse_killer_heuristic(true);
+
+
+
+        for(int i = 0; i < 10; i++){
+            evolve(population, pvSearch,5, 6, 0.1,0.8, 8);
+            writePopulation("noahEvaluator_2.population", population);
         }
-        System.out.println("Finished");
+//        System.out.println("Finished");
     }
 
 }
