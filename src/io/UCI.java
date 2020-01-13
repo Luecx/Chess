@@ -4,6 +4,9 @@ import board.Board;
 import board.SlowBoard;
 import board.moves.Move;
 import board.setup.Setup;
+import game.ai.evaluator.NoahEvaluator;
+import game.ai.ordering.SystematicOrderer;
+import game.ai.reducing.SimpleReducer;
 import game.ai.search.PVSearch;
 import io.IO;
 
@@ -15,7 +18,13 @@ import io.IO;
 import java.util.*;
 public class UCI {
     static String ENGINENAME = "Waldi"; // we should decide on a name of the engine
-    private static Board b = new SlowBoard(Setup.DEFAULT);;
+    private static Board b = new SlowBoard(Setup.DEFAULT);
+    private static PVSearch ai = new PVSearch(
+            new NoahEvaluator(),
+            new SystematicOrderer(),
+            new SimpleReducer(),
+            PVSearch.FLAG_TIME_LIMIT,
+            1000,4);
     public static void uciCommunication() {
         while (true)
         {
@@ -41,9 +50,9 @@ public class UCI {
             {
                 inputPosition(inputString);
             }
-            else if ("go".equals(inputString))
+            else if (inputString.startsWith("go"))
             {
-                //inputGo();
+                inputGo(inputString);
             }
             else if ("print".equals(inputString))
             {
@@ -84,11 +93,15 @@ public class UCI {
             for (String uciMove : moveArr) {
                 Move move = IO.uciToMove(uciMove, b);
                 b.move(move);
+                //System.out.println(b);
             }
         }
+        System.out.println(b);
         return b;
     }
-    public static void inputGo(String[] split) {
+    public static void inputGo(String inputString) {
+
+        String[] split = inputString.split(" ");
 
         ArrayList<String> commands = new ArrayList<>();
         for(String s:split){
@@ -128,10 +141,21 @@ public class UCI {
         }if(commands.contains("mate")){
             throw new RuntimeException("Not yet supported");
         }
-        //Move best = PVSearch.bestMove(b);
-        //System.out.println(IO.moveToUCI(best,b));
+        if (b.getActivePlayer() == 1) {
+            ai.setLimit(wtime/20);
+        }
+        if (b.getActivePlayer() == -1) {
+            ai.setLimit(btime/20);
+        }
+        ai.setPrint_overview(false);
+        Move best = ai.bestMove(b);
+        System.out.println(IO.moveToUCI(best,b));
     }
     public static void inputPrint() {
         //BoardGeneration.drawArray(UserInterface.WP,UserInterface.WN,UserInterface.WB,UserInterface.WR,UserInterface.WQ,UserInterface.WK,UserInterface.BP,UserInterface.BN,UserInterface.BB,UserInterface.BR,UserInterface.BQ,UserInterface.BK);
+    }
+
+    public static void main(String[] args) {
+        uciCommunication();
     }
 }

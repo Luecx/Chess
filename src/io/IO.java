@@ -578,7 +578,7 @@ public class IO {
         int from;
         int to;
         fromx = rankToIndex(input.charAt(0));
-        tox = input.charAt(2);
+        tox = rankToIndex(input.charAt(2));
         fromy = Character.getNumericValue(input.charAt(1)) - 1;
         toy = Character.getNumericValue(input.charAt(3)) - 1;
         from = board.index(fromx,fromy);

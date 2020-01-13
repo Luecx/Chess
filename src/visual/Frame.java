@@ -101,7 +101,7 @@ public class Frame extends JFrame implements KeyListener {
                 new SystematicOrderer(),
                 new SimpleReducer(),
                 PVSearch.FLAG_TIME_LIMIT,
-                500,6);
+                1000,6);
         boolean w = true;
 
 //        if(w){
@@ -146,7 +146,7 @@ public class Frame extends JFrame implements KeyListener {
 
         boolean flip = keys.contains("flip");
 
-        new Frame(b, ai1, ai).setFlippedBoard(flip);
+        new Frame(b, ai, ai1).setFlippedBoard(flip);
     }
 
     @Override
