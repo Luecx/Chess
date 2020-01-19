@@ -27,10 +27,10 @@ public interface Orderer {
      * @param lastIteration     [can be NULL] the principal variation line from the last iteration
      * @param board             the board object
      * @param killerTable       [can be NULL] a killerTable storing killer moves.
-     * @param <T>               type-parameter for the move object.
+
      */
-    <T extends Move> void sort(
-            List<T> collection,
+    void sort(
+            List<Move> collection,
             int depth,
             PVLine lastIteration,
             Board board,

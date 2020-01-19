@@ -21,15 +21,15 @@ public class SimpleReducer implements Reducer{
     }
 
     @Override
-    public int reduce(Move move, int depth, int moveIndex,boolean pv_node) {
-        if(move.getPieceFrom() == 0 ||
+    public int reduce(Move move, int depth, int depthLeft, int moveIndex,boolean pv_node) {
+        if(
                 move.getPieceTo() != 0 ||
                 pv_node ||
                 moveIndex < num_moves_not_reduced){
             return 0;
         }
         if(depth > 3){
-            return late_move_reduction  ;
+            return late_move_reduction;
         }else{
             return late_move_reduction;
         }

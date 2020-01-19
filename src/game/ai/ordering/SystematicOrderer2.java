@@ -10,7 +10,15 @@ import game.ai.tools.TranspositionTable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SystematicOrderer implements Orderer {
+public class SystematicOrderer2 implements Orderer {
+
+
+
+    ArrayList<Move> pvMoves = new ArrayList<>(10);
+    ArrayList<Move> goodCaptures = new ArrayList<>(10);
+    ArrayList<Move> killerMoves = new ArrayList<>(10);
+    ArrayList<Move> badCaptures = new ArrayList<>(10);
+    ArrayList<Move> nonCaptureMoves = new ArrayList<>(20);
 
     @Override
     public void sort(
@@ -23,14 +31,17 @@ public class SystematicOrderer implements Orderer {
 
         int initSize = collection.size();
 
-        ArrayList<Move> pvMoves = new ArrayList<>(10);
-        ArrayList<Move> captureMoves = new ArrayList<>(10);
-        ArrayList<Move> killerMoves = new ArrayList<>(10);
-        ArrayList<Move> nonCaptureMoves = new ArrayList<>(10);
 
-        for (Move m:collection){
-            NoahOrderer.setOrderPriority(m, board);
-        }
+
+        pvMoves.clear();
+        goodCaptures.clear();
+        killerMoves.clear();
+        badCaptures.clear();
+        nonCaptureMoves.clear();
+
+//        for (Move m:collection){
+//            NoahOrderer.setOrderPriority(m, board);
+//        }
 
         //PV nodes
         if(lastIteration != null){
@@ -62,16 +73,20 @@ public class SystematicOrderer implements Orderer {
 
         //capture moves / non capture / killers
         for(Move m:collection){
+            NoahOrderer.setOrderPriority(m, board);
             if(killerTable != null && killerTable.isKillerMove(depth, m)){
                 killerMoves.add(m);
             } else if(m.getPieceTo() != 0){
-                captureMoves.add(m);
+                if(Math.abs(m.getPieceTo()) >= Math.abs(m.getPieceFrom())){
+                    goodCaptures.add(m);
+                }else{
+                    goodCaptures.add(m);
+                }
+
             } else{
                 nonCaptureMoves.add(m);
             }
         }
-
-
 
         killerMoves.sort((o1, o2) -> {
             int p1 = o1.getOrderPriority();
@@ -79,7 +94,13 @@ public class SystematicOrderer implements Orderer {
 
             return -Integer.compare(p1,p2);
         });
-        captureMoves.sort((o1, o2) -> {
+        goodCaptures.sort((o1, o2) -> {
+            int p1 = o1.getOrderPriority();
+            int p2 = o2.getOrderPriority();
+
+            return -Integer.compare(p1,p2);
+        });
+        badCaptures.sort((o1, o2) -> {
             int p1 = o1.getOrderPriority();
             int p2 = o2.getOrderPriority();
 
@@ -96,8 +117,9 @@ public class SystematicOrderer implements Orderer {
 
         collection.clear();
         collection.addAll(pvMoves);
-        collection.addAll(captureMoves);
+        collection.addAll(goodCaptures);
         collection.addAll(killerMoves);
+        collection.addAll(badCaptures);
         collection.addAll(nonCaptureMoves);
 
 

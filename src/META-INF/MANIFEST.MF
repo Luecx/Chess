@@ -1,3 +1,7 @@
 Manifest-Version: 1.0
+<<<<<<< Updated upstream
 Main-Class: io.UCI
+=======
+Main-Class: game.ai.tools.FenToBestMove
+>>>>>>> Stashed changes
 

@@ -8,6 +8,7 @@ import game.Game;
 import game.Player;
 import game.ai.evaluator.NoahEvaluator;
 import game.ai.ordering.SystematicOrderer;
+import game.ai.reducing.SenpaiReducer;
 import game.ai.reducing.SimpleReducer;
 import game.ai.evaluator.FinnEvaluator;
 import game.ai.search.PVSearch;
@@ -95,33 +96,26 @@ public class Frame extends JFrame implements KeyListener {
             keys.add(s);
         }
 
+        boolean w = false;
 
-        PVSearch ai1 = new PVSearch(
-                new NoahEvaluator(),
-                new SystematicOrderer(),
-                new SimpleReducer(),
-                PVSearch.FLAG_TIME_LIMIT,
-                1000,6);
-        boolean w = true;
+        if(w){
+            keys.add("black");
+            keys.add("flip");
+        }else{
 
-//        if(w){
-//            keys.add("black");
-//        }else{
-//
-//            keys.add("white");
-//            keys.add("flip");
-//        }
+            keys.add("white");
+        }
 
 
 
         Player hm = new Player(){};
 
         PVSearch ai = new PVSearch(
-                new FinnEvaluator(),
+                new NoahEvaluator(),
                 new SystematicOrderer(),
-                new SimpleReducer(),
+                new SenpaiReducer() ,
                 PVSearch.FLAG_TIME_LIMIT,
-                1000,6);
+                5000,10);
         ai.setUse_iteration(true);
         ai.setUse_null_moves(true);
         ai.setPrint_overview(true);
@@ -131,13 +125,7 @@ public class Frame extends JFrame implements KeyListener {
         ai.setPrint_overview(true);
 
 
-        ai1.setUse_iteration(true);
-        ai1.setUse_null_moves(true);
-        ai1.setPrint_overview(true);
-        ai1.setUse_killer_heuristic(true);
-        ai1.setUse_LMR(true);
-        ai1.setUse_transposition(false);
-        ai1.setPrint_overview(true);
+
 
 
 
@@ -146,7 +134,7 @@ public class Frame extends JFrame implements KeyListener {
 
         boolean flip = keys.contains("flip");
 
-        new Frame(b, ai, ai1).setFlippedBoard(flip);
+        new Frame(b, ai1, ai).setFlippedBoard(flip);
     }
 
     @Override

@@ -25,10 +25,9 @@ public class SimpleOrderer implements Orderer {
      * @param collection
      * @param depth
      * @param lastIteration
-     * @param <T>
      */
     @Override
-    public <T extends Move> void sort(List<T> collection, int depth, PVLine lastIteration, Board board, KillerTable killerTable, TranspositionTable transpositionTable) {
+    public void sort(List<Move> collection, int depth, PVLine lastIteration, Board board, KillerTable killerTable, TranspositionTable transpositionTable) {
 
         collection.sort((o1, o2) -> {
             int p1 = EVALUATE_PRICE[Math.abs(o1.getPieceTo())] - EVALUATE_PRICE[Math.abs(o1.getPieceFrom())];
@@ -46,7 +45,7 @@ public class SimpleOrderer implements Orderer {
                 if(index != -1){
                     Object object = collection.get(index);
                     collection.remove(index);
-                    collection.add(0,(T)object);
+                    collection.add(0,(Move)object);
                 }
             }
         }

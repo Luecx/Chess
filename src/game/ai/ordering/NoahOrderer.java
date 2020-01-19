@@ -38,8 +38,8 @@ public class NoahOrderer implements Orderer {
     }
     
     @Override
-    public <T extends Move> void sort(
-            List<T> collection,
+    public void sort(
+            List<Move> collection,
             int depth,
             PVLine lastIteration,
             Board board,
@@ -63,7 +63,7 @@ public class NoahOrderer implements Orderer {
                 if(index != -1){
                     Object object = collection.get(index);
                     collection.remove(index);
-                    collection.add(0,(T)object);
+                    collection.add(0,(Move)object);
                 }
             }
         }

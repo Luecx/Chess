@@ -312,7 +312,7 @@ public abstract class GeneticEvaluator<T extends GeneticEvaluator<T>> implements
     }
 
     public static void main(String[] args) {
-        ArrayList<GeneticEvaluator> population = generatePopulation(32, new NoahEvaluator());
+        ArrayList<GeneticEvaluator> population = readPopulation("noahEvaluator_2.population", new NoahEvaluator());
 
 //        writePopulation("test.population", population);
 //
@@ -327,9 +327,9 @@ public abstract class GeneticEvaluator<T extends GeneticEvaluator<T>> implements
 
 
 
-        for(int i = 0; i < 10; i++){
-            evolve(population, pvSearch,5, 6, 0.1,0.8, 8);
-            writePopulation("noahEvaluator_2.population", population);
+        for(int i = 0; i < 1; i++){
+            evolve(population, pvSearch,16, 32, 0,0, 4);
+            //writePopulation("noahEvaluator_2.population", population);
         }
 //        System.out.println("Finished");
     }

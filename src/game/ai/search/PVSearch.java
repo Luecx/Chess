@@ -676,7 +676,7 @@ public class PVSearch implements AI {
             //<editor-fold desc="LMR">
             int to_reduce = 0;
             if (use_LMR && reducer != null) {
-                to_reduce = reducer.reduce(m, currentDepth, index, bSearchPv);
+                to_reduce = reducer.reduce(m, currentDepth, depthLeft, index, bSearchPv);
             }
             //</editor-fold>
 

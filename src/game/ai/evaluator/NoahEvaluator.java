@@ -181,8 +181,8 @@ public class NoahEvaluator extends GeneticEvaluator<NoahEvaluator> implements Ev
     private double PARAMATER_DOUBLE_BISHOP      = 50;
     private double PARAMETER_KING_SAFETY_1      = 15;
     private double PARAMETER_KING_SAFETY_2      = 10;
-    private double PARAMETER_ROOK_HALF_OPEN     = 15;
-    private double PARAMETER_ROOK_OPEN          = 20;
+    private double PARAMETER_ROOK_HALF_OPEN     = 2;
+    private double PARAMETER_ROOK_OPEN          = 8;
 
     //will get to this later. For now, I'm using this file to store position values
     @Override
@@ -316,9 +316,9 @@ public class NoahEvaluator extends GeneticEvaluator<NoahEvaluator> implements Ev
                 continue;
             }
             if (wPawns[file]  == 0) {
-                ev += 15;
+                ev += PARAMETER_ROOK_HALF_OPEN;
                 if (bPawns[file] == 0) {
-                    ev += 20;
+                    ev += PARAMETER_ROOK_OPEN;
                 }
             }
         }
@@ -327,9 +327,9 @@ public class NoahEvaluator extends GeneticEvaluator<NoahEvaluator> implements Ev
                 continue;
             }
             if (bPawns[file]  == 0) {
-                ev += PARAMETER_ROOK_HALF_OPEN;
+                ev -= PARAMETER_ROOK_HALF_OPEN;
                 if (wPawns[file] == 0) {
-                    ev += PARAMETER_ROOK_OPEN;
+                    ev -= PARAMETER_ROOK_OPEN;
                 }
             }
         }

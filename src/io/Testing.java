@@ -8,6 +8,8 @@ import board.setup.Setup;
 import game.ai.evaluator.FinnEvaluator;
 import game.ai.evaluator.NoahEvaluator;
 import game.ai.ordering.SystematicOrderer;
+import game.ai.ordering.SystematicOrderer2;
+import game.ai.reducing.SenpaiReducer;
 import game.ai.reducing.SimpleReducer;
 import game.ai.search.AI;
 import game.ai.search.PVSearch;
@@ -227,31 +229,32 @@ public class Testing {
     public static void main(String[] args) {
 
         PVSearch ai1 = new PVSearch(
-                new FinnEvaluator(),
-                new SystematicOrderer(),
-                new SimpleReducer(),
-                1,
-                1000,
-                4);
+                new NoahEvaluator(),
+                new SystematicOrderer2(),
+                new SenpaiReducer(),
+                2,
+                8,
+                6);
         ai1.setUse_killer_heuristic(true);
         ai1.setUse_null_moves(true);
         ai1.setUse_LMR(true);
-        ai1.setUse_transposition(true);
+        ai1.setUse_transposition(false);
         ai1.setUse_move_lists(true);
+
 
 
         PVSearch ai2 = new PVSearch(
                 new NoahEvaluator(),
                 new SystematicOrderer(),
-                new SimpleReducer(),
-                1,
-                1000,
-                4);
+                new SenpaiReducer(),
+                2,
+                8,
+                6);
 
         ai2.setUse_killer_heuristic(true);
         ai2.setUse_null_moves(true);
         ai2.setUse_LMR(true);
-        ai2.setUse_transposition(true);
+        ai2.setUse_transposition(false);
         ai2.setUse_move_lists(true);
 
         compare(new SlowBoard(), new PVSearch[]{ai1,ai2},
