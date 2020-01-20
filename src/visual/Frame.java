@@ -134,7 +134,7 @@ public class Frame extends JFrame implements KeyListener {
 
         boolean flip = keys.contains("flip");
 
-        new Frame(b, ai1, ai).setFlippedBoard(flip);
+        new Frame(b, white, black).setFlippedBoard(flip);
     }
 
     @Override

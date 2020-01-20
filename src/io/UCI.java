@@ -13,8 +13,11 @@ import io.IO;
 
 //// coppied from someone else, probabally not using it, and will instead try to do something with Python
 /// because I already have some thing for that.
-
-
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.*;
 public class UCI {
     static String ENGINENAME = "Waldi"; // we should decide on a name of the engine
@@ -26,44 +29,44 @@ public class UCI {
             PVSearch.FLAG_TIME_LIMIT,
             1000,4);
     public static void uciCommunication() {
+
+
+        Scanner input = new Scanner(System.in);
         while (true)
         {
-            Scanner input = new Scanner(System.in);
-            String inputString=input.nextLine();
-            if ("uci".equals(inputString))
-            {
+            String inputString = input.nextLine();
+            log("in: " + inputString + "\n");
+            if ("uci".equals(inputString)) {
                 inputUCI();
             }
-            else if (inputString.startsWith("setoption"))
-            {
+            else if (inputString.startsWith("setoption")) {
                 inputSetOption(inputString);
             }
-            else if ("isready".equals(inputString))
-            {
+            else if ("isready".equals(inputString)) {
                 inputIsReady();
             }
-            else if ("ucinewgame".equals(inputString))
-            {
+            else if ("ucinewgame".equals(inputString)) {
                 inputUCINewGame();
             }
-            else if (inputString.startsWith("position"))
-            {
+            else if (inputString.startsWith("position")) {
                 inputPosition(inputString);
             }
-            else if (inputString.startsWith("go"))
-            {
+            else if (inputString.startsWith("go")) {
                 inputGo(inputString);
             }
-            else if ("print".equals(inputString))
-            {
+            else if ("print".equals(inputString)) {
                 inputPrint();
             }
+            else if("quit".equals(inputString)){
+                break;
+            }
         }
+        input.close();
     }
     public static void inputUCI() {
         System.out.println("id name "+ENGINENAME);
         System.out.println("id author Finn/Noah");
-        //options go here
+        ///options go here
         System.out.println("uciok");
     }
     public static void inputSetOption(String inputString) {
@@ -96,7 +99,7 @@ public class UCI {
                 //System.out.println(b);
             }
         }
-        System.out.println(b);
+        //System.out.println(b);
         return b;
     }
     public static void inputGo(String inputString) {
@@ -118,7 +121,7 @@ public class UCI {
 
         int mode = PVSearch.FLAG_TIME_LIMIT;
         int limit = 5000;
-        int qdepth = 4;
+        int qdepth = 8;
 
         if(commands.contains("wtime")){
             wtime = Integer.parseInt(commands.get(commands.indexOf("wtime")+1));
@@ -148,14 +151,35 @@ public class UCI {
             ai.setLimit(btime/20);
         }
         ai.setPrint_overview(false);
+
+        if(ai.getLimit_flag() == PVSearch.FLAG_TIME_LIMIT && ai.getLimit() > 10000){
+            ai.setLimit(10000);
+        }
+
         Move best = ai.bestMove(b);
-        System.out.println(IO.moveToUCI(best,b));
+        log(IO.write_FEN(b) + "  bestmove: " + IO.moveToUCI(best,b) +"\n");
+        inputPrint();
+        System.out.println("bestmove " + IO.moveToUCI(best,b));
     }
+
+    public static void log(String s){
+        try {
+            new File("log.txt").createNewFile();
+            Files.write(Paths.get("log.txt"), s.getBytes(), StandardOpenOption.APPEND);
+        }catch (IOException e) {
+            //exception handling left as an exercise for the reader
+        }
+    }
+
     public static void inputPrint() {
+        System.out.println(b);
         //BoardGeneration.drawArray(UserInterface.WP,UserInterface.WN,UserInterface.WB,UserInterface.WR,UserInterface.WQ,UserInterface.WK,UserInterface.BP,UserInterface.BN,UserInterface.BB,UserInterface.BR,UserInterface.BQ,UserInterface.BK);
     }
 
     public static void main(String[] args) {
+
+        log("UCI Started\n");
+
         uciCommunication();
     }
 }

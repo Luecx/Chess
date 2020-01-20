@@ -560,7 +560,7 @@ public class IO {
         return "abcdefgh".indexOf(rank);
     }
     private static char indexToRank(int index) {
-        return "abcdefgh".charAt(index-1);
+        return "abcdefgh".charAt(index);
     }
 
     /**

@@ -8,3 +8,5 @@ javadoc/
 Chess.iml
 
 python/lichess-bot/.venv/
+
+python/
