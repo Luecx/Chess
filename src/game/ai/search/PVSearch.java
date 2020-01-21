@@ -460,6 +460,11 @@ public class PVSearch implements AI {
                     branchingFactor = Math.min(2,(double) (_visitedNodes + _quiesceNodes) / prevNode);
                     prevNode = (_visitedNodes + _quiesceNodes);
                     expectedTime = branchingFactor * iterationTime;
+
+                    if(depth > 100){
+                        break;
+                    }
+
                 }
 
 

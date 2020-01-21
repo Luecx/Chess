@@ -20,7 +20,8 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.*;
 public class UCI {
-    static String ENGINENAME = "Waldi"; // we should decide on a name of the engine
+
+    private static String ENGINENAME = "Waldi"; // we should decide on a name of the engine
     private static Board b = new SlowBoard(Setup.DEFAULT);
     private static PVSearch ai = new PVSearch(
             new NoahEvaluator(),
@@ -35,7 +36,7 @@ public class UCI {
         while (true)
         {
             String inputString = input.nextLine();
-            //log("in: " + inputString + "\n");
+            log("[IN]: " + inputString + "\n");
             if ("uci".equals(inputString)) {
                 inputUCI();
             }
@@ -67,11 +68,32 @@ public class UCI {
         System.out.println("id name "+ENGINENAME);
         System.out.println("id author Finn/Noah");
 
-        ///options go here
+        System.out.println("option name null_moves type check default true");
+        System.out.println("option name lmr type check default true");
+        System.out.println("option name killers type check default true");
+        System.out.println("option name transpositions type check default false");
+        System.out.println("option name iterative type check default true");
+        System.out.println("option name qdepth type spin min 0 max 50 default 10");
+
         System.out.println("uciok");
     }
     public static void inputSetOption(String inputString) {
 
+        String[] args = inputString.split(" ");
+
+        String name = args[2];
+        String value = args[4];
+
+        log("[INTERNAL] setting options with: " + name + "=" + value+"\n");
+
+        switch (name){
+            case "null_moves": ai.setUse_null_moves(Boolean.parseBoolean(value));break;
+            case "lmr": ai.setUse_LMR(Boolean.parseBoolean(value));break;
+            case "killers": ai.setUse_killer_heuristic(Boolean.parseBoolean(value));break;
+            case "transpositions": ai.setUse_transposition(Boolean.parseBoolean(value));break;
+            case "iterative": ai.setUse_iteration(Boolean.parseBoolean(value));break;
+            case "qdepth": ai.setQuiesce_depth(Integer.parseInt(value));break;
+        }
 
         //set options
     }
@@ -122,7 +144,6 @@ public class UCI {
 
         int mode = PVSearch.FLAG_TIME_LIMIT;
         int limit = 5000;
-        int qdepth = 4;
 
         if(commands.contains("wtime")){
             wtime = Integer.parseInt(commands.get(commands.indexOf("wtime")+1));
@@ -152,11 +173,6 @@ public class UCI {
             ai.setLimit(btime/20);
         }
         ai.setPrint_overview(false);
-        ai.setUse_LMR(true);
-        ai.setUse_killer_heuristic(true);
-        ai.setUse_null_moves(true);
-        ai.setUse_move_lists(true);
-        ai.setQuiesce_depth(qdepth);
 
         if(ai.getLimit_flag() == PVSearch.FLAG_TIME_LIMIT && ai.getLimit() > 10000){
             ai.setLimit(10000);

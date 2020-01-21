@@ -848,7 +848,7 @@ public class SlowBoard extends Board<SlowBoard> {
 
     public static void main(String[] args) {
         SlowBoard b = new SlowBoard(Setup.DEFAULT);
-        b = IO.read_FEN(b,"r1b2rk1/pppp1ppp/2n2q2/8/1P1bP3/P1NB1PP1/2PB3P/R2QK2R b KQq - 0 1");
+        b = IO.read_FEN(b,"1k6/1pp2p2/2n1p2p/1QNb4/5br1/K1B5/8/R7 b - - 0 1");
 
         PVSearch ai1 = new PVSearch(
                 new NoahEvaluator(),
