@@ -599,6 +599,9 @@ public class IO {
         toReturn = toReturn + Integer.toString(fromy+1);
         toReturn = toReturn + indexToRank(tox);
         toReturn = toReturn + Integer.toString(toy+1);
+        if(Math.abs(move.getPieceFrom()) == 1 && (toy == 1 || toy == 8)){
+            toReturn += "q";
+        }
 
         return toReturn;
     }

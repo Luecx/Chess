@@ -630,6 +630,10 @@ public class SlowBoard extends Board<SlowBoard> {
     public List<Move> getLegalMoves(MoveList list) {
         List<Move> moves = getPseudoLegalMoves(list);
         MoveList ml = new MoveList(50);
+
+        boolean shortCastle= true;
+        boolean longCastle = true;
+
         boolean inCheck = false;
         this.changeActivePlayer();
         List<Move> opMoves = getPseudoLegalMoves(ml);
@@ -638,11 +642,37 @@ public class SlowBoard extends Board<SlowBoard> {
                 inCheck = true;
                 break;
             }
+            if(this.getActivePlayer() == 1){
+                if(m.getTo() == 115){
+                    shortCastle = false;
+                }
+                if(m.getTo() == 112){
+                    longCastle = false;
+                }
+            }else{
+                if(m.getTo() == 31){
+                    shortCastle = false;
+                }
+                if(m.getTo() == 28){
+                    longCastle = false;
+                }
+            }
         }
         this.changeActivePlayer();
 
         for(int i = moves.size()-1; i>= 0; i--){
-            move(moves.get(i));
+            Move observe = moves.get(i);
+            move(observe);
+
+            if(observe.getPieceFrom() == -this.getActivePlayer()*6){
+                if(observe.getTo() - observe.getFrom() == 2 && (!shortCastle || inCheck)){
+                    moves.remove(i);
+                }
+                else if(observe.getTo() - observe.getFrom() == -2 && (!longCastle ||inCheck)){
+                    moves.remove(i);
+                }
+            }
+
             List<Move> opponent = getPseudoLegalMoves(ml);
             for(Move m:opponent){
                 if(m.getPieceTo() * this.getActivePlayer() == -6){
@@ -814,7 +844,7 @@ public class SlowBoard extends Board<SlowBoard> {
 
     public static void main(String[] args) {
         SlowBoard b = new SlowBoard(Setup.DEFAULT);
-        b = IO.read_FEN(b,"8/8/8/4q3/8/5k2/8/4K3 w - - 0 1");
+        b = IO.read_FEN(b,"rnbqk2r/ppp4p/8/1Q6/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1");
 
         PVSearch ai1 = new PVSearch(
                 new NoahEvaluator(),
@@ -840,7 +870,7 @@ public class SlowBoard extends Board<SlowBoard> {
 //        ai2.setUse_LMR(true);
 //        ai2.setUse_transposition(false);
 //
-        new Frame(b, new Player(){}, ai1);
+        new Frame(b, new Player(){}, new Player(){});
     }
 
 }
