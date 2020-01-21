@@ -667,9 +667,13 @@ public class SlowBoard extends Board<SlowBoard> {
             if(observe.getPieceFrom() == -this.getActivePlayer()*6){
                 if(observe.getTo() - observe.getFrom() == 2 && (!shortCastle || inCheck)){
                     moves.remove(i);
+                    undoMove();
+                    continue;
                 }
                 else if(observe.getTo() - observe.getFrom() == -2 && (!longCastle ||inCheck)){
                     moves.remove(i);
+                    undoMove();
+                    continue;
                 }
             }
 
@@ -844,18 +848,18 @@ public class SlowBoard extends Board<SlowBoard> {
 
     public static void main(String[] args) {
         SlowBoard b = new SlowBoard(Setup.DEFAULT);
-        b = IO.read_FEN(b,"rnbqk2r/ppp4p/8/1Q6/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1");
+        b = IO.read_FEN(b,"r1b2rk1/pppp1ppp/2n2q2/8/1P1bP3/P1NB1PP1/2PB3P/R2QK2R b KQq - 0 1");
 
         PVSearch ai1 = new PVSearch(
                 new NoahEvaluator(),
                 new SystematicOrderer2(),
-                new SenpaiReducer(),
-                2,
-                8,
-                4);
-        ai1.setUse_killer_heuristic(false);
-        ai1.setUse_null_moves(false);
-        ai1.setUse_LMR(false);
+                new SimpleReducer(),
+                1,
+                1000,
+                8);
+        ai1.setUse_killer_heuristic(true);
+        ai1.setUse_null_moves(true);
+        ai1.setUse_LMR(true);
         ai1.setUse_transposition(false);
 
 //        PVSearch ai2 = new PVSearch(
@@ -870,7 +874,7 @@ public class SlowBoard extends Board<SlowBoard> {
 //        ai2.setUse_LMR(true);
 //        ai2.setUse_transposition(false);
 //
-        new Frame(b, new Player(){}, new Player(){});
+        new Frame(b, new Player(){}, ai1);
     }
 
 }

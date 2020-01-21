@@ -526,6 +526,10 @@ public class PVSearch implements AI {
         if(print_overview) {
             System.out.format("%-15s", IO.algebraicNotation(_board, _bestMove) + "[" + _bestScore + "]: ");
             searchOverview.printIterationSummary();
+            for(Move m:pline.getLine()){
+                System.out.print(IO.algebraicNotation(_board, m) + " ");
+            }
+            System.out.println();
         }
 
         return pline;
@@ -791,6 +795,9 @@ public class PVSearch implements AI {
         _quiesceNodes++;
         double stand_pat = evaluator.evaluate(_board) * _board.getActivePlayer();
 
+        if(_board.isGameOver()){
+            return stand_pat;
+        }
         if (depth_left == 0) {
             _terminalNodes++;
             return stand_pat;

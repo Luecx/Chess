@@ -164,7 +164,7 @@ public class UCI {
 
         Move best = ai.bestMove(b);
         log("bestmove["+ai.getSearchOverview().getDepth()+"+"+ai.getSearchOverview().getqDepth()+"] " + IO.moveToUCI(best,b) +"\n");
-        inputPrint();
+        //inputPrint();
         System.out.println("bestmove " + IO.moveToUCI(best,b));
     }
 
