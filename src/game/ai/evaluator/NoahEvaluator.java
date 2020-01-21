@@ -191,11 +191,11 @@ public class NoahEvaluator extends GeneticEvaluator<NoahEvaluator> implements Ev
         if (board.isGameOver()) {
             switch (board.winner()) {
                 case 1:
-                    return 1000000000;
+                    return LateGameEvaluator.INFTY-1;
                 case 0:
                     return 0;
                 case -1:
-                    return -100000000;
+                    return -(LateGameEvaluator.INFTY-1);
             }
         }
         Tensor3D pieceValue = midValue;

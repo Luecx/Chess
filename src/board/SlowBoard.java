@@ -630,16 +630,16 @@ public class SlowBoard extends Board<SlowBoard> {
     public List<Move> getLegalMoves(MoveList list) {
         List<Move> moves = getPseudoLegalMoves(list);
         MoveList ml = new MoveList(50);
-//        boolean inCheck = false;
-//        this.changeActivePlayer();
-//        List<Move> opMoves = getPseudoLegalMoves(ml);
-//        for(Move m:opMoves){
-//            if(m.getPieceTo() * this.getActivePlayer() == -6){
-//                inCheck = true;
-//                break;
-//            }
-//        }
-//        this.changeActivePlayer();
+        boolean inCheck = false;
+        this.changeActivePlayer();
+        List<Move> opMoves = getPseudoLegalMoves(ml);
+        for(Move m:opMoves){
+            if(m.getPieceTo() * this.getActivePlayer() == -6){
+                inCheck = true;
+                break;
+            }
+        }
+        this.changeActivePlayer();
 
         for(int i = moves.size()-1; i>= 0; i--){
             move(moves.get(i));
@@ -653,13 +653,11 @@ public class SlowBoard extends Board<SlowBoard> {
             undoMove();
         }
 
-
-
-//        if(moves.size() == 0){
-//            if(!inCheck){
-//                moves.add(new Move());
-//            }
-//        }
+        if(moves.size() == 0){
+            if(!inCheck){
+                moves.add(new Move());
+            }
+        }
 
         return moves;
     }
@@ -816,18 +814,18 @@ public class SlowBoard extends Board<SlowBoard> {
 
     public static void main(String[] args) {
         SlowBoard b = new SlowBoard(Setup.DEFAULT);
-        //b = IO.read_FEN(b,"r1bq1rk1/1p2ppbp/p1np1np1/8/3NP3/1BN1B2P/PPP2PP1/R2Q1RK1");
+        b = IO.read_FEN(b,"8/8/8/4q3/8/5k2/8/4K3 w - - 0 1");
 
         PVSearch ai1 = new PVSearch(
                 new NoahEvaluator(),
                 new SystematicOrderer2(),
                 new SenpaiReducer(),
-                1,
-                5000,
-                6);
-        ai1.setUse_killer_heuristic(true);
-        ai1.setUse_null_moves(true);
-        ai1.setUse_LMR(true);
+                2,
+                8,
+                4);
+        ai1.setUse_killer_heuristic(false);
+        ai1.setUse_null_moves(false);
+        ai1.setUse_LMR(false);
         ai1.setUse_transposition(false);
 
 //        PVSearch ai2 = new PVSearch(

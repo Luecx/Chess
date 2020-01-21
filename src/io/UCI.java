@@ -35,7 +35,7 @@ public class UCI {
         while (true)
         {
             String inputString = input.nextLine();
-            log("in: " + inputString + "\n");
+            //log("in: " + inputString + "\n");
             if ("uci".equals(inputString)) {
                 inputUCI();
             }
@@ -66,6 +66,7 @@ public class UCI {
     public static void inputUCI() {
         System.out.println("id name "+ENGINENAME);
         System.out.println("id author Finn/Noah");
+
         ///options go here
         System.out.println("uciok");
     }
@@ -121,7 +122,7 @@ public class UCI {
 
         int mode = PVSearch.FLAG_TIME_LIMIT;
         int limit = 5000;
-        int qdepth = 8;
+        int qdepth = 4;
 
         if(commands.contains("wtime")){
             wtime = Integer.parseInt(commands.get(commands.indexOf("wtime")+1));
@@ -151,13 +152,18 @@ public class UCI {
             ai.setLimit(btime/20);
         }
         ai.setPrint_overview(false);
+        ai.setUse_LMR(true);
+        ai.setUse_killer_heuristic(true);
+        ai.setUse_null_moves(true);
+        ai.setUse_move_lists(true);
+        ai.setQuiesce_depth(qdepth);
 
         if(ai.getLimit_flag() == PVSearch.FLAG_TIME_LIMIT && ai.getLimit() > 10000){
             ai.setLimit(10000);
         }
 
         Move best = ai.bestMove(b);
-        log(IO.write_FEN(b) + "  bestmove: " + IO.moveToUCI(best,b) +"\n");
+        log("bestmove["+ai.getSearchOverview().getDepth()+"+"+ai.getSearchOverview().getqDepth()+"] " + IO.moveToUCI(best,b) +"\n");
         inputPrint();
         System.out.println("bestmove " + IO.moveToUCI(best,b));
     }
@@ -178,7 +184,7 @@ public class UCI {
 
     public static void main(String[] args) {
 
-        log("UCI Started\n");
+       //log("UCI Started\n");
 
         uciCommunication();
     }

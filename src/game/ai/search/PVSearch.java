@@ -13,6 +13,7 @@ import game.ai.reducing.Reducer;
 import game.ai.tools.*;
 import io.IO;
 
+import java.util.Arrays;
 import java.util.List;
 
 public class PVSearch implements AI {
@@ -611,22 +612,24 @@ public class PVSearch implements AI {
         }
         //</editor-fold>
 
-        //<editor-fold desc="quiesce search">
+        //<editor-fold desc="loop-break">
         List<Move> allMoves =
                 use_move_lists ?
                 currentDepth <= 1 ? _board.getLegalMoves() : _board.getPseudoLegalMoves(_buffer.get(currentDepth)):
                         currentDepth <= 1 ? _board.getLegalMoves() : _board.getPseudoLegalMoves();
 
 
-//        if(allMoves.size() <= 1){
-//            //System.out.println(allMoves.get(0).getIsNull());
-//            if(allMoves.size() == 0){
-//                return _board.getActivePlayer() * -LateGameEvaluator.INFTY;
-//            }
-//            if (allMoves.get(0).getIsNull()){
-//                return 0;  //stalemate
-//            }
-//        }
+        //allMoves will be empty if its checkmate and contain a null move if its a stalemate!
+        boolean zugzwang = false;
+        if(allMoves.size() <= 1){
+            if(allMoves.size() == 0){
+                return _board.getActivePlayer() * -LateGameEvaluator.INFTY;
+            }
+            if (allMoves.get(0).getIsNull()){
+                return 0;  //stalemate
+            }
+            zugzwang = true;
+        }
 
         if (depthLeft <= 0 || allMoves.size() == 0 || _board.isGameOver()) {
             return Quiesce(alpha, beta, currentDepth + 1,quiesce_depth);
@@ -637,7 +640,7 @@ public class PVSearch implements AI {
 
         //<editor-fold desc="Null moves">
         double score = Double.NEGATIVE_INFINITY;
-        if(use_null_moves){
+        if(use_null_moves && !zugzwang){
             Move nullMove = new Move();
             _board.move(nullMove);
             score = -pvSearch(

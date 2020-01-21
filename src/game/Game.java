@@ -82,6 +82,9 @@ public class Game {
         if(board.isGameOver()) return;
         if (humansTurn()){
             //System.out.println("Moving: " + IO.algebraicNotation(board, m));
+            for(Object mv:board.getLegalMoves()){
+                System.out.println(mv);
+            }
             board.move(m);
             listeners.forEach(Runnable::run);
             //System.out.println(board.isGameOver() + "  " + board.winner());
