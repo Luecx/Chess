@@ -13,3 +13,5 @@
 - Quiscence search
 - Transposition tables [soon]
  
+
+The bot can be played on Lichess: ![FN_Waldi on Lichess](https://lichess.org/@/FN_Waldi)
