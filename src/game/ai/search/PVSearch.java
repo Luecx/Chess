@@ -731,9 +731,6 @@ public class PVSearch implements AI {
 
             _board.undoMove();
 
-            if(currentDepth == 0){
-                System.out.println(IO.algebraicNotation(_board, m) + "  " + score);
-            }
 
             //<editor-fold desc="Debugging check">
             //Some security checks. if this exception is thrown, the move generation has a bug!

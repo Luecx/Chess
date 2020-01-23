@@ -6,17 +6,16 @@ import board.moves.MoveList;
 import board.repetitions.RepetitionList;
 import board.setup.Setup;
 import game.Player;
-import game.ai.evaluator.FinnEvaluator;
-import game.ai.evaluator.GeneticEvaluator;
-import game.ai.evaluator.LateGameEvaluator;
-import game.ai.evaluator.NoahEvaluator;
+import game.ai.evaluator.*;
 import game.ai.monte_carlo.MCTS;
 import game.ai.monte_carlo.expandor.ChessExpander;
 import game.ai.monte_carlo.nodedata.ChessNodeData;
 import game.ai.monte_carlo.selection.UCT;
 import game.ai.monte_carlo.simulator.EvaluatingSimulator;
+import game.ai.ordering.NoOrderer;
 import game.ai.ordering.SystematicOrderer;
 import game.ai.ordering.SystematicOrderer2;
+import game.ai.reducing.Reducer;
 import game.ai.reducing.SenpaiReducer;
 import game.ai.reducing.SimpleReducer;
 import game.ai.search.PVSearch;
@@ -853,37 +852,57 @@ public class SlowBoard extends Board<SlowBoard> {
 
     public static void main(String[] args) {
         SlowBoard b = new SlowBoard(Setup.DEFAULT);
-        b = IO.read_FEN(b,"k7/1R6/2Q5/8/2P5/6p1/P5KP/8 w - - 0 1");
-        //b = IO.read_FEN(b,"8/8/8/8/5q2/5k2/8/4K3_w_-_-_0_1");
 
-        PVSearch ai1 = new PVSearch(
-                new NoahEvaluator(),
-                new SystematicOrderer2(),
-                new SimpleReducer(),
+        new PVSearch(
+                new Evaluator() {
+                    @Override
+                    public double evaluate(Board board) {
+                        return 0;
+                    }
+                },
+                new NoOrderer(),
+                new Reducer(){
+                    @Override
+                    public int reduce(Move move, int depth, int depthLeft, int moveIndex, boolean pv_node) {
+                        return 0;
+                    }
+                },
                 1,
                 1000,
-                8);
-        ai1.setUse_killer_heuristic(true);
-        ai1.setUse_null_moves(true);
-        ai1.setUse_LMR(true);
-        ai1.setUse_transposition(false);
+                8
+        ).bestMove(b);
 
-
-        //MCTS<ChessNodeData> mcts = new MCTS<>(new UCT(), new EvaluatingSimulator(),new ChessExpander());
-
-        PVSearch ai2 = new PVSearch(
-                new NoahEvaluator(),
-                new SystematicOrderer2(),
-                new SenpaiReducer(),
-                2,
-                2,
-                1);
-        ai2.setUse_killer_heuristic(false);
-        ai2.setUse_null_moves(false);
-        ai2.setUse_LMR(false);
-        ai2.setUse_transposition(false);
+//        b = IO.read_FEN(b,"k7/1R6/2Q5/8/2P5/6p1/P5KP/8 w - - 0 1");
+//        //b = IO.read_FEN(b,"8/8/8/8/5q2/5k2/8/4K3_w_-_-_0_1");
 //
-       new Frame(b, ai2, new Player() {});
+//        PVSearch ai1 = new PVSearch(
+//                new NoahEvaluator(),
+//                new SystematicOrderer2(),
+//                new SimpleReducer(),
+//                1,
+//                1000,
+//                8);
+//        ai1.setUse_killer_heuristic(true);
+//        ai1.setUse_null_moves(true);
+//        ai1.setUse_LMR(true);
+//        ai1.setUse_transposition(false);
+//
+//
+//        //MCTS<ChessNodeData> mcts = new MCTS<>(new UCT(), new EvaluatingSimulator(),new ChessExpander());
+//
+//        PVSearch ai2 = new PVSearch(
+//                new NoahEvaluator(),
+//                new SystematicOrderer2(),
+//                new SenpaiReducer(),
+//                2,
+//                2,
+//                1);
+//        ai2.setUse_killer_heuristic(false);
+//        ai2.setUse_null_moves(false);
+//        ai2.setUse_LMR(false);
+//        ai2.setUse_transposition(false);
+////
+//       new Frame(b, ai2, new Player() {});
     }
 
 }
