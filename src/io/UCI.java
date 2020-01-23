@@ -6,6 +6,8 @@ import board.moves.Move;
 import board.setup.Setup;
 import game.ai.evaluator.NoahEvaluator;
 import game.ai.ordering.SystematicOrderer;
+import game.ai.ordering.SystematicOrderer2;
+import game.ai.reducing.SenpaiReducer;
 import game.ai.reducing.SimpleReducer;
 import game.ai.search.PVSearch;
 import io.IO;
@@ -25,8 +27,8 @@ public class UCI {
     private static Board b = new SlowBoard(Setup.DEFAULT);
     private static PVSearch ai = new PVSearch(
             new NoahEvaluator(),
-            new SystematicOrderer(),
-            new SimpleReducer(),
+            new SystematicOrderer2(),
+            new SenpaiReducer(),
             PVSearch.FLAG_TIME_LIMIT,
             1000,4);
     public static void uciCommunication() {
@@ -167,12 +169,14 @@ public class UCI {
             throw new RuntimeException("Not yet supported");
         }
         if (b.getActivePlayer() == 1) {
-            ai.setLimit(wtime/20);
+            ai.setLimit(wtime/30);
         }
         if (b.getActivePlayer() == -1) {
-            ai.setLimit(btime/20);
+            ai.setLimit(btime/30);
         }
         ai.setPrint_overview(false);
+
+        log(ai.isUse_LMR() + "  " + ai.isUse_iteration() + "  " + ai.isUse_null_moves() + "  " + ai.isUse_move_lists() + "  " + ai.isUse_killer_heuristic());
 
         if(ai.getLimit_flag() == PVSearch.FLAG_TIME_LIMIT && ai.getLimit() > 10000){
             ai.setLimit(10000);

@@ -10,6 +10,11 @@ import game.ai.evaluator.FinnEvaluator;
 import game.ai.evaluator.GeneticEvaluator;
 import game.ai.evaluator.LateGameEvaluator;
 import game.ai.evaluator.NoahEvaluator;
+import game.ai.monte_carlo.MCTS;
+import game.ai.monte_carlo.expandor.ChessExpander;
+import game.ai.monte_carlo.nodedata.ChessNodeData;
+import game.ai.monte_carlo.selection.UCT;
+import game.ai.monte_carlo.simulator.EvaluatingSimulator;
 import game.ai.ordering.SystematicOrderer;
 import game.ai.ordering.SystematicOrderer2;
 import game.ai.reducing.SenpaiReducer;
@@ -848,7 +853,8 @@ public class SlowBoard extends Board<SlowBoard> {
 
     public static void main(String[] args) {
         SlowBoard b = new SlowBoard(Setup.DEFAULT);
-        b = IO.read_FEN(b,"1k6/1pp2p2/2n1p2p/1QNb4/5br1/K1B5/8/R7 b - - 0 1");
+        b = IO.read_FEN(b,"k7/1R6/2Q5/8/2P5/6p1/P5KP/8 w - - 0 1");
+        //b = IO.read_FEN(b,"8/8/8/8/5q2/5k2/8/4K3_w_-_-_0_1");
 
         PVSearch ai1 = new PVSearch(
                 new NoahEvaluator(),
@@ -862,19 +868,22 @@ public class SlowBoard extends Board<SlowBoard> {
         ai1.setUse_LMR(true);
         ai1.setUse_transposition(false);
 
-//        PVSearch ai2 = new PVSearch(
-//                new NoahEvaluator(),
-//                new SystematicOrderer(),
-//                new SimpleReducer(),
-//                1,
-//                1000,
-//                6);
-//        ai2.setUse_killer_heuristic(true);
-//        ai2.setUse_null_moves(true);
-//        ai2.setUse_LMR(true);
-//        ai2.setUse_transposition(false);
+
+        //MCTS<ChessNodeData> mcts = new MCTS<>(new UCT(), new EvaluatingSimulator(),new ChessExpander());
+
+        PVSearch ai2 = new PVSearch(
+                new NoahEvaluator(),
+                new SystematicOrderer2(),
+                new SenpaiReducer(),
+                2,
+                2,
+                1);
+        ai2.setUse_killer_heuristic(false);
+        ai2.setUse_null_moves(false);
+        ai2.setUse_LMR(false);
+        ai2.setUse_transposition(false);
 //
-        new Frame(b, new Player(){}, ai1);
+       new Frame(b, ai2, new Player() {});
     }
 
 }

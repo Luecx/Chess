@@ -231,9 +231,9 @@ public class Testing {
         PVSearch ai1 = new PVSearch(
                 new NoahEvaluator(),
                 new SystematicOrderer2(),
-                new SenpaiReducer(),
-                2,
-                8,
+                new SimpleReducer(),
+                1,
+                3000,
                 6);
         ai1.setUse_killer_heuristic(true);
         ai1.setUse_null_moves(true);
@@ -245,10 +245,10 @@ public class Testing {
 
         PVSearch ai2 = new PVSearch(
                 new NoahEvaluator(),
-                new SystematicOrderer(),
+                new SystematicOrderer2(),
                 new SenpaiReducer(),
-                2,
-                8,
+                1,
+                3000,
                 6);
 
         ai2.setUse_killer_heuristic(true);
@@ -257,12 +257,23 @@ public class Testing {
         ai2.setUse_transposition(false);
         ai2.setUse_move_lists(true);
 
-        compare(new SlowBoard(), new PVSearch[]{ai1,ai2},
-            "r2q1rk1/1pp1bppp/p1npbn2/4p1B1/B3P3/2NP1N2/PPPQ1PPP/2KR3R",
-            "r2q1rk1/ppp2ppp/2n2n2/2b5/2B2Bb1/2NP1N2/PPPQ2PP/R4R1K",
-            "r1bq1rk1/1p2ppbp/p1np1np1/8/3NP3/1BN1B2P/PPP2PP1/R2Q1RK1",
-            "r2qk2r/ppp1nppp/1bn1b3/1B6/1P1pP3/5N2/PB3PPP/RN1Q1RK1",
-            "r2qkb1r/pp1n1pp1/2p1pn1p/8/3P1B1P/3Q1NN1/PPP2PP1/2KR3R");
+
+        String[] midgames = new String[]{
+                "r2q1rk1/1pp1bppp/p1npbn2/4p1B1/B3P3/2NP1N2/PPPQ1PPP/2KR3R",
+                "r2q1rk1/ppp2ppp/2n2n2/2b5/2B2Bb1/2NP1N2/PPPQ2PP/R4R1K",
+                "r1bq1rk1/1p2ppbp/p1np1np1/8/3NP3/1BN1B2P/PPP2PP1/R2Q1RK1",
+                "r2qk2r/ppp1nppp/1bn1b3/1B6/1P1pP3/5N2/PB3PPP/RN1Q1RK1",
+                "r2qkb1r/pp1n1pp1/2p1pn1p/8/3P1B1P/3Q1NN1/PPP2PP1/2KR3R"
+        };
+        String[] endgames = new String[]{
+                "8/8/4P1nn/8/2K2P2/4P1k1/2p5/3R4",
+                "8/n7/8/P5k1/5n2/3P2pP/K7/4R3",
+                "8/7R/4KP2/1P4p1/8/1n6/2k2P2/6n1",
+                "7k/3P2K1/6n1/1P1P2R1/1n4p1/8/8/8",
+                "8/5K2/6P1/1p2P1k1/8/P6n/7R/2n5"
+        };
+
+        compare(new SlowBoard(), new PVSearch[]{ai1,ai2},endgames);
 
 
 

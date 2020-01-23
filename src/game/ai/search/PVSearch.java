@@ -621,7 +621,7 @@ public class PVSearch implements AI {
         }
         //</editor-fold>
 
-        //<editor-fold desc="loop-break">
+        //<editor-fold desc="zugzwang">
         List<Move> allMoves =
                 use_move_lists ?
                 currentDepth <= 1 ? _board.getLegalMoves() : _board.getPseudoLegalMoves(_buffer.get(currentDepth)):
@@ -632,14 +632,16 @@ public class PVSearch implements AI {
         boolean zugzwang = false;
         if(allMoves.size() <= 1){
             if(allMoves.size() == 0){
-                return _board.getActivePlayer() * -LateGameEvaluator.INFTY;
+                return -LateGameEvaluator.INFTY;
             }
             if (allMoves.get(0).getIsNull()){
                 return 0;  //stalemate
             }
             zugzwang = true;
         }
+        //</editor-fold>
 
+        //<editor-fold desc="QSearch">
         if (depthLeft <= 0 || allMoves.size() == 0 || _board.isGameOver()) {
             return Quiesce(alpha, beta, currentDepth + 1,quiesce_depth);
         }
@@ -728,6 +730,10 @@ public class PVSearch implements AI {
             //</editor-fold>
 
             _board.undoMove();
+
+            if(currentDepth == 0){
+                System.out.println(IO.algebraicNotation(_board, m) + "  " + score);
+            }
 
             //<editor-fold desc="Debugging check">
             //Some security checks. if this exception is thrown, the move generation has a bug!
