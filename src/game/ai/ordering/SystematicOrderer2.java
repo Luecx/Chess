@@ -2,6 +2,7 @@ package game.ai.ordering;
 
 import board.Board;
 import board.moves.Move;
+import game.ai.evaluator.FinnEvaluator;
 import game.ai.tools.KillerTable;
 import game.ai.tools.PVLine;
 import game.ai.tools.TranspositionEntry;
@@ -26,6 +27,7 @@ public class SystematicOrderer2 implements Orderer {
             int depth,
             PVLine lastIteration,
             Board board,
+            boolean pvNode,
             KillerTable killerTable,
             TranspositionTable transpositionTable){
 
@@ -44,7 +46,7 @@ public class SystematicOrderer2 implements Orderer {
 //        }
 
         //PV nodes
-        if(lastIteration != null){
+        if(lastIteration != null && pvNode){
             if(depth < lastIteration.getLine().length){
                 int index = collection.indexOf(lastIteration.getLine()[depth]);
                 if(index != -1){
@@ -77,10 +79,11 @@ public class SystematicOrderer2 implements Orderer {
             if(killerTable != null && killerTable.isKillerMove(depth, m)){
                 killerMoves.add(m);
             } else if(m.getPieceTo() != 0){
-                if(Math.abs(m.getPieceTo()) >= Math.abs(m.getPieceFrom())){
+
+                if(FinnEvaluator.EVALUATE_PRICE[Math.abs(m.getPieceTo())] >= FinnEvaluator.EVALUATE_PRICE[Math.abs(m.getPieceFrom())]){
                     goodCaptures.add(m);
                 }else{
-                    goodCaptures.add(m);
+                    badCaptures.add(m);
                 }
 
             } else{

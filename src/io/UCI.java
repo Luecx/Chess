@@ -5,6 +5,7 @@ import board.SlowBoard;
 import board.moves.Move;
 import board.setup.Setup;
 import game.ai.evaluator.NoahEvaluator;
+import game.ai.evaluator.NoahEvaluator2;
 import game.ai.ordering.SystematicOrderer;
 import game.ai.ordering.SystematicOrderer2;
 import game.ai.reducing.SenpaiReducer;
@@ -26,7 +27,7 @@ public class UCI {
     private static String ENGINENAME = "Waldi"; // we should decide on a name of the engine
     private static Board b = new SlowBoard(Setup.DEFAULT);
     private static PVSearch ai = new PVSearch(
-            new NoahEvaluator(),
+            new NoahEvaluator2(),
             new SystematicOrderer2(),
             new SenpaiReducer(),
             PVSearch.FLAG_TIME_LIMIT,
@@ -38,7 +39,7 @@ public class UCI {
         while (true)
         {
             String inputString = input.nextLine();
-            log("[IN]: " + inputString + "\n");
+            //log("[IN]: " + inputString + "\n");
             if ("uci".equals(inputString)) {
                 inputUCI();
             }
@@ -86,7 +87,7 @@ public class UCI {
         String name = args[2];
         String value = args[4];
 
-        log("[INTERNAL] setting options with: " + name + "=" + value+"\n");
+        //log("[INTERNAL] setting options with: " + name + "=" + value+"\n");
 
         switch (name){
             case "null_moves": ai.setUse_null_moves(Boolean.parseBoolean(value));break;
@@ -175,16 +176,14 @@ public class UCI {
             ai.setLimit(btime/30);
         }
         ai.setPrint_overview(false);
-
-        log(ai.isUse_LMR() + "  " + ai.isUse_iteration() + "  " + ai.isUse_null_moves() + "  " + ai.isUse_move_lists() + "  " + ai.isUse_killer_heuristic());
-
         if(ai.getLimit_flag() == PVSearch.FLAG_TIME_LIMIT && ai.getLimit() > 10000){
             ai.setLimit(10000);
         }
 
         Move best = ai.bestMove(b);
-        log("bestmove["+ai.getSearchOverview().getDepth()+"+"+ai.getSearchOverview().getqDepth()+"] " + IO.moveToUCI(best,b) +"\n");
-        //inputPrint();
+
+        log(IO.moveToUCI(best,b)+" info " + ai.getSearchOverview().getInfo() + "\n");
+        System.out.println("info " + ai.getSearchOverview().getInfo());
         System.out.println("bestmove " + IO.moveToUCI(best,b));
     }
 

@@ -12,7 +12,7 @@ public class NoOrderer implements Orderer {
 
 
     @Override
-    public void sort(List<Move> collection, int depth, PVLine lastIteration, Board board, KillerTable killerTable,
+    public void sort(List<Move> collection, int depth, PVLine lastIteration, Board board, boolean pvNode,  KillerTable killerTable,
                                       TranspositionTable transpositionTable) {
     }
 }

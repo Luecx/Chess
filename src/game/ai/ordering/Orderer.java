@@ -34,6 +34,7 @@ public interface Orderer {
             int depth,
             PVLine lastIteration,
             Board board,
+            boolean pvNode,
             KillerTable killerTable,
             TranspositionTable transpositionTable);
 
