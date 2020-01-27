@@ -170,12 +170,13 @@ public class MoveList implements Iterable<Move>, List<Move> {
         if(this.size == moves.length){
             this.setCapacity(moves.length * 2);
         }
-        this.moves[size].isNull = false;
-        this.moves[size].from = from;
-        this.moves[size].to = to;
-        this.moves[size].pieceFrom = pieceFrom;
-        this.moves[size].pieceTo = pieceTo;
-        this.moves[size].metaInformation = metaInformation;
+        Move m = this.moves[size];
+        m.isNull = false;
+        m.from = from;
+        m.to = to;
+        m.pieceFrom = pieceFrom;
+        m.pieceTo = pieceTo;
+        m.metaInformation = metaInformation;
         this.size ++;
     }
 

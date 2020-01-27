@@ -5,59 +5,50 @@ import board.moves.Move;
 import board.moves.MoveList;
 import board.pieces.PieceList;
 import board.setup.Setup;
+import game.Player;
+import visual.Frame;
 
 import java.util.*;
 
 public class FastBoard extends Board<FastBoard> {
 
 
-    long[] white_values;        //6
-    long[] black_values;        //6
-    long[] team_total;          //2
-    long[] occupied;            //2
+    private long[]          white_values;        //bitmap for each white piece
+    private long[]          black_values;        //bitmap for each black piece
+    private long[]          team_total;          //bitmap for white and black occupancy respectively
+    private long            occupied;            //bitmap for occupied squares
 
 
-    private PieceList[] white_pieces;
-    private PieceList[] black_pieces;
+    private int[]           indexBoard;   //contains indices for each square. positive indices for white
+    private PieceList[]     white_pieces;
+    private PieceList[]     black_pieces;
 
-    private Stack<Move> moveHistory = new Stack<>();
+    private Stack<Move>     moveHistory = new Stack<>();
 
     public FastBoard() {
         super();
     }
 
+    public FastBoard(Setup setup) {
+        super(setup);
+    }
+
     public void reset() {
+
+        indexBoard = new int[64];
+
         white_values = new long[6];
         black_values = new long[6];
         team_total = new long[2];
-        occupied = new long[2];
+        occupied = 0L;
         white_pieces = new PieceList[6];
         black_pieces = new PieceList[6];
-        Random r = new Random((int) (Math.random() * 100000));
         for (int i = 0; i < 6; i++) {
             white_pieces[i] = new PieceList(i+1);
             black_pieces[i] = new PieceList(-(i+1));
         }
-        setPiece(-2, 0 + 7 * 8);
-        setPiece(-2, 7 + 7 * 8);
-        setPiece(-3, 1 + 7 * 8);
-        setPiece(-3, 6 + 7 * 8);
-        setPiece(-4, 2 + 7 * 8);
-        setPiece(-4, 5 + 7 * 8);
-        setPiece(-5, 3 + 7 * 8);
-        setPiece(-6, 4 + 7 * 8);
-        setPiece(2, 0);
-        setPiece(2, 7);
-        setPiece(3, 1);
-        setPiece(3, 6);
-        setPiece(4, 2);
-        setPiece(4, 5);
-        setPiece(5, 3);
-        setPiece(6, 4);
-        for (int i = 0; i < 8; i++) {
-            setPiece(1, 8 + i);
-            setPiece(-1, 48 + i);
-        }
+
+
         update_longs();
     }
 
@@ -94,19 +85,28 @@ public class FastBoard extends Board<FastBoard> {
             black_pieces[-p - 1].remove(new Integer(index));
             black_values[-p - 1] = BitBoard.unsetBit(black_values[-p - 1], index);
         }
+        indexBoard[index] = piece;
+
         if (piece == 0) return;
+
         if (piece > 0) {
-            if (!white_pieces[piece - 1].contains(index)) {
-                white_pieces[piece - 1].add(index);
-                white_values[piece - 1] = BitBoard.setBit(white_values[piece - 1], index);
-            }
+            white_pieces[piece - 1].add(index);
+            white_values[piece - 1] = BitBoard.setBit(white_values[piece - 1], index);
+
         } else {
-            if (!black_pieces[-piece - 1].contains(index)) {
-                black_pieces[-piece - 1].add(index);
-                black_values[-piece - 1] = BitBoard.setBit(black_values[-piece - 1], index);
-            }
+            black_pieces[-piece - 1].add(index);
+            black_values[-piece - 1] = BitBoard.setBit(black_values[-piece - 1], index);
+
         }
+        update_longs();
     }
+
+
+    @Override
+    public void setPiece(int x, int y, int piece) {
+        setPiece(piece, index(x,y));
+    }
+
 
     @Override
     public boolean equals(Object o) {
@@ -124,79 +124,8 @@ public class FastBoard extends Board<FastBoard> {
             team_total[0] = BitBoard.or(team_total[0], white_values[i]);
             team_total[1] = BitBoard.or(team_total[1], black_values[i]);
         }
-        occupied[0] = BitBoard.or(team_total[0], team_total[1]);
-        occupied[1] = BitBoard.not(occupied[0]);
+        occupied = BitBoard.or(team_total[0], team_total[1]);
     }
-//    public LinkedList<Move> possibleMoves(int id) {
-//        int p = id == 1 ? 0 : 1;
-//        int e = id == 1 ? 1 : 0;
-//
-//        int moveIndex = 0;
-//        LinkedList<Move> moves = new LinkedList<>();
-//
-//        int index = 0;
-//        long[] out = new long[50];
-//
-//        if (p == 0) {
-//            long b1 = and(team_total[1], shiftSouthWest(values[0]));
-//            long b2 = and(team_total[1], shiftSouthEast(values[0]));
-//            long b3 = and(occupied[1], shiftSouth(values[0]));
-//
-//            for (int i = 16; i < 64; i++) {
-//                if (getBit(b1, i)) {
-//                    out[index] = (i-9) * 64 + i;
-//                    index ++;
-//                    //moves.add(new Move(i - 9, i, 1));
-//                }
-//                if (getBit(b2, i)) {
-//                    out[index] = (i-7) * 64 + i;
-//                    index ++;
-//                    //moves.add(new Move(i - 7, i, 1));
-//                }
-//                if (getBit(b3, i)) {
-//                    out[index] = (i-8) * 64 + i;
-//                    index++;
-//                    //moves.add(new Move(i - 8, i, 1));
-//                }
-//            }
-//        } else {
-//            long b1 = and(team_total[0], shiftNorthEast(values[6]));
-//            long b2 = and(team_total[0], shiftNorthWest(values[6]));
-//            long b3 = and(occupied[1], shiftNorth(values[6]));
-//
-//
-//            for (int i = 48; i >= 0; i--) {
-//                if (getBit(b1, i)) {
-//                    moves.add(new Move(i + 9, i, 1));
-//                }
-//                if (getBit(b3, i)) {
-//                    moves.add(new Move(i + 8, i, 1));
-//                }
-//                if (getBit(b2, i)) {
-//                    moves.add(new Move(i + 7, i, 1));
-//                }
-//
-//            }
-//        }
-//
-//        for(int i = 0; i < 64; i++){
-//            if(getBit(values[1 + p * 6], i)){
-//                long v = and(KNIGHT_TABLE[i], not(team_total[p]));
-//                for(int n = Math.max(0, i - 18); n < Math.min(63, i + 18); n++){
-//                    if(getBit(v, n)){
-//                        out[index] = i * 64 + n;
-//                        index++;
-//                        //moves.add(new Move(i,n, 1 + p * 6));
-//                    }
-//                }
-//            }
-//        }
-//
-//        return moves;
-//
-//
-//    }
-
 
     @Override
     public boolean isGameOver() {
@@ -225,83 +154,8 @@ public class FastBoard extends Board<FastBoard> {
 
     @Override
     public int getPiece(int index) {
-        for (int i = 0; i < 6; i++) {
-            if (BitBoard.getBit(white_values[i], index)) {
-                return i + 1;
-            }
-            if (BitBoard.getBit(black_values[i], index)) {
-                return -i - 1;
-            }
-        }
-        return 0;
+        return indexBoard[index];
     }
-
-    private void slidingPieces(int pos, int direction, ArrayList<Move> list) {
-        int c = pos + direction;
-//        while (field[c] != INVALID) {
-//            if (field[c] != 0) {
-//                if (field[c] * getActivePlayer() < 1) {
-//                    list.add(new Move(pos, c, this));
-//                }
-//                return;
-//            } else {
-//                list.add(new Move(pos, c, this));
-//            }
-//            c += direction;
-//        }
-    }
-
-
-    public List<Move> getPseudoLegalMoves() {
-        LinkedList<Move> moves = new LinkedList<>();
-
-        int index;
-        for (int i = 0; i < white_pieces[2].size(); i++) {
-            index = white_pieces[2].get(i);
-            long attacks = BitBoard.KNIGHT_ATTACKS[index] & ~occupied[0];
-            while(attacks != 0){
-                //moves.add(new Move(index, BitBoard.bitscanForward(attacks), 1,0));
-                BitBoard.bitscanForward(attacks);
-                attacks = BitBoard.lsbReset(attacks);
-            }
-        }
-
-
-
-
-//        for (byte i = 0; i < 8; i++) {
-//            for (byte j = 0; j < 8; j++) {
-//
-//                int index = index(i, j);
-//                if(getActivePlayer() == 1 && !BitBoard.getBit(occupied[0], index)){
-//                        continue;
-//                }else if(getActivePlayer() == -1 && !BitBoard.getBit(occupied[1], index)){
-//                    continue;
-//                }
-//
-//                int piece = getPiece(index);
-//
-////                if (piece * getActivePlayer() <= 0) continue;
-////                if (piece == getActivePlayer()) { // Bauern
-////                    if (j == 0 || j == 7) continue;
-////                    if (getPiece(index + getActivePlayer() * 12) == 0) {
-////                        moves.add(new Move(index, index + getActivePlayer() * 12, getActivePlayer(), (byte) 0));
-////                        if ((j == getActivePlayer() || j == 7 + getActivePlayer()) && getPiece(index + getActivePlayer() * 2 * 12) == 0) {
-////                            moves.add(new Move(index, index + getActivePlayer() * 24, getActivePlayer(), (byte) 0));
-////                        }
-////                    }
-////                    if (field[index + getActivePlayer() * 11] != INVALID && field[index + getActivePlayer() * 11] * getActivePlayer() < 0) {
-////                        moves.add(new Move(index, index + getActivePlayer() * 11, this));
-////                    }
-////                    if (field[index + getActivePlayer() * 13] != INVALID && field[index + getActivePlayer() * 13] * getActivePlayer() < 0) {
-////                        moves.add(new Move(index, index + getActivePlayer() * 13, this));
-////                    }
-//                //}
-//            }
-//        }
-        return moves;
-    }
-
 
     @Override
     public String toString() {
@@ -336,15 +190,6 @@ public class FastBoard extends Board<FastBoard> {
 
     @Override
     public void move(Move m) {
-//        if(m.getPieceFrom() * getActivePlayer() == 6){
-//            if(Math.abs(m.getTo()-m.getFrom()) == 2){
-//                if(m.getTo() > m.getFrom()){
-//                    this.moveSimpleMove(new Move(m.getFrom() + 3, m.getFrom() + 1, this));
-//                }else{
-//                    this.moveSimpleMove(new Move(m.getFrom() -4, m.getFrom() -1, this));
-//                }
-//            }
-//        }
         this.moveSimpleMove(m);
         this.changeActivePlayer();
         this.update_longs();
@@ -355,6 +200,8 @@ public class FastBoard extends Board<FastBoard> {
         this.undoMoveSimpleMove();
         this.changeActivePlayer();
         this.update_longs();
+
+
     }
 
     @Override
@@ -363,6 +210,7 @@ public class FastBoard extends Board<FastBoard> {
     }
 
     private void moveSimpleMove(Move m) {
+
         this.setPiece(0, m.getFrom());
         this.setPiece(m.getPieceFrom(), m.getTo());
         this.moveHistory.push(m);
@@ -376,20 +224,9 @@ public class FastBoard extends Board<FastBoard> {
     }
 
     @Override
-    public List<Move> getLegalMoves() {
-        return null;
-    }
-
-    @Override
-    public List<Move> getCaptureMoves() {
-        return null;
-    }
-
-    @Override
     public FastBoard copy() {
         FastBoard copy = new FastBoard();
-        copy.occupied[0] = occupied[0];
-        copy.occupied[1] = occupied[1];
+        copy.occupied = occupied;
         copy.team_total[0] = team_total[0];
         copy.team_total[1] = team_total[1];
         for (int i = 0; i < 6; i++) {
@@ -405,13 +242,93 @@ public class FastBoard extends Board<FastBoard> {
     }
 
 
+
+    private void getPseudoLegalMoves(int color, PieceList[] pieces, long team, MoveList moves){
+        int index;
+
+        for (int i = 0; i < pieces[1].size(); i++) {
+            index = pieces[1].get(i);
+            long attacks = BitBoard.lookUpRookAttack(i, occupied) & ~team;
+            while(attacks != 0){
+                int to = BitBoard.bitscanForward(attacks);
+                moves.add(index, to, 2*color,indexBoard[to]);
+                attacks = BitBoard.lsbReset(attacks);
+            }
+        }
+
+        for (int i = 0; i < pieces[2].size(); i++) {
+            index = pieces[2].get(i);
+            long attacks = BitBoard.KNIGHT_ATTACKS[index] & ~team;
+            while(attacks != 0){
+                int to = BitBoard.bitscanForward(attacks);
+                moves.add(index, to, 3*color,indexBoard[to]);
+                attacks = BitBoard.lsbReset(attacks);
+            }
+        }
+
+        for (int i = 0; i < pieces[3].size(); i++){
+            index = pieces[3].get(i);
+            long attacks = BitBoard.lookUpBishopAttack(i, occupied) & ~team;
+            while(attacks != 0){
+                int to = BitBoard.bitscanForward(attacks);
+                moves.add(index, to, 4*color,indexBoard[to]);
+                attacks = BitBoard.lsbReset(attacks);
+            }
+        }
+
+        for (int i = 0; i < pieces[4].size(); i++){
+            index = pieces[4].get(i);
+            long attacks = BitBoard.lookUpBishopAttack(index, occupied) & ~team;
+            while(attacks != 0){
+                int to = BitBoard.bitscanForward(attacks);
+                moves.add(index, to, 5*color,indexBoard[to]);
+                attacks = BitBoard.lsbReset(attacks);
+            }
+            attacks = BitBoard.lookUpRookAttack(index, occupied) & ~team;
+            while(attacks != 0){
+                int to = BitBoard.bitscanForward(attacks);
+                moves.add(index, to, 5*color,indexBoard[to]);
+                attacks = BitBoard.lsbReset(attacks);
+            }
+        }
+
+        for (int i = 0; i < pieces[5].size(); i++){
+            index = pieces[5].get(i);
+            long attacks = BitBoard.KING_ATTACKS[index] & ~team;
+            while(attacks != 0){
+                int to = BitBoard.bitscanForward(attacks);
+                moves.add(index, to, 6*color,indexBoard[to]);
+                attacks = BitBoard.lsbReset(attacks);
+            }
+        }
+    }
+
+
+
+    public List<Move> getPseudoLegalMoves() {
+        return getPseudoLegalMoves(new MoveList(50));
+    }
+
     @Override
     public MoveList getPseudoLegalMoves(MoveList list) {
-        return null;
+        list.clear();
+        if(getActivePlayer() == 1) getPseudoLegalMoves(1 ,white_pieces, team_total[0], list);
+        if(getActivePlayer() ==-1) getPseudoLegalMoves(-1,black_pieces, team_total[1], list);
+        return list;
     }
 
     @Override
     public List<Move> getLegalMoves(MoveList list) {
+        return getPseudoLegalMoves(list);
+    }
+
+    @Override
+    public List<Move> getLegalMoves() {
+        return getPseudoLegalMoves();
+    }
+
+    @Override
+    public List<Move> getCaptureMoves() {
         return null;
     }
 
@@ -422,27 +339,23 @@ public class FastBoard extends Board<FastBoard> {
 
     @Override
     public FastBoard newInstance() {
-        return null;
-    }
-
-    @Override
-    public void setPiece(int x, int y, int piece) {
+        return new FastBoard();
     }
 
     public static void main(String[] args) {
-        SlowBoard board = new SlowBoard(Setup.DEFAULT);
-        MoveList list = new MoveList(60);
-        Move move = (Move) board.getLegalMoves(list).get(0);
+        FastBoard board = new FastBoard(Setup.NO_PAWNS);
+        //System.out.println(board);
+        //new Frame(board, new Player(){}, new Player(){});
 
 
         long time = System.currentTimeMillis();
-        int count = 0;
-        while (System.currentTimeMillis()-time < 3E3){
-            board.move(move);
-            board.undoMove();
-            count ++;
+            MoveList moves = new MoveList(80);
+
+        for(int i = 0; i < 1E7; i++){
+            board.getPseudoLegalMoves(moves);
         }
-        System.out.println(count / 3);
+
+        System.out.print(System.currentTimeMillis()-time);
 
     }
 }

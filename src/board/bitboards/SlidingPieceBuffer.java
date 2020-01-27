@@ -1,20 +1,16 @@
 package board.bitboards;
 
-import java.util.HashSet;
-import java.util.Random;
-import java.util.Set;
-
 public class SlidingPieceBuffer {
 
     private long mask;
     private long magic;
-    private int offset;
+    private int shift;
 
 
-    public SlidingPieceBuffer(long mask, long magic, int offset) {
+    public SlidingPieceBuffer(long mask, long magic, int shift) {
         this.mask = mask;
         this.magic = magic;
-        this.offset = offset;
+        this.shift = shift;
     }
 
 
@@ -34,11 +30,11 @@ public class SlidingPieceBuffer {
         this.magic = magic;
     }
 
-    public int getOffset() {
-        return offset;
+    public int getShift() {
+        return shift;
     }
 
-    public void setOffset(int offset) {
-        this.offset = offset;
+    public void setShift(int shift) {
+        this.shift = shift;
     }
 }
