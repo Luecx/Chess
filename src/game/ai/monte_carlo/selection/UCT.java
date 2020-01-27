@@ -5,7 +5,7 @@ import game.ai.monte_carlo.Node;
 
 public class UCT implements Selector {
 
-    private double C = 100*Math.sqrt(2);
+    private double C = Math.sqrt(2);
 
     public UCT(double c) {
         C = c;

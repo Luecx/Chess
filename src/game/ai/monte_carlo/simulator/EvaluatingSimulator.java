@@ -13,6 +13,6 @@ public class EvaluatingSimulator implements Simulator<ChessNodeData> {
 
     @Override
     public double simulate(Node<ChessNodeData> root) {
-        return -evaluator.evaluate(root.getNodeData().getBoard()) * root.getNodeData().getBoard().getActivePlayer();
+        return -evaluator.evaluate(root.getNodeData().getBoard()) * root.getNodeData().getBoard().getActivePlayer() / 1000;
     }
 }

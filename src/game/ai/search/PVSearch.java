@@ -420,6 +420,7 @@ public class PVSearch implements AI {
             _transpositionTable = new TranspositionTable<>((int) (5E6));//50E6
         }
 
+        PVLine pvLine = null;
         if (use_iteration) {
             if(limit_flag == FLAG_TIME_LIMIT){
                 //<editor-fold desc="time limited iterative deepening">
@@ -446,14 +447,13 @@ public class PVSearch implements AI {
 //                    e.printStackTrace();
 //                }
 
-                        PVLine line = null;
                 int depth = 1;
                 long prevTime = System.currentTimeMillis();
                 long prevNode = 1;
                 double branchingFactor = 1;
                 double expectedTime = 0;
                 while (System.currentTimeMillis() - time + expectedTime < limit) {
-                    line = iteration(depth++, line);
+                    pvLine = iteration(depth++, pvLine);
                     long iterationTime = System.currentTimeMillis() - prevTime;
                     prevTime = System.currentTimeMillis();
 
@@ -471,9 +471,8 @@ public class PVSearch implements AI {
                 //</editor-fold>
             }else{
                 //<editor-fold desc="depth limited iterative deepening">
-                PVLine line = null;
                 for (int i = 1; i <= limit; i++) {
-                    line = iteration(i, line);
+                    pvLine = iteration(i, pvLine);
                 }
                 //</editor-fold>
             }
@@ -484,7 +483,11 @@ public class PVSearch implements AI {
         //<editor-fold desc="search overview">
         searchOverview.setDepth(this._depth);
         searchOverview.setTotalTime((int)(System.currentTimeMillis()-time));
-        if(print_overview) searchOverview.printTotalSummary();
+        if(print_overview){
+            for(Move m:pvLine.getLine()){
+                System.out.println(IO.algebraicNotation(board, m));
+            }
+        }
         //</editor-fold>
 
         return _bestMove;
@@ -599,9 +602,7 @@ public class PVSearch implements AI {
             PVLine pLine,
             PVLine lastIteration) {
         _visitedNodes++;
-
         double origonalAlpha = alpha;
-
         //<editor-fold desc="Transposition lookup">
         //long zobrist = ((SlowBoard) _board).oldZobrist();
         long zobrist = _board.zobrist();
@@ -621,38 +622,32 @@ public class PVSearch implements AI {
             }
         }
         //</editor-fold>
-
         //<editor-fold desc="zugzwang">
         List<Move> allMoves =
                 use_move_lists ?
-                currentDepth <= 1 ? _board.getLegalMoves(_buffer.get(currentDepth)) : _board.getPseudoLegalMoves(_buffer.get(currentDepth)):
+                        currentDepth <= 1 ? _board.getLegalMoves(_buffer.get(currentDepth)) : _board.getPseudoLegalMoves(_buffer.get(currentDepth)) :
                         currentDepth <= 1 ? _board.getLegalMoves() : _board.getPseudoLegalMoves();
-
-
         //allMoves will be empty if its checkmate and contain a null move if its a stalemate!
         boolean zugzwang = false;
-        if(allMoves.size() <= 1){
-            if(allMoves.size() == 0){
+        if (allMoves.size() <= 1) {
+            if (allMoves.size() == 0) {
                 return -LateGameEvaluator.INFTY;
             }
-            if (allMoves.get(0).getIsNull()){
+            if (allMoves.get(0).getIsNull()) {
                 return 0;  //stalemate
             }
             zugzwang = true;
         }
         //</editor-fold>
-
         //<editor-fold desc="QSearch">
         if (depthLeft <= 0 || allMoves.size() == 0 || _board.isGameOver()) {
-            return Quiesce(alpha, beta, currentDepth + 1,quiesce_depth);
+            return Quiesce(alpha, beta, currentDepth + 1, quiesce_depth);
         }
         //</editor-fold>
-
         PVLine line = new PVLine(_depth - currentDepth);
-
         //<editor-fold desc="Null moves">
         double score = Double.NEGATIVE_INFINITY;
-        if(use_null_moves && !zugzwang){
+        if (use_null_moves && !zugzwang) {
             Move nullMove = new Move();
             _board.move(nullMove);
             score = -pvSearch(
@@ -670,32 +665,26 @@ public class PVSearch implements AI {
             }
         }
         //</editor-fold>
-
         //<editor-fold desc="move-ordering">
         orderer.sort(allMoves, currentDepth, lastIteration, _board, pv, _killerTable, _transpositionTable);
         //</editor-fold>
-
         //<editor-fold desc="Searching">
         boolean bSearchPv = true;
         Move bestMove = allMoves.get(0);
         double bestSoFar = Double.NEGATIVE_INFINITY;
-        for(int index = 0; index < allMoves.size(); index++){
+        for (int index = 0; index < allMoves.size(); index++) {
             Move m = allMoves.get(index);
-
             //<editor-fold desc="Debugging check">
-            long prevMeta = ((SlowBoard)_board).getBoard_meta_information();
+            long prevMeta = ((SlowBoard) _board).getBoard_meta_information();
             long security = _board.zobrist();
             //</editor-fold>
-
             _board.move(m);
-
             //<editor-fold desc="LMR">
             int to_reduce = 0;
             if (use_LMR && reducer != null) {
                 to_reduce = reducer.reduce(m, currentDepth, depthLeft, index, pv);
             }
             //</editor-fold>
-
             //<editor-fold desc="recursion">
             if (bSearchPv) {
                 //<editor-fold desc="pv node search">
@@ -733,44 +722,35 @@ public class PVSearch implements AI {
                 //</editor-fold>
             }
             //</editor-fold>
-
             _board.undoMove();
-
-
             //<editor-fold desc="Debugging check">
             //Some security checks. if this exception is thrown, the move generation has a bug!
-            if(security != _board.zobrist() || ((SlowBoard) _board).getBoard_meta_information() != prevMeta){
-                System.out.println(security + "  "  + _board.zobrist());
+            if (security != _board.zobrist() || ((SlowBoard) _board).getBoard_meta_information() != prevMeta) {
+                System.out.println(security + "  " + _board.zobrist());
                 System.out.println(prevMeta + "  " + ((SlowBoard) _board).getBoard_meta_information());
                 System.out.println(m);
                 System.out.println(zobrist);
                 System.out.println(_board);
                 throw new RuntimeException();
             }
-
             //</editor-fold>
-
             //<editor-fold desc="beta cutoff">
             if (score >= beta) {
-                if (_killerTable != null && m.getPieceTo() == 0){
+                if (_killerTable != null && m.getPieceTo() == 0) {
                     _killerTable.put(currentDepth, m.copy());
                 }
                 transpositionPlacement(zobrist, currentDepth, depthLeft, beta, TranspositionEntry.CUT_NODE, m);
                 return beta;
             }
             //</editor-fold>
-
             //<editor-fold desc="killer node">
-
             if (score > bestSoFar) {
                 bestSoFar = score;
                 bestMove = m.copy();
             }
-
             if (score > alpha) {
                 alpha = score;
                 bestMove = m.copy();
-
                 pLine.getLine()[0] = bestMove;
                 for (int i = 0; i < line.getMovesInLine(); i++) {
                     pLine.getLine()[i + 1] = line.getLine()[i];
@@ -780,20 +760,16 @@ public class PVSearch implements AI {
                     _bestScore = score;
                     _bestMove = m;
                 }
-
                 bSearchPv = false;
             }
             //</editor-fold>
         }
         //</editor-fold>
-
         if (score > origonalAlpha) {
             transpositionPlacement(zobrist, currentDepth, depthLeft, alpha, TranspositionEntry.PV_NODE, bestMove);
         } else {
-            transpositionPlacement(zobrist, currentDepth, depthLeft,alpha, TranspositionEntry.ALL_NODE, bestMove);
+            transpositionPlacement(zobrist, currentDepth, depthLeft, alpha, TranspositionEntry.ALL_NODE, bestMove);
         }
-
-
         return alpha;
     }
 

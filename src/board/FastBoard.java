@@ -258,7 +258,7 @@ public class FastBoard extends Board<FastBoard> {
         int index;
         for (int i = 0; i < white_pieces[2].size(); i++) {
             index = white_pieces[2].get(i);
-            long attacks = BitBoard.KNIGHT_TABLE[index] & ~occupied[0];
+            long attacks = BitBoard.KNIGHT_ATTACKS[index] & ~occupied[0];
             while(attacks != 0){
                 //moves.add(new Move(index, BitBoard.bitscanForward(attacks), 1,0));
                 BitBoard.bitscanForward(attacks);

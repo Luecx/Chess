@@ -1,55 +1,29 @@
 package board.bitboards;
 
+import java.util.HashSet;
 import java.util.Random;
+import java.util.Set;
 
 public class SlidingPieceBuffer {
 
-    private long attack;
+    private long mask;
     private long magic;
-    private long offset;
+    private int offset;
 
-    public SlidingPieceBuffer(long attack, long magic, long offset) {
-        this.attack = attack;
+
+    public SlidingPieceBuffer(long mask, long magic, int offset) {
+        this.mask = mask;
         this.magic = magic;
         this.offset = offset;
     }
 
-    public void generateMagic() {
-        Random r = new Random();
 
-
-        long magic;
-        while(true){
-            magic = r.nextLong();
-            for(int i = 0; i < Math.pow(2, offset); i++){
-                long occ = fillAttackWithSample(attack, i);
-                long key = occ;
-                //TODO
-            }
-        }
+    public long getMask() {
+        return mask;
     }
 
-    private static long fillAttackWithSample(long attack, int index){
-        long res = 0;
-        int i = 0;
-
-        while(attack != 0){
-            int bit = BitBoard.bitscanForward(attack);
-            if(BitBoard.getBit(index, i))
-                res = BitBoard.setBit(res, bit);
-            attack = BitBoard.lsbIsolation(attack);
-            index ++;
-        }
-
-        return res;
-    }
-
-    public long getAttack() {
-        return attack;
-    }
-
-    public void setAttack(long attack) {
-        this.attack = attack;
+    public void setMask(long mask) {
+        this.mask = mask;
     }
 
     public long getMagic() {
@@ -60,11 +34,11 @@ public class SlidingPieceBuffer {
         this.magic = magic;
     }
 
-    public long getOffset() {
+    public int getOffset() {
         return offset;
     }
 
-    public void setOffset(long offset) {
+    public void setOffset(int offset) {
         this.offset = offset;
     }
 }

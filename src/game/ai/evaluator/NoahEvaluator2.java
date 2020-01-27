@@ -175,8 +175,8 @@ public class NoahEvaluator2 extends GeneticEvaluator<NoahEvaluator2> implements 
     private double PARAMATER_ISOLATED_PAWN      = -25;
     private double PARAMATER_DOUBLED_PAWN       = -35;
     private double PARAMATER_DOUBLE_BISHOP      = 50;
-    private double PARAMETER_KING_SAFETY_1      = 15;
-    private double PARAMETER_KING_SAFETY_2      = 10;
+    private double PARAMETER_KING_SAFETY_1      = 30;
+    private double PARAMETER_KING_SAFETY_2      = 35;
     private double PARAMETER_ROOK_HALF_OPEN     = 10;
     private double PARAMETER_ROOK_OPEN          = 25;
     private double PARAMETER_CONNECTED_PAWN     = 18;

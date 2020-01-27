@@ -49,7 +49,12 @@ public class MCTS<T extends NodeData> implements AI {
 
     public Node<T> run(Node<T> root, int times){
         this.root = root;
+        int p = 0;
         for(int i = 0; i < times; i++){
+            if((int)((double)i / times * 100) > p){
+                p = (int)((double)i / times * 100);
+                System.out.print("\r"+p+" %");
+            }
             iteration();
         }
         Node<T> best = root.getChilds().get(0);
@@ -154,9 +159,9 @@ public class MCTS<T extends NodeData> implements AI {
 
     @Override
     public Move bestMove(Board board) {
-        this.maxDepth = 6;
-        Node<ChessNodeData> node =  this.run(new Node(new ChessNodeData(board, null),0),50000);
-        System.out.println(this.toString(1));
+        this.maxDepth = 3;
+        Node<ChessNodeData> node =  this.run(new Node(new ChessNodeData(board, null),0),10000);
+        System.out.println(this.toString(2));
         return node.getNodeData().getMove();
     }
 }
