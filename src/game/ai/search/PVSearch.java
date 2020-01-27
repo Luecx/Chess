@@ -483,11 +483,11 @@ public class PVSearch implements AI {
         //<editor-fold desc="search overview">
         searchOverview.setDepth(this._depth);
         searchOverview.setTotalTime((int)(System.currentTimeMillis()-time));
-        if(print_overview){
-            for(Move m:pvLine.getLine()){
-                System.out.println(IO.algebraicNotation(board, m));
-            }
-        }
+//        if(print_overview){
+//            for(Move m:pvLine.getLine()){
+//                System.out.println(IO.algebraicNotation(board, m));
+//            }
+//        }
         //</editor-fold>
 
         return _bestMove;

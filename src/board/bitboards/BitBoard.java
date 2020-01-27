@@ -148,7 +148,8 @@ public class BitBoard {
     public static final SlidingPieceBuffer[]        ROOK_BUFFER     = new SlidingPieceBuffer[64];
     public static final SlidingPieceBuffer[]        BISHOP_BUFFER   = new SlidingPieceBuffer[64];
 
-    static {
+
+    public static void generateData() {
         generateBuffers();
         if(VALIDATE_MAGICS && !validateMagics())
             System.out.println("[Error] The magic numbers can not be used.");
@@ -613,6 +614,8 @@ public class BitBoard {
 //        long mg = 0x0080081000200080L;
 //        long relOcc = ROOK_BUFFER[2].getMask();
 //        int offset = ROOK_BUFFER[2].getOffset();
+
+        generateData();
 
         long occupied = 0x1238912312893121L;
         BitBoard.printBitmap(occupied);
