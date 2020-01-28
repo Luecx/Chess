@@ -53,7 +53,7 @@ public class PieceList {
     public void remove(int position){
         for(int i = 0; i < this.size; i++){
             if(this.indices[i] == position){
-                this.indices[i] = this.indices[size];
+                this.indices[i] = this.indices[size-1];
                 size--;
                 return;
             }

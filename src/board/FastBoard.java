@@ -248,7 +248,7 @@ public class FastBoard extends Board<FastBoard> {
 
         for (int i = 0; i < pieces[1].size(); i++) {
             index = pieces[1].get(i);
-            long attacks = BitBoard.lookUpRookAttack(i, occupied) & ~team;
+            long attacks = BitBoard.lookUpRookAttack(index, occupied) & ~team;
             while(attacks != 0){
                 int to = BitBoard.bitscanForward(attacks);
                 moves.add(index, to, 2*color,indexBoard[to]);
@@ -268,7 +268,7 @@ public class FastBoard extends Board<FastBoard> {
 
         for (int i = 0; i < pieces[3].size(); i++){
             index = pieces[3].get(i);
-            long attacks = BitBoard.lookUpBishopAttack(i, occupied) & ~team;
+            long attacks = BitBoard.lookUpBishopAttack(index, occupied) & ~team;
             while(attacks != 0){
                 int to = BitBoard.bitscanForward(attacks);
                 moves.add(index, to, 4*color,indexBoard[to]);
@@ -303,6 +303,34 @@ public class FastBoard extends Board<FastBoard> {
         }
     }
 
+    private void getPseudoLegalMovesWhitePawns(MoveList moves) {
+        long rightAttacks = BitBoard.shiftSouthWest(team_total[1]) & this.white_values[0];
+        while (rightAttacks != 0) {
+            int from = BitBoard.bitscanForward(rightAttacks);
+            moves.add(from, from + 9, 1, indexBoard[from + 9]);
+            rightAttacks = BitBoard.lsbReset(rightAttacks);
+        }
+        long leftAttacks = BitBoard.shiftSouthEast(team_total[1]) & this.white_values[0];
+        while (leftAttacks != 0) {
+            int from = BitBoard.bitscanForward(leftAttacks);
+            moves.add(from, from + 7, 1, indexBoard[from + 7]);
+            leftAttacks = BitBoard.lsbReset(leftAttacks);
+        }
+        long advance1 = BitBoard.shiftNorth(white_values[0]) & ~occupied;
+        long attacks = advance1;
+        while (attacks != 0) {
+            int to = BitBoard.bitscanForward(attacks);
+            moves.add(to-8, to, 1, indexBoard[to]);
+            attacks = BitBoard.lsbReset(attacks);
+        }
+
+        long advance2 = BitBoard.shiftNorth(advance1) & ~occupied & BitBoard.rank_4;
+        while (advance2 != 0) {
+            int to = BitBoard.bitscanForward(advance2);
+            moves.add(to-16, to, 1, indexBoard[to]);
+            advance2 = BitBoard.lsbReset(advance2);
+        }
+    }
 
 
     public List<Move> getPseudoLegalMoves() {
@@ -312,7 +340,10 @@ public class FastBoard extends Board<FastBoard> {
     @Override
     public MoveList getPseudoLegalMoves(MoveList list) {
         list.clear();
-        if(getActivePlayer() == 1) getPseudoLegalMoves(1 ,white_pieces, team_total[0], list);
+        if(getActivePlayer() == 1) {
+            getPseudoLegalMoves(1 ,white_pieces, team_total[0], list);
+            getPseudoLegalMovesWhitePawns(list);
+        }
         if(getActivePlayer() ==-1) getPseudoLegalMoves(-1,black_pieces, team_total[1], list);
         return list;
     }
@@ -343,19 +374,19 @@ public class FastBoard extends Board<FastBoard> {
     }
 
     public static void main(String[] args) {
-        FastBoard board = new FastBoard(Setup.NO_PAWNS);
-        //System.out.println(board);
-        //new Frame(board, new Player(){}, new Player(){});
+        FastBoard board = new FastBoard(Setup.DEFAULT);
 
+        MoveList ml = new MoveList(70);
 
-        long time = System.currentTimeMillis();
-            MoveList moves = new MoveList(80);
-
+        long t = System.currentTimeMillis();
         for(int i = 0; i < 1E7; i++){
-            board.getPseudoLegalMoves(moves);
+            board.getPseudoLegalMoves(ml);
         }
+        System.out.println(System.currentTimeMillis()-t);
 
-        System.out.print(System.currentTimeMillis()-time);
+
+        //System.out.println(board);
+        new Frame(board, new Player(){}, new Player(){});
 
     }
 }
