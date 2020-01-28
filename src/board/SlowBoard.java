@@ -854,7 +854,7 @@ public class SlowBoard extends Board<SlowBoard> {
 
 
     public static void main(String[] args) {
-        SlowBoard b = new SlowBoard(Setup.DEFAULT);
+        FastBoard b = new FastBoard(Setup.DEFAULT);
 
         b = IO.read_FEN(b,"r1bq1rk1/ppp1bppp/4p3/n2pP3/3P3P/2PBBN2/P1P2PP1/1R1QK2R b Kq - 0 1");
 //        //b = IO.read_FEN(b,"8/8/8/8/5q2/5k2/8/4K3_w_-_-_0_1");

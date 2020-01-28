@@ -197,6 +197,9 @@ public class FastBoard extends Board<FastBoard> {
 
     @Override
     public void undoMove() {
+
+        if(this.moveHistory.size() == 0) return;
+
         this.undoMoveSimpleMove();
         this.changeActivePlayer();
         this.update_longs();
@@ -304,19 +307,19 @@ public class FastBoard extends Board<FastBoard> {
     }
 
     private void getPseudoLegalMovesWhitePawns(MoveList moves) {
-        long rightAttacks = BitBoard.shiftSouthWest(team_total[1]) & this.white_values[0];
+        long rightAttacks = BitBoard.shiftSouthWest(team_total[1]) & this.white_values[0] & ~BitBoard.rank_8;
         while (rightAttacks != 0) {
             int from = BitBoard.bitscanForward(rightAttacks);
             moves.add(from, from + 9, 1, indexBoard[from + 9]);
             rightAttacks = BitBoard.lsbReset(rightAttacks);
         }
-        long leftAttacks = BitBoard.shiftSouthEast(team_total[1]) & this.white_values[0];
+        long leftAttacks = BitBoard.shiftSouthEast(team_total[1]) & this.white_values[0] & ~BitBoard.rank_8;
         while (leftAttacks != 0) {
             int from = BitBoard.bitscanForward(leftAttacks);
             moves.add(from, from + 7, 1, indexBoard[from + 7]);
             leftAttacks = BitBoard.lsbReset(leftAttacks);
         }
-        long advance1 = BitBoard.shiftNorth(white_values[0]) & ~occupied;
+        long advance1 = BitBoard.shiftNorth(white_values[0]) & ~occupied & ~BitBoard.rank_8;
         long attacks = advance1;
         while (attacks != 0) {
             int to = BitBoard.bitscanForward(attacks);
@@ -333,23 +336,27 @@ public class FastBoard extends Board<FastBoard> {
     }
 
     private void getPseudoLegalMovesBlackPawns(MoveList moves) {
-        long rightAttacks = BitBoard.shiftNorthWest(team_total[0]) & this.black_values[0];
+        long rightAttacks = BitBoard.shiftNorthWest(team_total[0]) & this.black_values[0] & ~BitBoard.rank_1;
         while (rightAttacks != 0) {
             int from = BitBoard.bitscanForward(rightAttacks);
-            moves.add(from, from + 9, -1, indexBoard[from + 9]);
+            try{
+
+                moves.add(from, from + 9, -1, indexBoard[from + 9]);
+            }catch (Exception e){
+                System.out.println(this);
+                System.exit(-1);
+            }
             rightAttacks = BitBoard.lsbReset(rightAttacks);
         }
-        long leftAttacks = BitBoard.shiftSouthEast(team_total[0]) & this.black_values[0];
+        long leftAttacks = BitBoard.shiftSouthEast(team_total[0]) & this.black_values[0] & ~BitBoard.rank_1;
         while (leftAttacks != 0) {
             int from = BitBoard.bitscanForward(leftAttacks);
             moves.add(from, from + 7, -1, indexBoard[from + 7]);
             leftAttacks = BitBoard.lsbReset(leftAttacks);
         }
-        long advance1 = BitBoard.shiftSouth(black_values[0]) & ~occupied;
+        long advance1 = BitBoard.shiftSouth(black_values[0]) & ~occupied & ~BitBoard.rank_1;
         long attacks = advance1;
 
-
-        BitBoard.printBitmap(attacks);
 
         while (attacks != 0) {
             int to = BitBoard.bitscanForward(attacks);
@@ -372,15 +379,14 @@ public class FastBoard extends Board<FastBoard> {
 
     @Override
     public MoveList getPseudoLegalMoves(MoveList list) {
-        System.out.println(this.getActivePlayer());
         list.clear();
         if(getActivePlayer() == 1) {
             getPseudoLegalMoves(1 ,white_pieces, team_total[0], list);
-            getPseudoLegalMovesWhitePawns(list);
+            //getPseudoLegalMovesWhitePawns(list);
         }
         else if(getActivePlayer() ==-1) {
             getPseudoLegalMoves(-1,black_pieces, team_total[1], list);
-            getPseudoLegalMovesBlackPawns(list);
+            //getPseudoLegalMovesBlackPawns(list);
         }
         return list;
     }
@@ -397,12 +403,12 @@ public class FastBoard extends Board<FastBoard> {
 
     @Override
     public List<Move> getCaptureMoves() {
-        return null;
+        return getPseudoLegalMoves();
     }
 
     @Override
     public List<Move> getCaptureMoves(MoveList list) {
-        return null;
+        return getPseudoLegalMoves(list);
     }
 
     @Override

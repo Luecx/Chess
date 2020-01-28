@@ -675,8 +675,8 @@ public class PVSearch implements AI {
         for (int index = 0; index < allMoves.size(); index++) {
             Move m = allMoves.get(index);
             //<editor-fold desc="Debugging check">
-            long prevMeta = ((SlowBoard) _board).getBoard_meta_information();
-            long security = _board.zobrist();
+            //long prevMeta = ((SlowBoard) _board).getBoard_meta_information();
+//            long security = _board.zobrist();
             //</editor-fold>
             _board.move(m);
             //<editor-fold desc="LMR">
@@ -725,14 +725,14 @@ public class PVSearch implements AI {
             _board.undoMove();
             //<editor-fold desc="Debugging check">
             //Some security checks. if this exception is thrown, the move generation has a bug!
-            if (security != _board.zobrist() || ((SlowBoard) _board).getBoard_meta_information() != prevMeta) {
-                System.out.println(security + "  " + _board.zobrist());
-                System.out.println(prevMeta + "  " + ((SlowBoard) _board).getBoard_meta_information());
-                System.out.println(m);
-                System.out.println(zobrist);
-                System.out.println(_board);
-                throw new RuntimeException();
-            }
+//            if (security != _board.zobrist() || ((SlowBoard) _board).getBoard_meta_information() != prevMeta) {
+//                System.out.println(security + "  " + _board.zobrist());
+//                System.out.println(prevMeta + "  " + ((SlowBoard) _board).getBoard_meta_information());
+//                System.out.println(m);
+//                System.out.println(zobrist);
+//                System.out.println(_board);
+//                throw new RuntimeException();
+//            }
             //</editor-fold>
             //<editor-fold desc="beta cutoff">
             if (score >= beta) {
