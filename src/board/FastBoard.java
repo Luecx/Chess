@@ -332,6 +332,39 @@ public class FastBoard extends Board<FastBoard> {
         }
     }
 
+    private void getPseudoLegalMovesBlackPawns(MoveList moves) {
+        long rightAttacks = BitBoard.shiftNorthWest(team_total[0]) & this.black_values[0];
+        while (rightAttacks != 0) {
+            int from = BitBoard.bitscanForward(rightAttacks);
+            moves.add(from, from + 9, -1, indexBoard[from + 9]);
+            rightAttacks = BitBoard.lsbReset(rightAttacks);
+        }
+        long leftAttacks = BitBoard.shiftSouthEast(team_total[0]) & this.black_values[0];
+        while (leftAttacks != 0) {
+            int from = BitBoard.bitscanForward(leftAttacks);
+            moves.add(from, from + 7, -1, indexBoard[from + 7]);
+            leftAttacks = BitBoard.lsbReset(leftAttacks);
+        }
+        long advance1 = BitBoard.shiftSouth(black_values[0]) & ~occupied;
+        long attacks = advance1;
+
+
+        BitBoard.printBitmap(attacks);
+
+        while (attacks != 0) {
+            int to = BitBoard.bitscanForward(attacks);
+            moves.add(to+8, to, -1, indexBoard[to]);
+            attacks = BitBoard.lsbReset(attacks);
+        }
+
+        long advance2 = BitBoard.shiftSouth(advance1) & ~occupied & BitBoard.rank_5;
+        while (advance2 != 0) {
+            int to = BitBoard.bitscanForward(advance2);
+            moves.add(to+16, to, -1, indexBoard[to]);
+            advance2 = BitBoard.lsbReset(advance2);
+        }
+    }
+
 
     public List<Move> getPseudoLegalMoves() {
         return getPseudoLegalMoves(new MoveList(50));
@@ -339,12 +372,16 @@ public class FastBoard extends Board<FastBoard> {
 
     @Override
     public MoveList getPseudoLegalMoves(MoveList list) {
+        System.out.println(this.getActivePlayer());
         list.clear();
         if(getActivePlayer() == 1) {
             getPseudoLegalMoves(1 ,white_pieces, team_total[0], list);
             getPseudoLegalMovesWhitePawns(list);
         }
-        if(getActivePlayer() ==-1) getPseudoLegalMoves(-1,black_pieces, team_total[1], list);
+        else if(getActivePlayer() ==-1) {
+            getPseudoLegalMoves(-1,black_pieces, team_total[1], list);
+            getPseudoLegalMovesBlackPawns(list);
+        }
         return list;
     }
 
@@ -378,11 +415,11 @@ public class FastBoard extends Board<FastBoard> {
 
         MoveList ml = new MoveList(70);
 
-        long t = System.currentTimeMillis();
-        for(int i = 0; i < 1E7; i++){
-            board.getPseudoLegalMoves(ml);
-        }
-        System.out.println(System.currentTimeMillis()-t);
+//        long t = System.currentTimeMillis();
+//        for(int i = 0; i < 1E7; i++){
+//            board.getPseudoLegalMoves(ml);
+//        }
+//        System.out.println(System.currentTimeMillis()-t);
 
 
         //System.out.println(board);

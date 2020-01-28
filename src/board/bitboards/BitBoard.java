@@ -36,13 +36,13 @@ public class BitBoard {
     public static final long rank_8                                 = rank_1 << 56;
 
     public static final long anti_diagonal_7                        = 0x102040810204080L;
-    public static final long anti_diagonal_6                        = shiftNorth(anti_diagonal_7);
-    public static final long anti_diagonal_5                        = shiftNorth(anti_diagonal_6);
-    public static final long anti_diagonal_4                        = shiftNorth(anti_diagonal_5);
-    public static final long anti_diagonal_3                        = shiftNorth(anti_diagonal_4);
-    public static final long anti_diagonal_2                        = shiftNorth(anti_diagonal_3);
-    public static final long anti_diagonal_1                        = shiftNorth(anti_diagonal_2);
-    public static final long anti_diagonal_0                        = shiftNorth(anti_diagonal_1);
+    public static final long anti_diagonal_6                        = shiftSouth(anti_diagonal_7);
+    public static final long anti_diagonal_5                        = shiftSouth(anti_diagonal_6);
+    public static final long anti_diagonal_4                        = shiftSouth(anti_diagonal_5);
+    public static final long anti_diagonal_3                        = shiftSouth(anti_diagonal_4);
+    public static final long anti_diagonal_2                        = shiftSouth(anti_diagonal_3);
+    public static final long anti_diagonal_1                        = shiftSouth(anti_diagonal_2);
+    public static final long anti_diagonal_0                        = shiftSouth(anti_diagonal_1);
 
     public static final long anti_diagonal_8                        = shiftNorth(anti_diagonal_7);
     public static final long anti_diagonal_9                        = shiftNorth(anti_diagonal_8);
@@ -96,19 +96,19 @@ public class BitBoard {
 
 
     public static final long[] bishopRelevantOccupancy = new long[] {
-            0x0040201008040200L, 0x0000402010080400L, 0x0040004020100800L, 0x0020400040201000L,
-            0x0010204000402000L, 0x0008102040004000L, 0x0004081020400000L, 0x0002040810204000L,
-            0x0020100804020000L, 0x0040201008040000L, 0x0020402010080000L, 0x0010204020100000L,
-            0x0008102040200000L, 0x0004081020400000L, 0x0002040810200000L, 0x0004081020400000L,
-            0x0050080402000000L, 0x0020500804000000L, 0x0050205008000200L, 0x0008502050000400L,
-            0x0004085020400800L, 0x0002040850005000L, 0x0004081020002000L, 0x0008102040004000L,
-            0x0028440200000000L, 0x0010284400000000L, 0x0028102840020000L, 0x0044281020440200L,
+            0x0040201008040200L, 0x0000402010080400L, 0x0000004020100a00L, 0x0000000040221400L,
+            0x0000000002442800L, 0x0000000204085000L, 0x0000020408102000L, 0x0002040810204000L,
+            0x0020100804020000L, 0x0040201008040000L, 0x00004020100a0000L, 0x0000004022140000L,
+            0x0000000244280000L, 0x0000020408500000L, 0x0002040810200000L, 0x0004081020400000L,
+            0x0010080402000200L, 0x0020100804000400L, 0x004020100a000a00L, 0x0000402214001400L,
+            0x0000024428002800L, 0x0002040850005000L, 0x0004081020002000L, 0x0008102040004000L,
+            0x0008040200020400L, 0x0010080400040800L, 0x0020100a000a1000L, 0x0040221400142200L,
             0x0002442800284400L, 0x0004085000500800L, 0x0008102000201000L, 0x0010204000402000L,
-            0x0014224000000000L, 0x0008142040000000L, 0x0014081022400000L, 0x0022140014224000L,
+            0x0004020002040800L, 0x0008040004081000L, 0x00100a000a102000L, 0x0022140014224000L,
             0x0044280028440200L, 0x0008500050080400L, 0x0010200020100800L, 0x0020400040201000L,
-            0x000a102040000000L, 0x0004081020400000L, 0x000a000a10204000L, 0x0014001422400000L,
+            0x0002000204081000L, 0x0004000408102000L, 0x000a000a10204000L, 0x0014001422400000L,
             0x0028002844020000L, 0x0050005008040200L, 0x0020002010080400L, 0x0040004020100800L,
-            0x0004081020400000L, 0x0000040810204000L, 0x00000a1020400000L, 0x0000142240000000L,
+            0x0000020408102000L, 0x0000040810204000L, 0x00000a1020400000L, 0x0000142240000000L,
             0x0000284402000000L, 0x0000500804020000L, 0x0000201008040200L, 0x0000402010080400L,
             0x0002040810204000L, 0x0004081020400000L, 0x000a102040000000L, 0x0014224000000000L,
             0x0028440200000000L, 0x0050080402000000L, 0x0020100804020000L, 0x0040201008040200L
@@ -156,22 +156,23 @@ public class BitBoard {
     };
 
     public static final long[] bishopMagics = new long[]{
-            0xa00c50a401440040L, 0x0060120204450000L, 0x4150660228400014L, 0xc004218020108000L,
-            0xc004218020108000L, 0x0164200041003210L, 0x0800004011000000L, 0x0002840280900800L,
-            0x00a8449006020410L, 0x0000101081850044L, 0x0050100402b18048L, 0x4150660228400014L,
-            0x4010008031020009L, 0xc004218020108000L, 0x0c80040401281800L, 0x4100920090880880L,
-            0x8000009202020400L, 0xf041000204040081L, 0x0c214c0802008010L, 0x0c214c0802008010L,
-            0x00c0400181800001L, 0x8000202201900800L, 0x08a3008044100400L, 0xd00a4020240c4400L,
-            0x000062a010320801L, 0xd00a4020240c4400L, 0x0c214c0802008010L, 0x019108000260b004L,
-            0x1810040000806104L, 0x0208060009608401L, 0x0004040800908405L, 0x80060a0080210108L,
-            0xd00a4020240c4400L, 0x0820100020200430L, 0x000062a010320801L, 0x0010a01800210114L,
-            0x2008020c00001010L, 0x0a08010810010040L, 0x0410028511018410L, 0x0004108060829401L,
-            0x0010020900015100L, 0x0010020900015100L, 0x0002020201000200L, 0x8100420122003404L,
-            0x0002401814402600L, 0x0164200041003210L, 0x00f2040904040a31L, 0x00050404148000c0L,
-            0x0800004011000000L, 0x0ba300c210040c00L, 0x20c0810048122001L, 0x1442000084040048L,
-            0x8000009202020400L, 0x0208842408021202L, 0x042004010a0c0024L, 0x0060120204450000L,
-            0x0002840280900800L, 0x4100920090880880L, 0x2408100201042908L, 0x200a002000840400L,
-            0x0004000010020200L, 0x0000c04204482182L, 0x00a8449006020410L, 0xa00c50a401440040L,
+            0x0002020202020200L, 0x0002020202020000L, 0x0004010202000000L, 0x0004040080000000L,
+            0x0001104000000000L, 0x0000821040000000L, 0x0000410410400000L, 0x0000104104104000L,
+            0x0000040404040400L, 0x0000020202020200L, 0x0000040102020000L, 0x0000040400800000L,
+            0x0000011040000000L, 0x0000008210400000L, 0x0000004104104000L, 0x0000002082082000L,
+            0x0004000808080800L, 0x0002000404040400L, 0x0001000202020200L, 0x0000800802004000L,
+            0x0000800400A00000L, 0x0000200100884000L, 0x0000400082082000L, 0x0000200041041000L,
+            0x0002080010101000L, 0x0001040008080800L, 0x0000208004010400L, 0x0000404004010200L,
+            0x0000840000802000L, 0x0000404002011000L, 0x0000808001041000L, 0x0000404000820800L,
+            0x0001041000202000L, 0x0000820800101000L, 0x0000104400080800L, 0x0000020080080080L,
+            0x0000404040040100L, 0x0000808100020100L, 0x0001010100020800L, 0x0000808080010400L,
+            0x0000820820004000L, 0x0000410410002000L, 0x0000082088001000L, 0x0000002011000800L,
+            0x0000080100400400L, 0x0001010101000200L, 0x0002020202000400L, 0x0001010101000200L,
+            0x0000410410400000L, 0x0000208208200000L, 0x0000002084100000L, 0x0000000020880000L,
+            0x0000001002020000L, 0x0000040408020000L, 0x0004040404040000L, 0x0002020202020000L,
+            0x0000104104104000L, 0x0000002082082000L, 0x0000000020841000L, 0x0000000000208800L,
+            0x0000000010020200L, 0x0000000404080200L, 0x0000040404040400L, 0x0002020202020200L
+
     };
     public static final long[] rookMagics = new long[]{
             0x0080001020400080L, 0x0040001000200040L, 0x0080081000200080L, 0x0080040800100080L,
@@ -190,7 +191,6 @@ public class BitBoard {
             0x0000040008008080L, 0x0000020004008080L, 0x0000800100020080L, 0x0000800041000080L,
             0x00FFFCDDFCED714AL, 0x007FFCDDFCED714AL, 0x003FFFCDFFD88096L, 0x0000040810002101L,
             0x0001000204080011L, 0x0001000204000801L, 0x0001000082000401L, 0x0001FFFAABFAD1A2L
-
     };
 
 
@@ -303,7 +303,6 @@ public class BitBoard {
     public static boolean validateMagics() {
         boolean works = true;
         for(int i = 0; i < 64; i++){
-            System.out.println(i);
             if(!isValidMagic(ROOK_BUFFER[i].getMask(), ROOK_BUFFER[i].getShift(),
                     ROOK_BUFFER[i].getMagic(),i,false)) {
                 System.err.println("Error at: " + i);
@@ -395,7 +394,6 @@ public class BitBoard {
             for(int i = 0; i < 64; i++){
                 ByteBuffer bb = ByteBuffer.allocate(ROOK_ATTACKS[i].length * Long.BYTES);
                 bb.asLongBuffer().put(ROOK_ATTACKS[i]);
-                System.out.println(bb.capacity());
                 fos.write(bb.array());
                 bb = ByteBuffer.allocate(Long.BYTES);
                 bb.asLongBuffer().put(NEW_LINE);
@@ -535,7 +533,6 @@ public class BitBoard {
         SlidingPieceBuffer buff = ROOK_BUFFER[index];
         return ROOK_ATTACKS[index][(int)((occupied & buff.getMask()) *
                 buff.getMagic() >>> (buff.getShift()))];
-        //System.out.println("######################################");
         //return generateRookAttack(index, occupied);
     }
 
@@ -694,7 +691,6 @@ public class BitBoard {
         String s = Long.toBinaryString(number);
         for (int i = 7; i >= 0; i--) {
             for (int n = 0; n < 8; n++) {
-                //System.out.print(antiDiagonalIndex(squareIndex(i,n)) + " ");
                 System.out.print(getBit(number, squareIndex(i,n)) ? 1:0);
             }
             System.out.println();
@@ -898,35 +894,9 @@ public class BitBoard {
     }
 
     public static void main(String[] args) {
+        
 
-//        for(int i = 0; i < 9; i++){
-//            generateMagicRookNumber(i, 2000);
-//        }
-//        for(int i = 0; i < 64; i++){
-//            generateMagicBishopNumber(i, 2000);
-//        }
-        //generateKingAndRookAttacks();
-
-        //printBitmap(bishopRelevantOccupancy[0]);
-
-        int index = Integer.parseInt("111111000010",2);
-        BitBoard.printBitmap(rookRelevantOccupancy[63]);
-        BitBoard.printBitmap(BitBoard.populateMask(rookRelevantOccupancy[63], index));
-
-        long occup = BitBoard.populateMask(rookRelevantOccupancy[63], index);
-
-        BitBoard.printBitmap(BitBoard.lookUpRookAttack(63, occup));
-
-        //BitBoard.printBitmap(populateMask(rookRelevantOccupancy[]));
-        //writeAttackTables(SLIDING_ATTACKS_SOURCE);
-
-//        ByteBuffer bb = ByteBuffer.allocate(1 * Long.BYTES);
-//        bb.asLongBuffer().put(1123L);
-//        System.out.println(Arrays.toString(" ".getBytes()));
-
-//        printBitmap(123912938129L);
-//        printBitmap(lookUpBishopAttack(28, 123912938129L));
-//        printBitmap(generateBishopAttack(28,0L));
+        writeAttackTables(SLIDING_ATTACKS_SOURCE);
 
     }
 
