@@ -255,28 +255,28 @@ public class NoahEvaluator extends GeneticEvaluator<NoahEvaluator> implements Ev
                         break;
                     case 6: //king
                         //This is for king safety
-                        if (!board.isEndgame()) {
-                            for (int j = -1; j < 2; j++) {
-                                if (i+j <= -1 || i+j>=8 || n+1<= -1 || n+1 >=8) {
-                                    continue;
-                                }
-                                if (board.getPiece(i + j, n + 1) > 0) ev += PARAMETER_KING_SAFETY_1;
-                            }
-                            if (board.getPiece(i - 1, n) > 0) ev += PARAMETER_KING_SAFETY_2;
-                            if (board.getPiece(i + 1, n) > 0) ev += PARAMETER_KING_SAFETY_2;
-                        }
+//                        if (!board.isEndgame()) {
+//                            for (int j = -1; j < 2; j++) {
+//                                if (i+j <= -1 || i+j>=8 || n+1<= -1 || n+1 >=8) {
+//                                    continue;
+//                                }
+//                                if (board.getPiece(i + j, n + 1) > 0) ev += PARAMETER_KING_SAFETY_1;
+//                            }
+//                            if (board.getPiece(i - 1, n) > 0) ev += PARAMETER_KING_SAFETY_2;
+//                            if (board.getPiece(i + 1, n) > 0) ev += PARAMETER_KING_SAFETY_2;
+//                        }
                         break;
                     case -6:
-                        if (!board.isEndgame()) {
-                            for (int j = -1; j < 2; j++) {
-                                if (i+j <= -1 || i+j>=8 || n-1<= -1 || n-1 >=8) {
-                                    continue;
-                                }
-                                if (board.getPiece(i + j, n - 1) < 0) ev -= PARAMETER_KING_SAFETY_1;
-                            }
-                            if (board.getPiece(i - 1, n) < 0) ev -= PARAMETER_KING_SAFETY_2;
-                            if (board.getPiece(i + 1, n) < 0) ev -= PARAMETER_KING_SAFETY_2;
-                        }
+//                        if (!board.isEndgame()) {
+//                            for (int j = -1; j < 2; j++) {
+//                                if (i+j <= -1 || i+j>=8 || n-1<= -1 || n-1 >=8) {
+//                                    continue;
+//                                }
+//                                if (board.getPiece(i + j, n - 1) < 0) ev -= PARAMETER_KING_SAFETY_1;
+//                            }
+//                            if (board.getPiece(i - 1, n) < 0) ev -= PARAMETER_KING_SAFETY_2;
+//                            if (board.getPiece(i + 1, n) < 0) ev -= PARAMETER_KING_SAFETY_2;
+//                        }
                         break;
                 }
             }

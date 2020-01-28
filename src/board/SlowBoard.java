@@ -862,14 +862,19 @@ public class SlowBoard extends Board<SlowBoard> {
         PVSearch ai1 = new PVSearch(
                 new NoahEvaluator(),
                 new SystematicOrderer(),
-                new SenpaiReducer(50),
-                1,
-                5000,
-                10);
+                new SenpaiReducer(5),
+                2,
+                10,
+                0);
         ai1.setUse_killer_heuristic(true);
         ai1.setUse_null_moves(true);
         ai1.setUse_LMR(true);
         ai1.setUse_transposition(false);
+
+
+
+        //System.out.println(b);
+
 //        ai1.bestMove(b);
 //
 //

@@ -190,6 +190,13 @@ public class FastBoard extends Board<FastBoard> {
 
     @Override
     public void move(Move m) {
+
+//        if(m.getIsNull()){
+//            this.changeActivePlayer();
+//            this.moveHistory.add(m);
+//            return;
+//        }
+
         this.moveSimpleMove(m);
         this.changeActivePlayer();
         this.update_longs();
@@ -199,6 +206,13 @@ public class FastBoard extends Board<FastBoard> {
     public void undoMove() {
 
         if(this.moveHistory.size() == 0) return;
+
+        Move last = moveHistory.peek();
+        if(last.getIsNull()){
+            this.changeActivePlayer();
+            moveHistory.pop();
+            return;
+        }
 
         this.undoMoveSimpleMove();
         this.changeActivePlayer();
@@ -230,6 +244,7 @@ public class FastBoard extends Board<FastBoard> {
     public FastBoard copy() {
         FastBoard copy = new FastBoard();
         copy.occupied = occupied;
+        copy.indexBoard = Arrays.copyOf(indexBoard, 64);
         copy.team_total[0] = team_total[0];
         copy.team_total[1] = team_total[1];
         for (int i = 0; i < 6; i++) {
@@ -339,19 +354,13 @@ public class FastBoard extends Board<FastBoard> {
         long rightAttacks = BitBoard.shiftNorthWest(team_total[0]) & this.black_values[0] & ~BitBoard.rank_1;
         while (rightAttacks != 0) {
             int from = BitBoard.bitscanForward(rightAttacks);
-            try{
-
-                moves.add(from, from + 9, -1, indexBoard[from + 9]);
-            }catch (Exception e){
-                System.out.println(this);
-                System.exit(-1);
-            }
+            moves.add(from, from - 7, -1, indexBoard[from - 7]);
             rightAttacks = BitBoard.lsbReset(rightAttacks);
         }
-        long leftAttacks = BitBoard.shiftSouthEast(team_total[0]) & this.black_values[0] & ~BitBoard.rank_1;
+        long leftAttacks = BitBoard.shiftNorthEast(team_total[0]) & this.black_values[0] & ~BitBoard.rank_1;
         while (leftAttacks != 0) {
             int from = BitBoard.bitscanForward(leftAttacks);
-            moves.add(from, from + 7, -1, indexBoard[from + 7]);
+            moves.add(from, from - 9, -1, indexBoard[from - 9]);
             leftAttacks = BitBoard.lsbReset(leftAttacks);
         }
         long advance1 = BitBoard.shiftSouth(black_values[0]) & ~occupied & ~BitBoard.rank_1;
@@ -382,11 +391,11 @@ public class FastBoard extends Board<FastBoard> {
         list.clear();
         if(getActivePlayer() == 1) {
             getPseudoLegalMoves(1 ,white_pieces, team_total[0], list);
-            //getPseudoLegalMovesWhitePawns(list);
+            getPseudoLegalMovesWhitePawns(list);
         }
         else if(getActivePlayer() ==-1) {
             getPseudoLegalMoves(-1,black_pieces, team_total[1], list);
-            //getPseudoLegalMovesBlackPawns(list);
+            getPseudoLegalMovesBlackPawns(list);
         }
         return list;
     }

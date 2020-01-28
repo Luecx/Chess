@@ -42,6 +42,7 @@ public class PieceList {
     public PieceList copy() {
         PieceList copy = new PieceList(this.piece, this.size);
         copy.indices = Arrays.copyOf(this.indices, this.indices.length);
+        copy.size = this.size;
         return copy;
     }
 

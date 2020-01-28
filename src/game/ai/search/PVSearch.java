@@ -733,6 +733,7 @@ public class PVSearch implements AI {
 //                System.out.println(_board);
 //                throw new RuntimeException();
 //            }
+
             //</editor-fold>
             //<editor-fold desc="beta cutoff">
             if (score >= beta) {
