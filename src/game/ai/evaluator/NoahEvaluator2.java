@@ -1,191 +1,150 @@
 package game.ai.evaluator;
 
 import board.Board;
+import board.FastBoard;
+import board.bitboards.BitBoard;
+import board.pieces.PieceList;
+import game.ai.tools.tensor.Tensor;
+import game.ai.tools.tensor.Tensor1D;
 import game.ai.tools.tensor.Tensor2D;
 import game.ai.tools.tensor.Tensor3D;
 
+import static game.ai.evaluator.FinnEvaluator.flipTensor;
+
 public class NoahEvaluator2 extends GeneticEvaluator<NoahEvaluator2> implements Evaluator {
 
-    public static final Tensor2D B_PAWN_VALUES = new Tensor2D(new double[][]{
-            {0, 0, 0, 0, 0, 0, 0, 0},
-            {50, 50, 50, 50, 50, 50, 50, 50},
-            {10, 10, 20, 30, 30, 20, 10, 10},
-            {5, 5, 10, 25, 25, 10, 5, 5},
-            {0, 0, 0, 20, 20, 0, 0, 0},
-            {5, -5, -10, 0, 0, -10, -5, 5},
-            {5, 10, 10, -20, -20, 10, 10, 5},
-            {0, 0, 0, 0, 0, 0, 0, 0}
-    });
-    public static final Tensor2D W_PAWN_VALUES = new Tensor2D(new double[][]{
-            {0, 0, 0, 0, 0, 0, 0, 0},
-            {5, 10, 10, -20, -20, 10, 10, 5},
-            {5, -5, -10, 0, 0, -10, -5, 5},
-            {0, 0, 0, 20, 20, 0, 0, 0},
-            {5, 5, 10, 25, 25, 10, 5, 5},
-            {10, 10, 20, 30, 30, 20, 10, 10},
-            {50, 50, 50, 50, 50, 50, 50, 50},
-            {0, 0, 0, 0, 0, 0, 0, 0},
-    });
+    public static final Tensor1D PAWN_VALUES = new Tensor1D(new double[]{
+            0, 0, 0, 0, 0, 0, 0, 0,
+            50, 50, 50, 50, 50, 50, 50, 50,
+            10, 10, 20, 30, 30, 20, 10, 10,
+            5,  5, 10, 25, 25, 10,  5,  5,
+            0,  0,  0, 20, 20,  0,  0,  0,
+            5, -5,-10,  0,  0,-10, -5,  5,
+            5, 10, 10,-20,-20, 10, 10,  5,
+            0, 0, 0, 0, 0, 0, 0, 0});
 
-    public static final Tensor2D B_BISHOP_VALUES = new Tensor2D(new double[][]{
-            {-20, -10, -10, -10, -10, -10, -10, -20},
-            {-10, 0, 0, 0, 0, 0, 0, -10},
-            {-10, 0, 5, 10, 10, 5, 0, -10},
-            {-10, 5, 5, 10, 10, 5, 5, -10},
-            {-10, 0, 10, 10, 10, 10, 0, -10},
-            {-10, 10, 10, 10, 10, 10, 10, -10},
-            {-10, 5, 0, 0, 0, 0, 5, -10},
-            {-20, -10, -10, -10, -10, -10, -10, -20,},
+    public static final Tensor1D BISHOP_VALUES = new Tensor1D(new double[]{
+            -20, -10, -10, -10, -10, -10, -10, -20,
+            -10, 0, 0, 0, 0, 0, 0, -10,
+            -10, 0, 5, 10, 10, 5, 0, -10,
+            -10, 5, 5, 10, 10, 5, 5, -10,
+            -10, 0, 10, 10, 10, 10, 0, -10,
+            -10, 10, 10, 10, 10, 10, 10, -10,
+            -10, 5, 0, 0, 0, 0, 5, -10,
+            -20, -10, -10, -10, -10, -10, -10, -20,
     });
 
-    public static final Tensor2D W_BISHOP_VALUES = new Tensor2D(new double[][]{
-            {-20, -10, -10, -10, -10, -10, -10, -20,},
-            {-10, 5, 0, 0, 0, 0, 5, -10},
-            {-10, 10, 10, 10, 10, 10, 10, -10},
-            {-10, 0, 10, 10, 10, 10, 0, -10},
-            {-10, 5, 5, 10, 10, 5, 5, -10},
-            {-10, 0, 5, 10, 10, 5, 0, -10},
-            {-10, 0, 0, 0, 0, 0, 0, -10},
-            {-20, -10, -10, -10, -10, -10, -10, -20},
+    public static final Tensor1D ROOK_VALUES = new Tensor1D(new double[]{
+            0, 0, 0, 0, 0, 0, 0, 0,
+            5, 20, 20, 20, 20, 20, 20, 5,
+            -5, 0, 0, 0, 0, 0, 0, -5,
+            -5, 0, 0, 0, 0, 0, 0, -5,
+            -5, 0, 0, 0, 0, 0, 0, -5,
+            -5, 0, 0, 0, 0, 0, 0, -5,
+            -5, 0, 0, 0, 0, 0, 0, -5,
+            0, 0, 0, 5, 5, 0, 0, 0
     });
 
-    public static final Tensor2D W_ROOK_VALUES = new Tensor2D(new double[][]{
-            {0, 0, 0, 0, 0, 0, 0, 0},
-            {-5, 0, 0, 0, 0, 0, 0, -5},
-            {-5, 0, 0, 0, 0, 0, 0, -5},
-            {-5, 0, 0, 0, 0, 0, 0, -5},
-            {-5, 0, 0, 0, 0, 0, 0, -5},
-            {-5, 0, 0, 0, 0, 0, 0, -5},
-            {5, 10, 10, 10, 10, 10, 10, 5},
-            {0, 0, 0, 5, 5, 0, 0, 0}
+    public static final Tensor1D KNIGHT_VALUES = new Tensor1D(new double[]{
+            -20, -16, -12, -12, -12, -12, -16, -20,
+            -8, -4, 0, 0, 0, 0, -4,-8 ,
+            -12, 4, 8, 12, 12, 12, 4, -12,
+            -12, 2, 6, 10, 10, 6, 2, -12,
+            -12, 2, 6, 10, 10, 6, 2, -12,
+            -6, 10, 8, 6, 6, 8, 2, -6,
+            -16, -8, 0, 2, 2, 0, -8, -16,
+            -24, -50, -12, -12, -12, -12, -50, -24,
+    });
+    public static final Tensor1D QUEEN_VALUES = new Tensor1D(new double[]{
+            -20, -10, -10, -5, -5, -10, -10, -20,
+            -10, 0, 0, 0, 0, 0, 0, -10,
+            -10, 0, 5, 5, 5, 5, 0, -10,
+            -5, 0, 5, 5, 5, 5, 0, -5,
+            0, 0, 5, 5, 5, 5, 0, -5,
+            -10, 5, 5, 5, 5, 5, 0, -10,
+            -10, 0, 5, 0, 0, 0, 0, -10,
+            -20, -10, -10, -5, -5, -10, -10, -20
     });
 
-    public static final Tensor2D B_ROOK_VALUES = new Tensor2D(new double[][]{
-            {0, 0, 0, 0, 0, 0, 0, 0},
-            {5, 10, 10, 10, 10, 10, 10, 5},
-            {-5, 0, 0, 0, 0, 0, 0, -5},
-            {-5, 0, 0, 0, 0, 0, 0, -5},
-            {-5, 0, 0, 0, 0, 0, 0, -5},
-            {-5, 0, 0, 0, 0, 0, 0, -5},
-            {-5, 0, 0, 0, 0, 0, 0, -5},
-            {0, 0, 0, 5, 5, 0, 0, 0}
+    public static final Tensor1D KING_VALUES_MID = new Tensor1D(new double[]{
+            -30, -40, -40, -50, -50, -40, -40, -30,
+            -30, -40, -40, -50, -50, -40, -40, -30,
+            -30, -40, -40, -50, -50, -40, -40, -30,
+            -30, -40, -40, -50, -50, -40, -40, -30,
+            -20, -30, -30, -40, -40, -30, -30, -20,
+            -10, -20, -20, -20, -20, -20, -20, -10,
+            20, 20, -50, -50, -50, 0, 20, 20,
+            20, 30, -50, -50, 0, 10, 30, 20
     });
 
-    public static final Tensor2D KNIGHT_VALUES = new Tensor2D(new double[][]{
-            {-50, -40, -30, -30, -30, -30, -40, -50},
-            {-40, -20, 0, 0, 0, 0, -20, -40},
-            {-30, 0, 10, 15, 15, 10, 0, -30},
-            {-30, 5, 15, 20, 20, 15, 5, -30},
-            {-30, 0, 15, 20, 20, 15, 0, -30},
-            {-30, 5, 10, 15, 15, 10, 5, -30},
-            {-40, -20, 0, 5, 5, 0, -20, -40},
-            {-50, -40, -30, -30, -30, -30, -40, -50},
-    });
-    public static final Tensor2D QUEEN_VALUES = new Tensor2D(new double[][]{
-            {-20, -10, -10, -5, -5, -10, -10, -20},
-            {-10, 0, 0, 0, 0, 0, 0, -10},
-            {-10, 0, 5, 5, 5, 5, 0, -10},
-            {-5, 0, 5, 5, 5, 5, 0, -5},
-            {-5, 0, 5, 5, 5, 5, 0, -5},
-            {-10, 5, 5, 5, 5, 5, 0, -10},
-            {-10, 0, 5, 0, 0, 0, 0, -10},
-            {-20, -10, -10, -5, -5, -10, -10, -20}
-    });
 
-    public static final Tensor2D B_KING_VALUES_MID = new Tensor2D(new double[][]{
-            {-30, -40, -40, -50, -50, -40, -40, -30},
-            {-30, -40, -40, -50, -50, -40, -40, -30},
-            {-30, -40, -40, -50, -50, -40, -40, -30},
-            {-30, -40, -40, -50, -50, -40, -40, -30},
-            {-20, -30, -30, -40, -40, -30, -30, -20},
-            {-10, -20, -20, -20, -20, -20, -20, -10},
-            {20, 20, 0, 0, 0, 0, 20, 20},
-            {20, 30, 10, 0, 0, 10, 30, 20}
-    });
+    public static Tensor1D addScalarToTensor(Tensor1D tensor2D, double scalar){
+        for (int i = 0; i < 64; i++) {
+            tensor2D.add(scalar, i);
+        }
+        return tensor2D;
+    }
 
-    public static final Tensor2D W_KING_VALUES_MID = new Tensor2D(new double[][]{
-            {20, 30, 10, 0, 0, 10, 30, 20},
-            {20, 20, 0, 0, 0, 0, 20, 20},
-            {-10, -20, -20, -20, -20, -20, -20, -10},
-            {-20, -30, -30, -40, -40, -30, -30, -20},
-            {-30, -40, -40, -50, -50, -40, -40, -30},
-            {-30, -40, -40, -50, -50, -40, -40, -30},
-            {-30, -40, -40, -50, -50, -40, -40, -30},
-            {-30, -40, -40, -50, -50, -40, -40, -30},
-    });
+    public static Tensor1D negateTensor(Tensor1D tensor2D){
+        Tensor1D tensor2D1 = new Tensor1D(tensor2D);
+        tensor2D1.scale(-1);
+        return tensor2D1;
+    }
 
-    public static final int[] EVALUATE_PRICE = new int[]{0, 100, 500, 315, 341, 950, 20000};
+    public static Tensor1D flipTensor(Tensor1D tensor){
+        Tensor1D flipped = new Tensor1D(64);
+        for(int i = 0; i < 32; i++){
+            int file = BitBoard.fileIndex(i);
+            int rank = BitBoard.rankIndex(i);
+            int otherRank = 7 - rank;
+            flipped.set(tensor.get(BitBoard.squareIndex(otherRank, file)), BitBoard.squareIndex(rank, file));
+            flipped.set(tensor.get(BitBoard.squareIndex(rank, file)), BitBoard.squareIndex(otherRank, file));
+        }
+        return flipped;
+    }
 
-    public static final Tensor3D W_POSITION_PRICE = new Tensor3D(W_PAWN_VALUES, W_ROOK_VALUES, KNIGHT_VALUES, W_BISHOP_VALUES, QUEEN_VALUES, W_KING_VALUES_MID);
-    public static final Tensor3D B_POSITION_PRICE = new Tensor3D(B_PAWN_VALUES, B_ROOK_VALUES, KNIGHT_VALUES, B_BISHOP_VALUES, QUEEN_VALUES, B_KING_VALUES_MID);
+    //pawn, rook,knight,bishop,queen,king
+    public static final int[] EVALUATE_PRICE = new int[]{0, 100, 500, 320, 330, 900, 20000};
+    public static final Tensor2D POSITION_PRICE =
+            new Tensor2D(
+                    addScalarToTensor(negateTensor(KING_VALUES_MID), -EVALUATE_PRICE[6]),
+                    addScalarToTensor(negateTensor(QUEEN_VALUES), -EVALUATE_PRICE[5]),
+                    addScalarToTensor(negateTensor(BISHOP_VALUES), -EVALUATE_PRICE[4]),
+                    addScalarToTensor(negateTensor(KNIGHT_VALUES), -EVALUATE_PRICE[3]),
+                    addScalarToTensor(negateTensor(ROOK_VALUES), -EVALUATE_PRICE[2]),
+                    addScalarToTensor(negateTensor(PAWN_VALUES), -EVALUATE_PRICE[1]),
+                    addScalarToTensor(negateTensor(KING_VALUES_MID), 0),
+                    addScalarToTensor(flipTensor(PAWN_VALUES), EVALUATE_PRICE[1]),
+                    addScalarToTensor(flipTensor(ROOK_VALUES), EVALUATE_PRICE[2]),
+                    addScalarToTensor(flipTensor(KNIGHT_VALUES), EVALUATE_PRICE[3]),
+                    addScalarToTensor(flipTensor(BISHOP_VALUES), EVALUATE_PRICE[4]),
+                    addScalarToTensor(flipTensor(QUEEN_VALUES), EVALUATE_PRICE[5]),
+                    addScalarToTensor(flipTensor(KING_VALUES_MID), EVALUATE_PRICE[6]));
 
-    public static final int[] COMPLETE_EVALUATE_PRICE = new int[]{
-            EVALUATE_PRICE[6],
-            EVALUATE_PRICE[5],
-            EVALUATE_PRICE[4],
-            EVALUATE_PRICE[3],
-            EVALUATE_PRICE[2],
-            EVALUATE_PRICE[1],
-            EVALUATE_PRICE[0],
-            EVALUATE_PRICE[1],
-            EVALUATE_PRICE[2],
-            EVALUATE_PRICE[3],
-            EVALUATE_PRICE[4],
-            EVALUATE_PRICE[5],
-            EVALUATE_PRICE[6],
-    };
-    public static final int[] SIGNED_COMPLETE_EVALUATE_PRICE = new int[]{
-            -EVALUATE_PRICE[6],
-            -EVALUATE_PRICE[5],
-            -EVALUATE_PRICE[4],
-            -EVALUATE_PRICE[3],
-            -EVALUATE_PRICE[2],
-            -EVALUATE_PRICE[1],
-            -EVALUATE_PRICE[0],
-            EVALUATE_PRICE[1],
-            EVALUATE_PRICE[2],
-            EVALUATE_PRICE[3],
-            EVALUATE_PRICE[4],
-            EVALUATE_PRICE[5],
-            EVALUATE_PRICE[6],
-    };
-    public static final Tensor3D COMPLETE_POSITION_PRICE = new Tensor3D(
-            B_KING_VALUES_MID,
-            QUEEN_VALUES,
-            B_BISHOP_VALUES,
-            KNIGHT_VALUES,
-            B_ROOK_VALUES,
-            B_PAWN_VALUES,
 
-            QUEEN_VALUES,
 
-            W_PAWN_VALUES,
-            W_ROOK_VALUES,
-            KNIGHT_VALUES,
-            W_BISHOP_VALUES,
-            QUEEN_VALUES,
-            W_KING_VALUES_MID
-    );
 
-    public static final Tensor3D midValue = FinnEvaluator.POSITION_PRICE;
-    public static final Tensor3D endValue = LateGameEvaluator.POSITION_PRICE;
+    public static final Tensor2D midValue = POSITION_PRICE;
+    //public static final Tensor2D endValue = LateGameEvaluator.POSITION_PRICE;
 
 
     private double PARAMATER_PASSED_PAWN        = 25;
     private double PARAMATER_ISOLATED_PAWN      = -25;
     private double PARAMATER_DOUBLED_PAWN       = -35;
     private double PARAMATER_DOUBLE_BISHOP      = 50;
-    private double PARAMETER_KING_SAFETY_1      = 30;
-    private double PARAMETER_KING_SAFETY_2      = 35;
+    private double PARAMETER_KING_SAFETY_1      = 0;
+    private double PARAMETER_KING_SAFETY_2      = 0;
     private double PARAMETER_ROOK_HALF_OPEN     = 10;
     private double PARAMETER_ROOK_OPEN          = 25;
-    private double PARAMETER_CONNECTED_PAWN     = 18;
+    private double PARAMETER_CONNECTED_PAWN     = 0;
 
     //will get to this later. For now, I'm using this file to store position values
     @Override
     public double evaluate(Board board) {
 
-        if (board.isGameOver()) {
+        FastBoard fb = (FastBoard) board;
+
+        if (fb.isGameOver()) {
             switch (board.winner()) {
                 case 1:
                     return LateGameEvaluator.INFTY-1;
@@ -195,102 +154,81 @@ public class NoahEvaluator2 extends GeneticEvaluator<NoahEvaluator2> implements 
                     return -(LateGameEvaluator.INFTY-1);
             }
         }
-        Tensor3D pieceValue = midValue;
+        Tensor2D pieceValue = midValue;
 
-        if (board.isEndgame()) {
-            pieceValue = endValue;
-        }
+//        if (board.isEndgame()) {
+//            pieceValue = endValue;
+//        }
 
         int numWhiteBishops = 0;
         int numBlackBishops = 0;
 
-        //recording the file the rook is on
-        int[] whiteRooks = {-1,-1};
-        int[] blackRooks = {-1,-1};
-
-        //pawn rook knight bishop queen king
-
-        int[] wPawns = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-        int[] bPawns = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-
-        int lastWPawnFile = -1;
-        int lastBPawnFile = -1;
+//        //recording the file the rook is on
+//        int[] whiteRooks = {-1,-1};
+//        int[] blackRooks = {-1,-1};
+//
+//        //pawn rook knight bishop queen king
+//
+//        int[] wPawns = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+//        int[] bPawns = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+//
+//        int lastWPawnFile = -1;
+//        int lastBPawnFile = -1;
 
         double ev = 0;
         int v;
-        for (int i = 0; i < 8; i++) {
-            for (int n = 0; n < 8; n++) {
 
-                v = board.getPiece(i, n);
-                if (v == 0) continue;
+        int i;
+        int index;
 
-                ev += pieceValue.get(v + 6, n, i);
 
-                switch (v) {
-                    case -1:
-                        bPawns[i+1] += 1;
-                        if(Math.abs(n-lastWPawnFile) == 1){
-                            ev += PARAMETER_CONNECTED_PAWN;
-                        }else{
-                            lastWPawnFile = -1;
-                        }
-                        break;
-                    case 1:
-                        wPawns[i+1] += 1;
-                        if(Math.abs(n-lastBPawnFile) == 1){
-                            ev -= PARAMETER_CONNECTED_PAWN;
-                        }else{
-                            lastBPawnFile = -1;
-                        }
-                        break;
-                    case 2:
-                        if (whiteRooks[0] == -1) {
-                            whiteRooks[0]  = i;
-                        } else if (whiteRooks[1]  == -1) {
-                            whiteRooks[1] = i;
-                        }
-                    case -2:
-                        if (blackRooks[0] == -1) {
-                            blackRooks[0] = i;
-                        } else if (blackRooks[1] == -1) {
-                            blackRooks[1] = i;
-                        }
-                    case 4: //bishop
-                        numWhiteBishops += 1;
-                        break;
-                    case -4:
-                        numBlackBishops += 1;
-                        break;
-                    case 6: //king
-                        //This is for king safety
-                        if (!board.isEndgame()) {
-                            for (int j = -1; j < 2; j++) {
-                                if (i+j <= -1 || i+j>=8 || n+1<= -1 || n+1 >=8) {
-                                    continue;
-                                }
-                                if (board.getPiece(i + j, n + 1) > 0) ev += PARAMETER_KING_SAFETY_1;
-                            }
-                            if (board.getPiece(i - 1, n) > 0) ev += PARAMETER_KING_SAFETY_2;
-                            if (board.getPiece(i + 1, n) > 0) ev += PARAMETER_KING_SAFETY_2;
-                        }
-                        break;
-                    case -6:
-                        if (!board.isEndgame()) {
-                            for (int j = -1; j < 2; j++) {
-                                if (i+j <= -1 || i+j>=8 || n-1<= -1 || n-1 >=8) {
-                                    continue;
-                                }
-                                if (board.getPiece(i + j, n - 1) < 0) ev -= PARAMETER_KING_SAFETY_1;
-                            }
-                            if (board.getPiece(i - 1, n) < 0) ev -= PARAMETER_KING_SAFETY_2;
-                            if (board.getPiece(i + 1, n) < 0) ev -= PARAMETER_KING_SAFETY_2;
-                        }
-                        break;
-                    default:
-                        lastWPawnFile = -1;
-                        lastBPawnFile = -1;
-                }
-            }
+        numWhiteBishops = fb.getWhite_pieces()[3].size();
+        numBlackBishops = fb.getBlack_pieces()[3].size();
+
+        for(i = 0; i < fb.getWhite_pieces()[0].size(); i ++) {
+            index = fb.getWhite_pieces()[0].get(i);
+            ev += pieceValue.get(7, index);
+        }for(i = 0; i < fb.getWhite_pieces()[1].size(); i ++) {
+            index = fb.getWhite_pieces()[1].get(i);
+            ev += pieceValue.get(8, index);
+        }for(i = 0; i < fb.getWhite_pieces()[2].size(); i ++) {
+            index = fb.getWhite_pieces()[2].get(i);
+            ev += pieceValue.get(9, index);
+        }for(i = 0; i < fb.getWhite_pieces()[3].size(); i ++) {
+            index = fb.getWhite_pieces()[3].get(i);
+            ev += pieceValue.get(10, index);
+        }for(i = 0; i < fb.getWhite_pieces()[4].size(); i ++) {
+            index = fb.getWhite_pieces()[4].get(i);
+            ev += pieceValue.get(11, index);
+        }for(i = 0; i < fb.getWhite_pieces()[5].size(); i ++) {
+            index = fb.getWhite_pieces()[5].get(i);
+            ev += pieceValue.get(12, index);
+            ev += (BitBoard.bitCount(BitBoard.KING_ATTACKS[index] & fb.getTeam_total()[0])) *
+                    PARAMETER_KING_SAFETY_1;
+            ev += (BitBoard.bitCount(BitBoard.KING_ATTACKS[index] & fb.getTeam_total()[1])) *
+                    PARAMETER_KING_SAFETY_2;
+        }for(i = 0; i < fb.getBlack_pieces()[0].size(); i ++) {
+            index = fb.getBlack_pieces()[0].get(i);
+            ev += pieceValue.get(5, index);
+        }for(i = 0; i < fb.getBlack_pieces()[1].size(); i ++) {
+            index = fb.getBlack_pieces()[1].get(i);
+            ev += pieceValue.get(4, index);
+        }for(i = 0; i < fb.getBlack_pieces()[2].size(); i ++) {
+            index = fb.getBlack_pieces()[2].get(i);
+            ev += pieceValue.get(3, index);
+        }for(i = 0; i < fb.getBlack_pieces()[3].size(); i ++) {
+            index = fb.getBlack_pieces()[3].get(i);
+            ev += pieceValue.get(2, index);
+        }for(i = 0; i < fb.getBlack_pieces()[4].size(); i ++) {
+            index = fb.getBlack_pieces()[4].get(i);
+            ev += pieceValue.get(1, index);
+        }for(i = 0; i < fb.getBlack_pieces()[5].size(); i ++) {
+            index = fb.getBlack_pieces()[5].get(i);
+            ev += pieceValue.get(0, index);
+            ev -= (BitBoard.bitCount(BitBoard.KING_ATTACKS[index] & fb.getTeam_total()[1])) *
+                    PARAMETER_KING_SAFETY_1;
+            ev -= (BitBoard.bitCount(BitBoard.KING_ATTACKS[index] & fb.getTeam_total()[0])) *
+                    PARAMETER_KING_SAFETY_2;
         }
 
 
@@ -298,52 +236,68 @@ public class NoahEvaluator2 extends GeneticEvaluator<NoahEvaluator2> implements 
         if (numWhiteBishops > 1) ev += PARAMATER_DOUBLE_BISHOP;
         if (numBlackBishops > 1) ev -= PARAMATER_DOUBLE_BISHOP;
 
-        //pawns
-        for (int rank = 1; rank < 9; rank++) {
-            //doubled
-            if (wPawns[rank] > 1) ev += PARAMATER_DOUBLED_PAWN;
-            if (bPawns[rank] > 1) ev -= PARAMATER_DOUBLED_PAWN;
+        ev -= PARAMATER_DOUBLED_PAWN *
+                BitBoard.bitCount(BitBoard.shiftNorth(fb.getWhite_values()[0]) & fb.getWhite_values()[0]);
+        ev += PARAMATER_DOUBLED_PAWN *
+                BitBoard.bitCount(BitBoard.shiftSouth(fb.getBlack_values()[0]) & fb.getBlack_values()[0]);
+        
+        
+        ev += PARAMETER_CONNECTED_PAWN *
+                (BitBoard.bitCount(BitBoard.shiftNorthEast(fb.getWhite_values()[0]) & fb.getWhite_values()[0])+
+                BitBoard.bitCount(BitBoard.shiftNorthWest(fb.getWhite_values()[0]) & fb.getWhite_values()[0]));
 
-            if (wPawns[rank] > 0) {
-                //passed
-                if (bPawns[rank - 1] == 0 && bPawns[rank] == 0 && bPawns[rank + 1] == 0) {
-                    ev += PARAMATER_PASSED_PAWN;
-                }
-                //isolated
-                if (wPawns[rank - 1] == 0 && wPawns[rank + 1] == 0) ev += PARAMATER_ISOLATED_PAWN;
-            }
-            if (bPawns[rank] > 0) {
-                //passed
-                if (wPawns[rank - 1] == 0 && wPawns[rank] == 0 && wPawns[rank + 1] == 0) {
-                    ev -= PARAMATER_PASSED_PAWN;
-                }
-                //isolated
-                if (bPawns[rank - 1] == 0 && bPawns[rank + 1] == 0) ev -= PARAMATER_ISOLATED_PAWN;
-            }
-        }
+        ev -= PARAMETER_CONNECTED_PAWN *
+                (BitBoard.bitCount(BitBoard.shiftSouthEast(fb.getBlack_values()[0]) & fb.getBlack_values()[0])+
+                BitBoard.bitCount(BitBoard.shiftSouthWest(fb.getBlack_values()[0]) & fb.getBlack_values()[0]));
+        
+        //pawns
+//        for (int rank = 1; rank < 9; rank++) {
+//            //doubled
+//            if (wPawns[rank] > 1) ev += PARAMATER_DOUBLED_PAWN;
+//            if (bPawns[rank] > 1) ev -= PARAMATER_DOUBLED_PAWN;
+//
+//            if (wPawns[rank] > 0) {
+//                //passed
+//                if (bPawns[rank - 1] == 0 && bPawns[rank] == 0 && bPawns[rank + 1] == 0) {
+//                    ev += PARAMATER_PASSED_PAWN;
+//                }
+//                //isolated
+//                if (wPawns[rank - 1] == 0 && wPawns[rank + 1] == 0) ev += PARAMATER_ISOLATED_PAWN;
+//            }
+//            if (bPawns[rank] > 0) {
+//                //passed
+//                if (wPawns[rank - 1] == 0 && wPawns[rank] == 0 && wPawns[rank + 1] == 0) {
+//                    ev -= PARAMATER_PASSED_PAWN;
+//                }
+//                //isolated
+//                if (bPawns[rank - 1] == 0 && bPawns[rank + 1] == 0) ev -= PARAMATER_ISOLATED_PAWN;
+//            }
+//        }
         /// rooks
-        for (int file : whiteRooks) {
-            if (file == -1) {
-                continue;
-            }
-            if (wPawns[file]  == 0) {
-                ev += PARAMETER_ROOK_HALF_OPEN;
-                if (bPawns[file] == 0) {
-                    ev += PARAMETER_ROOK_OPEN;
-                }
-            }
-        }
-        for (int file : blackRooks) {
-            if (file == -1) {
-                continue;
-            }
-            if (bPawns[file]  == 0) {
-                ev -= PARAMETER_ROOK_HALF_OPEN;
-                if (wPawns[file] == 0) {
-                    ev -= PARAMETER_ROOK_OPEN;
-                }
-            }
-        }
+
+
+//        for (int file : whiteRooks) {
+//            if (file == -1) {
+//                continue;
+//            }
+//            if (wPawns[file]  == 0) {
+//                ev += PARAMETER_ROOK_HALF_OPEN;
+//                if (bPawns[file] == 0) {
+//                    ev += PARAMETER_ROOK_OPEN;
+//                }
+//            }
+//        }
+//        for (int file : blackRooks) {
+//            if (file == -1) {
+//                continue;
+//            }
+//            if (bPawns[file]  == 0) {
+//                ev -= PARAMETER_ROOK_HALF_OPEN;
+//                if (wPawns[file] == 0) {
+//                    ev -= PARAMETER_ROOK_OPEN;
+//                }
+//            }
+//        }
 
 
         return ev;

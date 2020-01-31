@@ -1,7 +1,5 @@
 package board.bitboards;
 
-import com.sun.org.apache.bcel.internal.generic.NEW;
-import sun.misc.IOUtils;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -206,22 +204,22 @@ public class BitBoard {
 
 
     public static final long[]                      KING_ATTACKS    = new long[]{
-            0x0000000000000302L, 0x0000000000000704L, 0x0000000000000e08L, 0x0000000000001c10L,
-            0x0000000000003820L, 0x0000000000007040L, 0x000000000000e080L, 0x000000000000c000L,
-            0x0000000000030203L, 0x0000000000070407L, 0x00000000000e080eL, 0x00000000001c101cL,
-            0x0000000000382038L, 0x0000000000704070L, 0x0000000000e080e0L, 0x0000000000c000c0L,
-            0x0000000003020300L, 0x0000000007040700L, 0x000000000e080e00L, 0x000000001c101c00L,
-            0x0000000038203800L, 0x0000000070407000L, 0x00000000e080e000L, 0x00000000c000c000L,
-            0x0000000302030000L, 0x0000000704070000L, 0x0000000e080e0000L, 0x0000001c101c0000L,
-            0x0000003820380000L, 0x0000007040700000L, 0x000000e080e00000L, 0x000000c000c00000L,
-            0x0000030203000000L, 0x0000070407000000L, 0x00000e080e000000L, 0x00001c101c000000L,
-            0x0000382038000000L, 0x0000704070000000L, 0x0000e080e0000000L, 0x0000c000c0000000L,
-            0x0003020300000000L, 0x0007040700000000L, 0x000e080e00000000L, 0x001c101c00000000L,
-            0x0038203800000000L, 0x0070407000000000L, 0x00e080e000000000L, 0x00c000c000000000L,
-            0x0302030000000000L, 0x0704070000000000L, 0x0e080e0000000000L, 0x1c101c0000000000L,
-            0x3820380000000000L, 0x7040700000000000L, 0xe080e00000000000L, 0xc000c00000000000L,
-            0x0203000000000000L, 0x0407000000000000L, 0x080e000000000000L, 0x101c000000000000L,
-            0x2038000000000000L, 0x4070000000000000L, 0x80e0000000000000L, 0x00c0000000000000L
+            0x0000000000000302L, 0x0000000000000705L, 0x0000000000000e0aL, 0x0000000000001c14L,
+            0x0000000000003828L, 0x0000000000007050L, 0x000000000000e0a0L, 0x000000000000c040L,
+            0x0000000000030203L, 0x0000000000070507L, 0x00000000000e0a0eL, 0x00000000001c141cL,
+            0x0000000000382838L, 0x0000000000705070L, 0x0000000000e0a0e0L, 0x0000000000c040c0L,
+            0x0000000003020300L, 0x0000000007050700L, 0x000000000e0a0e00L, 0x000000001c141c00L,
+            0x0000000038283800L, 0x0000000070507000L, 0x00000000e0a0e000L, 0x00000000c040c000L,
+            0x0000000302030000L, 0x0000000705070000L, 0x0000000e0a0e0000L, 0x0000001c141c0000L,
+            0x0000003828380000L, 0x0000007050700000L, 0x000000e0a0e00000L, 0x000000c040c00000L,
+            0x0000030203000000L, 0x0000070507000000L, 0x00000e0a0e000000L, 0x00001c141c000000L,
+            0x0000382838000000L, 0x0000705070000000L, 0x0000e0a0e0000000L, 0x0000c040c0000000L,
+            0x0003020300000000L, 0x0007050700000000L, 0x000e0a0e00000000L, 0x001c141c00000000L,
+            0x0038283800000000L, 0x0070507000000000L, 0x00e0a0e000000000L, 0x00c040c000000000L,
+            0x0302030000000000L, 0x0705070000000000L, 0x0e0a0e0000000000L, 0x1c141c0000000000L,
+            0x3828380000000000L, 0x7050700000000000L, 0xe0a0e00000000000L, 0xc040c00000000000L,
+            0x0203000000000000L, 0x0507000000000000L, 0x0a0e000000000000L, 0x141c000000000000L,
+            0x2838000000000000L, 0x5070000000000000L, 0xa0e0000000000000L, 0x40c0000000000000L
     };
     public static final long[]                      KNIGHT_ATTACKS  = new long[]{
             0x0000000000020400L, 0x0000000000050800L, 0x00000000000a1100L, 0x0000000000142200L,
@@ -323,15 +321,6 @@ public class BitBoard {
             for(int i = 0; i < (int)Math.pow(2, 64-ROOK_BUFFER[n].getShift()); i++){
                 long rel_occ = BitBoard.populateMask(ROOK_BUFFER[n].getMask(), i);
                 int index =(int)((rel_occ * ROOK_BUFFER[n].getMagic()) >>> (ROOK_BUFFER[n].getShift()));
-
-//                if(n == 63){
-//                    System.out.println(Integer.parseInt("111111000010",2));
-//                    System.out.println(i);
-//                }
-//                if(n == 63 && i == Integer.parseInt("111111000010",2)){
-//                    System.err.println(index);
-//                }
-
                 ROOK_ATTACKS[n][index] = BitBoard.generateRookAttack(n, rel_occ);
             }
             BISHOP_ATTACKS[n] = new long[(int)Math.pow(2, 64-BISHOP_BUFFER[n].getShift())];
@@ -487,7 +476,7 @@ public class BitBoard {
         System.out.println("King attacks:");
         for (int n = 0; n < 64; n++) {
             long attack = 0L;
-            for(int[] k:new int[][]{{1,1},{-1,1},{1,-1},{-1,-1},{1,0},{0,-1},{-0,1},{-0,-1}}){
+            for(int[] k:new int[][]{{1,1},{-1,1},{1,-1},{-1,-1},{1,0},{0,1},{-1,0},{0,-1}}){
                 int f = fileIndex(n) + k[0];
                 int r = rankIndex(n) + k[1];
                 if(f >= 0 && f < 8 && r >= 0 && r < 8){
@@ -859,8 +848,9 @@ public class BitBoard {
      * @return
      */
     public static final int bitscanForward(long bb){
-        assert bb != 0;
-        return index64[(int)(((bb ^ (bb-1L)) * debruijn64) >>> 58)];
+        return Long.numberOfTrailingZeros(bb);
+//        assert bb != 0;
+//        return index64[(int)(((bb ^ (bb-1L)) * debruijn64) >>> 58)];
     }
 
     /**
@@ -886,7 +876,7 @@ public class BitBoard {
      */
     public static final int bitCount(long bb) {
         int counter = 0;
-        while(bb > 0){
+        while(bb != 0){
             bb = lsbReset(bb);
             counter ++;
         }
@@ -894,9 +884,9 @@ public class BitBoard {
     }
 
     public static void main(String[] args) {
-        
 
-        writeAttackTables(SLIDING_ATTACKS_SOURCE);
+        generateKingAndRookAttacks();
+        //writeAttackTables(SLIDING_ATTACKS_SOURCE);
 
     }
 

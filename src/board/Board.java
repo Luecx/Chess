@@ -23,7 +23,6 @@ public abstract class Board<T extends Board<T>> {
     }
 
 
-
     /**
      * The methods returns a Stack of the move history.
      * <p>
@@ -54,9 +53,8 @@ public abstract class Board<T extends Board<T>> {
     /**
      * It returns a list of all moves that are available for the current
      * active player.
-     * <p>
-     * This method does not check any mate-threats!
-     * <p>
+     * The method might return null if and only if the previous move from
+     * the opponent was an illegal move
      * @return All the available moves
      */
     public abstract List<Move> getPseudoLegalMoves();
@@ -64,9 +62,8 @@ public abstract class Board<T extends Board<T>> {
     /**
      * It returns a list of all moves that are available for the current
      * active player.
-     * <p>
-     * This method does not check any mate-threats!
-     * <p>
+     * The method might return null if and only if the previous move from
+     * the opponent was an illegal move
      * @return All the available moves
      */
     public abstract List<Move> getPseudoLegalMoves(MoveList list);
@@ -126,6 +123,14 @@ public abstract class Board<T extends Board<T>> {
      * @return corresponding x-coordinate.
      */
     public abstract int x(int index);
+
+    /**
+     * the method returns true if the given players king is at check
+     *
+     * @param player
+     * @return
+     */
+    public abstract boolean isAtCheck(int player);
 
     /**
      * The method transforms the internally stored index that is

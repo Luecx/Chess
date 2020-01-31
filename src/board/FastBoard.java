@@ -3,9 +3,15 @@ package board;
 import board.bitboards.BitBoard;
 import board.moves.Move;
 import board.moves.MoveList;
+import board.moves.MoveListBuffer;
 import board.pieces.PieceList;
+import board.repetitions.RepetitionList;
 import board.setup.Setup;
 import game.Player;
+import game.ai.evaluator.NoahEvaluator;
+import game.ai.evaluator.NoahEvaluator2;
+import io.IO;
+import io.Testing;
 import visual.Frame;
 
 import java.util.*;
@@ -23,7 +29,8 @@ public class FastBoard extends Board<FastBoard> {
     private PieceList[]     white_pieces;
     private PieceList[]     black_pieces;
 
-    private Stack<Move>     moveHistory = new Stack<>();
+    private RepetitionList  repetitionList;
+    private long            zobrist;
 
     public FastBoard() {
         super();
@@ -48,7 +55,7 @@ public class FastBoard extends Board<FastBoard> {
             black_pieces[i] = new PieceList(-(i+1));
         }
 
-
+        this.repetitionList = new RepetitionList();
         update_longs();
     }
 
@@ -81,9 +88,11 @@ public class FastBoard extends Board<FastBoard> {
         if (p > 0) {
             white_pieces[p - 1].remove(new Integer(index));
             white_values[p - 1] = BitBoard.unsetBit(white_values[p - 1], index);
+            zobrist ^= BitBoard.white_hashes[p-1][index];
         } else if (p < 0) {
             black_pieces[-p - 1].remove(new Integer(index));
             black_values[-p - 1] = BitBoard.unsetBit(black_values[-p - 1], index);
+            zobrist ^= BitBoard.white_hashes[-p - 1][index];
         }
         indexBoard[index] = piece;
 
@@ -92,21 +101,19 @@ public class FastBoard extends Board<FastBoard> {
         if (piece > 0) {
             white_pieces[piece - 1].add(index);
             white_values[piece - 1] = BitBoard.setBit(white_values[piece - 1], index);
-
+            zobrist ^= BitBoard.white_hashes[piece-1][index];
         } else {
             black_pieces[-piece - 1].add(index);
             black_values[-piece - 1] = BitBoard.setBit(black_values[-piece - 1], index);
-
+            zobrist ^= BitBoard.white_hashes[-piece - 1][index];
         }
         update_longs();
     }
-
 
     @Override
     public void setPiece(int x, int y, int piece) {
         setPiece(piece, index(x,y));
     }
-
 
     @Override
     public boolean equals(Object o) {
@@ -176,30 +183,34 @@ public class FastBoard extends Board<FastBoard> {
 
     @Override
     public long zobrist() {
-        long zob = 0;
-        for (int i = 0; i < 6; i++) {
-            for (int n = 0; n < white_pieces[i].size(); n++){
-                zob = BitBoard.xor(zob, BitBoard.white_hashes[i][n]);
-            }
-            for (int n = 0; n < black_pieces[i].size(); n++){
-                zob = BitBoard.xor(zob, BitBoard.black_hashes[i][n]);
-            }
-        }
-        return zob;
+        return zobrist;
+//        long zob = 0;
+//        for (int i = 0; i < 6; i++) {
+//            for (int n = 0; n < white_pieces[i].size(); n++){
+//                zob = BitBoard.xor(zob, BitBoard.white_hashes[i][n]);
+//            }
+//            for (int n = 0; n < black_pieces[i].size(); n++){
+//                zob = BitBoard.xor(zob, BitBoard.black_hashes[i][n]);
+//            }
+//        }
+//        return zob;
     }
 
     @Override
     public void move(Move m) {
 
-//        if(m.getIsNull()){
-//            this.changeActivePlayer();
-//            this.moveHistory.add(m);
-//            return;
-//        }
+        if(m.getIsNull()){
+            this.changeActivePlayer();
+            this.moveHistory.add(m);
+            return;
+        }
+
+
 
         this.moveSimpleMove(m);
         this.changeActivePlayer();
         this.update_longs();
+        this.repetitionList.add(zobrist);
     }
 
     @Override
@@ -214,6 +225,7 @@ public class FastBoard extends Board<FastBoard> {
             return;
         }
 
+        this.repetitionList.sub(zobrist);
         this.undoMoveSimpleMove();
         this.changeActivePlayer();
         this.update_longs();
@@ -244,6 +256,8 @@ public class FastBoard extends Board<FastBoard> {
     public FastBoard copy() {
         FastBoard copy = new FastBoard();
         copy.occupied = occupied;
+        copy.repetitionList = this.repetitionList.copy();
+        copy.zobrist = this.zobrist;
         copy.indexBoard = Arrays.copyOf(indexBoard, 64);
         copy.team_total[0] = team_total[0];
         copy.team_total[1] = team_total[1];
@@ -259,11 +273,8 @@ public class FastBoard extends Board<FastBoard> {
         return copy;
     }
 
-
-
     private void getPseudoLegalMoves(int color, PieceList[] pieces, long team, MoveList moves){
         int index;
-
         for (int i = 0; i < pieces[1].size(); i++) {
             index = pieces[1].get(i);
             long attacks = BitBoard.lookUpRookAttack(index, occupied) & ~team;
@@ -381,6 +392,45 @@ public class FastBoard extends Board<FastBoard> {
         }
     }
 
+    public long getAttackedSquaresFromWhite(){
+
+        long attacks = 0L;
+
+        attacks |= BitBoard.shiftNorthEast(white_values[0]) | BitBoard.shiftNorthWest(white_values[0]);
+        for (int i = 0; i < white_pieces[1].size(); i++) {
+            attacks |= BitBoard.lookUpRookAttack(white_pieces[1].get(i), occupied);
+        }for (int i = 0; i < white_pieces[2].size(); i++) {
+            attacks |= BitBoard.KNIGHT_ATTACKS[white_pieces[2].get(i)];
+        }for (int i = 0; i < white_pieces[3].size(); i++){
+            attacks |= BitBoard.lookUpBishopAttack(white_pieces[3].get(i), occupied);
+        }for (int i = 0; i < white_pieces[4].size(); i++){
+            attacks |= BitBoard.lookUpBishopAttack(white_pieces[4].get(i), occupied);
+            attacks |=  BitBoard.lookUpRookAttack(white_pieces[4].get(i), occupied);
+        }for (int i = 0; i < white_pieces[5].size(); i++){
+            attacks |= BitBoard.KING_ATTACKS[white_pieces[5].get(i)];
+        }
+        return attacks & ~team_total[0];
+    }
+
+    public long getAttackedSquaresFromBlack(){
+
+        long attacks = 0L;
+
+        attacks |= BitBoard.shiftSouthWest(black_values[0]) | BitBoard.shiftSouthEast(black_values[0]);
+        for (int i = 0; i < black_pieces[1].size(); i++) {
+            attacks |= BitBoard.lookUpRookAttack(black_pieces[1].get(i), occupied);
+        }for (int i = 0; i < black_pieces[2].size(); i++) {
+            attacks |= BitBoard.KNIGHT_ATTACKS[black_pieces[2].get(i)];
+        }for (int i = 0; i < black_pieces[3].size(); i++){
+            attacks |= BitBoard.lookUpBishopAttack(black_pieces[3].get(i), occupied);
+        }for (int i = 0; i < black_pieces[4].size(); i++){
+            attacks |= BitBoard.lookUpBishopAttack(black_pieces[4].get(i), occupied);
+            attacks |=  BitBoard.lookUpRookAttack(black_pieces[4].get(i), occupied);
+        }for (int i = 0; i < black_pieces[5].size(); i++){
+            attacks |= BitBoard.KING_ATTACKS[black_pieces[5].get(i)];
+        }
+        return attacks & ~team_total[1];
+    }
 
     public List<Move> getPseudoLegalMoves() {
         return getPseudoLegalMoves(new MoveList(50));
@@ -390,10 +440,16 @@ public class FastBoard extends Board<FastBoard> {
     public MoveList getPseudoLegalMoves(MoveList list) {
         list.clear();
         if(getActivePlayer() == 1) {
+            if((getAttackedSquaresFromWhite() & black_values[5]) != 0){
+                return null;
+            }
             getPseudoLegalMoves(1 ,white_pieces, team_total[0], list);
             getPseudoLegalMovesWhitePawns(list);
         }
         else if(getActivePlayer() ==-1) {
+            if((getAttackedSquaresFromBlack() & white_values[5]) != 0){
+                return null;
+            }
             getPseudoLegalMoves(-1,black_pieces, team_total[1], list);
             getPseudoLegalMovesBlackPawns(list);
         }
@@ -421,24 +477,83 @@ public class FastBoard extends Board<FastBoard> {
     }
 
     @Override
+    public boolean isAtCheck(int player) {
+        if(player == 1){
+            return (getAttackedSquaresFromBlack() & white_values[5]) != 0;
+        }else{
+            return (getAttackedSquaresFromWhite() & black_values[5]) != 0;
+        }
+    }
+
+    @Override
     public FastBoard newInstance() {
         return new FastBoard();
+    }
+
+    public long[] getWhite_values() {
+        return white_values;
+    }
+
+    public long[] getBlack_values() {
+        return black_values;
+    }
+
+    public long[] getTeam_total() {
+        return team_total;
+    }
+
+    public long getOccupied() {
+        return occupied;
+    }
+
+    public int[] getIndexBoard() {
+        return indexBoard;
+    }
+
+    public PieceList[] getWhite_pieces() {
+        return white_pieces;
+    }
+
+    public PieceList[] getBlack_pieces() {
+        return black_pieces;
     }
 
     public static void main(String[] args) {
         FastBoard board = new FastBoard(Setup.DEFAULT);
 
-        MoveList ml = new MoveList(70);
+        board = IO.read_FEN(board,"r1bq1rk1/ppp1bppp/4p3/n2pP3/3P3P/2PBBN2/P1P2PP1/1R1QK2R b Kq - 0 1");
 
-//        long t = System.currentTimeMillis();
-//        for(int i = 0; i < 1E7; i++){
-//            board.getPseudoLegalMoves(ml);
-//        }
-//        System.out.println(System.currentTimeMillis()-t);
+        NoahEvaluator2 ev = new NoahEvaluator2();
+//        MoveListBuffer buffer = new MoveListBuffer(10);
+//
+//        System.out.println(Testing.perft_pseudo(board, 3,buffer));
 
 
-        //System.out.println(board);
-        new Frame(board, new Player(){}, new Player(){});
+        MoveList ml = new MoveList(90);
+        Move m = board.getPseudoLegalMoves(ml).get(0);
+        long t = System.currentTimeMillis();
+
+        for(int i = 0; i < 1E7; i++){
+            board.move(m);
+            board.undoMove();
+            //board.getPseudoLegalMoves(ml);
+            //ev.evaluate(board);
+        }
+        System.out.println(System.currentTimeMillis()-t);
+
+
+
+
+//
+//
+//        BitBoard.printBitmap(board.getAttackedSquaresFromWhite());
+//
+//
+//        System.out.println(BitBoard.bitCount(board.getAttackedSquaresFromWhite()));
+//        System.out.println(BitBoard.bitCount(board.getAttackedSquaresFromBlack()));
+//
+//        //System.out.println(board);
+//        new Frame(board, new Player(){}, new Player(){});
 
     }
 }

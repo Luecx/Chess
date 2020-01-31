@@ -1,8 +1,10 @@
 package game.ai.search;
 
 import board.Board;
+import board.FastBoard;
 import board.moves.Move;
 import board.SlowBoard;
+import board.moves.MoveListBuffer;
 import board.setup.Setup;
 import game.ai.evaluator.Evaluator;
 import game.ai.evaluator.SimpleEvaluator;
@@ -43,8 +45,10 @@ public class MiniMax implements AI {
         return _bestMove;
     }
 
+    MoveListBuffer moveListBuffer = new MoveListBuffer(20);
+
     private double minimax(int tiefe){
-        List<Move> moves = _board.getLegalMoves();
+        List<Move> moves = _board.getPseudoLegalMoves(moveListBuffer.get(tiefe));
         _visitedNodes ++;
 
 //        long zobrist = _board.zobrist();
@@ -57,7 +61,7 @@ public class MiniMax implements AI {
 //            _hashed_positions.put(zobrist, field);
 //        }
 
-        if (tiefe == 0 || moves.size() == 0 || _board.isGameOver()){
+        if (tiefe == 0  || moves == null){
             _evaluatedNodes++;
             return evaluator.evaluate(_board) * _board.getActivePlayer();
         }
@@ -68,9 +72,9 @@ public class MiniMax implements AI {
             double wert = -minimax(tiefe - 1);
             _board.undoMove();
 
-            if(tiefe == depth){
-                System.out.println(moves.indexOf(m) +1+ " / " + moves.size());
-            }
+//            if(tiefe == depth){
+//                System.out.println(moves.indexOf(m) +1+ " / " + moves.size());
+//            }
 
             if (wert > max) {
                 max = wert;
@@ -82,9 +86,16 @@ public class MiniMax implements AI {
     }
 
     public static void main(String[] args) {
-        MiniMax m = new MiniMax(new SimpleEvaluator(), 4);
-        SlowBoard board = new SlowBoard(Setup.DEFAULT);
+        MiniMax m = new MiniMax(new Evaluator() {
+            @Override
+            public double evaluate(Board board) {
+                return 0;
+            }
+        }, 5);
+        FastBoard board = new FastBoard(Setup.DEFAULT);
+        long t = System.currentTimeMillis();
         System.out.println(m.bestMove(board));
+        System.out.println(System.currentTimeMillis()-t);
     }
 
 }

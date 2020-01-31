@@ -1,22 +1,19 @@
 package game.ai.search;
 
 import board.Board;
-import board.SlowBoard;
 import board.moves.Move;
 import board.moves.MoveListBuffer;
 import game.ai.evaluator.Evaluator;
 import game.ai.evaluator.LateGameEvaluator;
 import game.ai.evaluator.NoahEvaluator;
 import game.ai.ordering.Orderer;
-import game.ai.ordering.SystematicOrderer;
 import game.ai.reducing.Reducer;
 import game.ai.tools.*;
 import io.IO;
 
-import java.util.Arrays;
 import java.util.List;
 
-public class PVSearch implements AI {
+public class PVSearchFast implements AI {
 
 
     public static final int FLAG_TIME_LIMIT = 1;
@@ -45,7 +42,7 @@ public class PVSearch implements AI {
 
     private SearchOverview searchOverview;
 
-    public PVSearch(Evaluator evaluator, Orderer orderer, Reducer reducer, int limit_flag,  int limit, int quiesce_depth) {
+    public PVSearchFast(Evaluator evaluator, Orderer orderer, Reducer reducer, int limit_flag, int limit, int quiesce_depth) {
         this.evaluator = evaluator;
         this.limit_flag = limit_flag;
         this.reducer = reducer;
@@ -483,11 +480,12 @@ public class PVSearch implements AI {
         //<editor-fold desc="search overview">
         searchOverview.setDepth(this._depth);
         searchOverview.setTotalTime((int)(System.currentTimeMillis()-time));
-//        if(print_overview){
-//            for(Move m:pvLine.getLine()){
-//                System.out.println(IO.algebraicNotation(board, m));
-//            }
-//        }
+        if(print_overview){
+            for(Move m:pvLine.getLine()){
+                System.out.print(IO.algebraicNotation(board, m));
+            }
+            System.out.println();
+        }
         //</editor-fold>
 
         return _bestMove;
@@ -606,44 +604,33 @@ public class PVSearch implements AI {
         double origonalAlpha = alpha;
         //<editor-fold desc="Transposition lookup">
         //long zobrist = ((SlowBoard) _board).oldZobrist();
-        long zobrist = _board.zobrist();
-        TranspositionEntry transposition = transpositionLookUp(zobrist, currentDepth, depthLeft);
-        if (transposition != null) {
-            if (transposition.getNode_type() == TranspositionEntry.PV_NODE) {
-                //System.out.println("PV transposition");
-                return transposition.getVal();
-            } else if (transposition.getNode_type() == TranspositionEntry.CUT_NODE) {
-                //System.out.println("CUT transposition");
-                alpha = transposition.getVal();
-                if (alpha >= beta) return beta;
-            } else if (transposition.getNode_type() == TranspositionEntry.ALL_NODE) {
-                //System.out.println("ALL transposition");
-                beta = transposition.getVal();
-                if (beta <= alpha) return alpha;
-            }
-        }
+//        long zobrist = _board.zobrist();
+//        TranspositionEntry transposition = transpositionLookUp(zobrist, currentDepth, depthLeft);
+//        if (transposition != null) {
+//            if (transposition.getNode_type() == TranspositionEntry.PV_NODE) {
+//                //System.out.println("PV transposition");
+//                return transposition.getVal();
+//            } else if (transposition.getNode_type() == TranspositionEntry.CUT_NODE) {
+//                //System.out.println("CUT transposition");
+//                alpha = transposition.getVal();
+//                if (alpha >= beta) return beta;
+//            } else if (transposition.getNode_type() == TranspositionEntry.ALL_NODE) {
+//                //System.out.println("ALL transposition");
+//                beta = transposition.getVal();
+//                if (beta <= alpha) return alpha;
+//            }
+//        }
         //</editor-fold>
         //<editor-fold desc="zugzwang">
-        List<Move> allMoves =
-                use_move_lists ?
-                        currentDepth <= 1 ? _board.getLegalMoves(_buffer.get(currentDepth)) : _board.getPseudoLegalMoves(_buffer.get(currentDepth)) :
-                        currentDepth <= 1 ? _board.getLegalMoves() : _board.getPseudoLegalMoves();
+        List<Move> allMoves = _board.getPseudoLegalMoves(_buffer.get(currentDepth));
+
 
         if(allMoves == null){
             return Double.NaN;
         }
 
         //allMoves will be empty if its checkmate and contain a null move if its a stalemate!
-        boolean zugzwang = false;
-        if (allMoves.size() <= 1) {
-            if (allMoves.size() == 0) {
-                return -LateGameEvaluator.INFTY;
-            }
-            if (allMoves.get(0).getIsNull()) {
-                return 0;  //stalemate
-            }
-            zugzwang = true;
-        }
+        boolean zugzwang = allMoves.size() <= 1;
         //</editor-fold>
         //<editor-fold desc="QSearch">
         if (depthLeft <= 0 || allMoves.size() == 0 || _board.isGameOver()) {
@@ -678,6 +665,7 @@ public class PVSearch implements AI {
         boolean bSearchPv = true;
         Move bestMove = allMoves.get(0);
         double bestSoFar = Double.NEGATIVE_INFINITY;
+        int legalMoveCounter = 0;
 
         for (int index = 0; index < allMoves.size(); index++) {
             Move m = allMoves.get(index);
@@ -731,12 +719,19 @@ public class PVSearch implements AI {
             }
             //</editor-fold>
             _board.undoMove();
+
+            if(Double.isNaN(score)){
+                continue;
+            }else{
+                legalMoveCounter ++;
+            }
+
             //<editor-fold desc="beta cutoff">
             if (score >= beta) {
                 if (_killerTable != null && m.getPieceTo() == 0) {
                     _killerTable.put(currentDepth, m.copy());
                 }
-                transpositionPlacement(zobrist, currentDepth, depthLeft, beta, TranspositionEntry.CUT_NODE, m);
+                //transpositionPlacement(zobrist, currentDepth, depthLeft, beta, TranspositionEntry.CUT_NODE, m);
                 return beta;
             }
             //</editor-fold>
@@ -755,7 +750,7 @@ public class PVSearch implements AI {
                 pLine.setMovesInLine(line.getMovesInLine() + 1);
                 if (currentDepth == 0) {
                     _bestScore = score;
-                    _bestMove = m;
+                    _bestMove = bestMove;
                 }
                 bSearchPv = false;
             }
@@ -763,12 +758,27 @@ public class PVSearch implements AI {
         }
         //</editor-fold>
 
-
-        if (score > origonalAlpha) {
-            transpositionPlacement(zobrist, currentDepth, depthLeft, alpha, TranspositionEntry.PV_NODE, bestMove);
-        } else {
-            transpositionPlacement(zobrist, currentDepth, depthLeft, alpha, TranspositionEntry.ALL_NODE, bestMove);
+        if(legalMoveCounter == 0){
+            if(_board.isAtCheck(_board.getActivePlayer())){
+                if (currentDepth == 0) {
+                    _bestScore = -LateGameEvaluator.INFTY;
+                    _bestMove = null;
+                }
+                return -LateGameEvaluator.INFTY;
+            }else{
+                if (currentDepth == 0) {
+                    _bestScore = 0;
+                    _bestMove = null;
+                }
+                return 0;
+            }
         }
+
+//        if (score > origonalAlpha) {
+//            transpositionPlacement(zobrist, currentDepth, depthLeft, alpha, TranspositionEntry.PV_NODE, bestMove);
+//        } else {
+//            transpositionPlacement(zobrist, currentDepth, depthLeft, alpha, TranspositionEntry.ALL_NODE, bestMove);
+//        }
         return alpha;
     }
 

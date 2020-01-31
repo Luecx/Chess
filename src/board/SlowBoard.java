@@ -21,6 +21,7 @@ import game.ai.reducing.Reducer;
 import game.ai.reducing.SenpaiReducer;
 import game.ai.reducing.SimpleReducer;
 import game.ai.search.PVSearch;
+import game.ai.search.PVSearchFast;
 import io.IO;
 import io.Testing;
 import visual.Frame;
@@ -47,6 +48,7 @@ public class SlowBoard extends Board<SlowBoard> {
     public static final short MASK_GAMEOVER                     = (short)1 << 12;
     public static final short MASK_WINNER_WHITE                 = (short)1 << 13;
     public static final short MASK_WINNER_BLACK                 = (short)1 << 14;
+
 
 
     public static final short INDEX_WHITE_QUEENSIDE_ROOK        = (short)26;
@@ -355,6 +357,11 @@ public class SlowBoard extends Board<SlowBoard> {
             }
             c += direction;
         }
+    }
+
+    @Override
+    public boolean isAtCheck(int player) {
+        return false;
     }
 
     protected void pseudeLegalMoves_pawn(int index, int i, int j, MoveList moves){
@@ -854,18 +861,21 @@ public class SlowBoard extends Board<SlowBoard> {
 
 
     public static void main(String[] args) {
-        FastBoard b = new FastBoard(Setup.DEFAULT);
+        Board b = new FastBoard(Setup.DEFAULT);
 
-        b = IO.read_FEN(b,"r1bq1rk1/ppp1bppp/4p3/n2pP3/3P3P/2PBBN2/P1P2PP1/1R1QK2R b Kq - 0 1");
-//        //b = IO.read_FEN(b,"8/8/8/8/5q2/5k2/8/4K3_w_-_-_0_1");
+        //b = IO.read_FEN(b, "QBN2nbq/QBN2nbq/QBN2nbq/KBN2nbq/QBN2nbk/QBN2nbq/QBN2nbq/QBN2nbq w - - 0 1");
+        //b = IO.read_FEN(b, "6k1/8/5K2/1Q6/8/8/8/8 w - - 0 1");
+        //b = IO.read_FEN(b,"r1bq1rk1/ppp1bppp/4p3/n2pP3/3P3P/2PBBN2/P1P2PP1/1R1QK2R b Kq - 0 1");
+        //b = IO.read_FEN(b,"8/8/8/8/5q2/5k2/8/4K3_w_-_-_0_1");
 
-        PVSearch ai1 = new PVSearch(
-                new NoahEvaluator(),
+        PVSearchFast ai1 = new PVSearchFast(
+                new NoahEvaluator2(),
                 new SystematicOrderer(),
-                new SenpaiReducer(5),
+                new SenpaiReducer(1),
                 2,
-                10,
+                6,
                 0);
+        ai1.setUse_iteration(true);
         ai1.setUse_killer_heuristic(true);
         ai1.setUse_null_moves(true);
         ai1.setUse_LMR(true);
@@ -877,23 +887,23 @@ public class SlowBoard extends Board<SlowBoard> {
 
 //        ai1.bestMove(b);
 //
-//
-//        PVSearch ai2 = new PVSearch(
-//                new NoahEvaluator2(),
-//                new SystematicOrderer2(),
-//                new SenpaiReducer(0),
-//                1,
-//                5000,
-//                8);
-//        ai2.setUse_killer_heuristic(true);
-//        ai2.setUse_null_moves(true);
-//        ai2.setUse_LMR(true);
-//        ai2.setUse_transposition(false);
+
+        PVSearch ai2 = new PVSearch(
+                new NoahEvaluator(),
+                new SystematicOrderer2(),
+                new SenpaiReducer(0),
+                1,
+                1000,
+                0);
+        ai2.setUse_killer_heuristic(true);
+        ai2.setUse_null_moves(true);
+        ai2.setUse_LMR(true);
+        ai2.setUse_transposition(false);
 
         //MCTS<ChessNodeData> mcts = new MCTS<>(new UCT(), new EvaluatingSimulator(),new ChessExpander());
 
 
-        new Frame(b, new Player(){},ai1);
+        new Frame(b, ai2,ai1);
     }
 
 }

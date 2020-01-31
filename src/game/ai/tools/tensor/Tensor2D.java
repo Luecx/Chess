@@ -10,6 +10,24 @@ public class Tensor2D extends Tensor {
         updatePartialDimensions();
     }
 
+    public Tensor2D(Tensor1D... tensors) {
+        this.dimensions = new int[2];
+        this.dimensions[0] = tensors.length;
+        this.dimensions[1] = tensors[0].size();
+
+        this.partialDimensions = new int[]{1, this.dimensions[0]};
+
+        this.size = this.dimensions[0] * this.dimensions[1];
+        this.data = new double[size];
+
+        updatePartialDimensions();
+        for(int i = 0; i < this.dimensions[0]; i++){
+            for(int n = 0; n < this.dimensions[1]; n++){
+                this.data[index(i,n)] = tensors[i].get(n);
+            }
+        }
+    }
+
     public Tensor2D(double[][] data){
         this.dimensions = new int[2];
         this.dimensions[0] = data.length;
