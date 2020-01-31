@@ -5,10 +5,6 @@ import java.util.Random;
 
 public class Tensor1D extends Tensor{
 
-    protected int[] partialDimensions;
-    protected int[] dimensions;
-    protected int size;
-
     public Tensor1D(Tensor1D tensor){
         this.partialDimensions = Arrays.copyOf(tensor.partialDimensions, tensor.partialDimensions.length);
         this.dimensions = Arrays.copyOf(tensor.dimensions, tensor.dimensions.length);
@@ -17,20 +13,10 @@ public class Tensor1D extends Tensor{
     }
 
     public Tensor1D(double[] data) {
-        this(data.length);
+        super(data.length);
         this.data = data;
     }
 
-    public Tensor1D(int size) {
-        this.dimensions = new int[]{size};
-        this.size = 1;
-        this.partialDimensions = new int[dimensions.length];
-        for (int i = 0; i < dimensions.length; i++) {
-            partialDimensions[i] = size;
-            this.size *= dimensions[i];
-        }
-        this.data = new double[this.size];
-    }
 
     public void transpose(int dimA, int dimB) {
         int dim = partialDimensions[dimA];
@@ -105,4 +91,13 @@ public class Tensor1D extends Tensor{
                 '}';
     }
 
+
+    public static void main(String[] args) {
+        Tensor1D tensor1D = new Tensor1D(new double[]{1,2,3,4});
+        System.out.println(tensor1D);
+        System.out.println(tensor1D.size);
+        System.out.println(Arrays.toString(tensor1D.dimensions));
+        System.out.println(Arrays.toString(tensor1D.partialDimensions));
+
+    }
 }

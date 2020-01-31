@@ -87,12 +87,14 @@ public class NoahEvaluator2 extends GeneticEvaluator<NoahEvaluator2> implements 
 
     public static Tensor1D negateTensor(Tensor1D tensor2D){
         Tensor1D tensor2D1 = new Tensor1D(tensor2D);
+        System.out.println(tensor2D1);
         tensor2D1.scale(-1);
+        System.out.println(tensor2D1);
         return tensor2D1;
     }
 
     public static Tensor1D flipTensor(Tensor1D tensor){
-        Tensor1D flipped = new Tensor1D(64);
+        Tensor1D flipped = new Tensor1D(tensor);
         for(int i = 0; i < 32; i++){
             int file = BitBoard.fileIndex(i);
             int rank = BitBoard.rankIndex(i);
@@ -188,7 +190,8 @@ public class NoahEvaluator2 extends GeneticEvaluator<NoahEvaluator2> implements 
         for(i = 0; i < fb.getWhite_pieces()[0].size(); i ++) {
             index = fb.getWhite_pieces()[0].get(i);
             ev += pieceValue.get(7, index);
-        }for(i = 0; i < fb.getWhite_pieces()[1].size(); i ++) {
+        }
+        for(i = 0; i < fb.getWhite_pieces()[1].size(); i ++) {
             index = fb.getWhite_pieces()[1].get(i);
             ev += pieceValue.get(8, index);
         }for(i = 0; i < fb.getWhite_pieces()[2].size(); i ++) {
@@ -207,10 +210,12 @@ public class NoahEvaluator2 extends GeneticEvaluator<NoahEvaluator2> implements 
                     PARAMETER_KING_SAFETY_1;
             ev += (BitBoard.bitCount(BitBoard.KING_ATTACKS[index] & fb.getTeam_total()[1])) *
                     PARAMETER_KING_SAFETY_2;
-        }for(i = 0; i < fb.getBlack_pieces()[0].size(); i ++) {
+        }
+        for(i = 0; i < fb.getBlack_pieces()[0].size(); i ++) {
             index = fb.getBlack_pieces()[0].get(i);
             ev += pieceValue.get(5, index);
-        }for(i = 0; i < fb.getBlack_pieces()[1].size(); i ++) {
+        }
+        for(i = 0; i < fb.getBlack_pieces()[1].size(); i ++) {
             index = fb.getBlack_pieces()[1].get(i);
             ev += pieceValue.get(4, index);
         }for(i = 0; i < fb.getBlack_pieces()[2].size(); i ++) {
@@ -240,8 +245,8 @@ public class NoahEvaluator2 extends GeneticEvaluator<NoahEvaluator2> implements 
                 BitBoard.bitCount(BitBoard.shiftNorth(fb.getWhite_values()[0]) & fb.getWhite_values()[0]);
         ev += PARAMATER_DOUBLED_PAWN *
                 BitBoard.bitCount(BitBoard.shiftSouth(fb.getBlack_values()[0]) & fb.getBlack_values()[0]);
-        
-        
+
+
         ev += PARAMETER_CONNECTED_PAWN *
                 (BitBoard.bitCount(BitBoard.shiftNorthEast(fb.getWhite_values()[0]) & fb.getWhite_values()[0])+
                 BitBoard.bitCount(BitBoard.shiftNorthWest(fb.getWhite_values()[0]) & fb.getWhite_values()[0]));

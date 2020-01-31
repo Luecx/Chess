@@ -118,6 +118,15 @@ public class SearchOverview {
         this.qDepth = qDepth;
     }
 
+    public static String timeToString(long mills) {
+
+        int min = (int) (mills / (60 * 1E3) % 60);
+        int sec = (int) (mills / 1E3 % 60);
+        int mil = (int) (mills % 1E3);
+
+        return String.format("time[m:s:ms]: %02d:%02d:%03d", min, sec, mil);
+    }
+
     /**
      * prints a summary of the last iteration.
      * <p>

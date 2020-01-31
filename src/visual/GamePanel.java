@@ -263,6 +263,14 @@ public class GamePanel extends JPanel {
     }
 
     /**
+     * returns the current game object
+     * @return
+     */
+    public Game getGame() {
+        return g;
+    }
+
+    /**
      * This method will process a move.
      * It will create a new Thread to not interrupt the rendering.
      * The Thread will call the move() method of the game.

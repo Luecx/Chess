@@ -863,6 +863,7 @@ public class SlowBoard extends Board<SlowBoard> {
     public static void main(String[] args) {
         Board b = new FastBoard(Setup.DEFAULT);
 
+        //b = IO.read_FEN(b, "r2q1rk1/1pp1bppp/p1npbn2/4p1B1/B3P3/2NP1N2/PPPQ1PPP/2KR3R");
         //b = IO.read_FEN(b, "QBN2nbq/QBN2nbq/QBN2nbq/KBN2nbq/QBN2nbk/QBN2nbq/QBN2nbq/QBN2nbq w - - 0 1");
         //b = IO.read_FEN(b, "6k1/8/5K2/1Q6/8/8/8/8 w - - 0 1");
         //b = IO.read_FEN(b,"r1bq1rk1/ppp1bppp/4p3/n2pP3/3P3P/2PBBN2/P1P2PP1/1R1QK2R b Kq - 0 1");
@@ -870,10 +871,10 @@ public class SlowBoard extends Board<SlowBoard> {
 
         PVSearchFast ai1 = new PVSearchFast(
                 new NoahEvaluator2(),
-                new SystematicOrderer(),
-                new SenpaiReducer(1),
-                2,
-                6,
+                new SystematicOrderer2(),
+                new SenpaiReducer(2),
+                1,
+                1000,
                 0);
         ai1.setUse_iteration(true);
         ai1.setUse_killer_heuristic(true);
@@ -883,15 +884,10 @@ public class SlowBoard extends Board<SlowBoard> {
 
 
 
-        //System.out.println(b);
-
-//        ai1.bestMove(b);
-//
-
         PVSearch ai2 = new PVSearch(
                 new NoahEvaluator(),
                 new SystematicOrderer2(),
-                new SenpaiReducer(0),
+                new SenpaiReducer(2),
                 1,
                 1000,
                 0);
@@ -903,7 +899,7 @@ public class SlowBoard extends Board<SlowBoard> {
         //MCTS<ChessNodeData> mcts = new MCTS<>(new UCT(), new EvaluatingSimulator(),new ChessExpander());
 
 
-        new Frame(b, ai2,ai1);
+        new Frame(b, ai1,ai2);
     }
 
 }

@@ -137,6 +137,10 @@ public class Frame extends JFrame implements KeyListener {
         new Frame(b, white, black).setFlippedBoard(flip);
     }
 
+    public GamePanel getGamePanel() {
+        return gamePanel;
+    }
+
     @Override
     public void keyTyped(KeyEvent e) {
     }

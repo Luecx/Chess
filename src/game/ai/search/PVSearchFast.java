@@ -417,6 +417,8 @@ public class PVSearchFast implements AI {
             _transpositionTable = new TranspositionTable<>((int) (5E6));//50E6
         }
 
+
+
         PVLine pvLine = null;
         if (use_iteration) {
             if(limit_flag == FLAG_TIME_LIMIT){
@@ -447,7 +449,7 @@ public class PVSearchFast implements AI {
                 int depth = 1;
                 long prevTime = System.currentTimeMillis();
                 long prevNode = 1;
-                double branchingFactor = 1;
+                double branchingFactor;
                 double expectedTime = 0;
                 while (System.currentTimeMillis() - time + expectedTime < limit) {
                     pvLine = iteration(depth++, pvLine);
@@ -481,9 +483,16 @@ public class PVSearchFast implements AI {
         searchOverview.setDepth(this._depth);
         searchOverview.setTotalTime((int)(System.currentTimeMillis()-time));
         if(print_overview){
-            for(Move m:pvLine.getLine()){
-                System.out.print(IO.algebraicNotation(board, m));
+            System.out.print(SearchOverview.timeToString(System.currentTimeMillis()-time) + "  pv: ");
+            //System.out.println();
+            if(pvLine != null){
+                for(Move m:pvLine.getLine()){
+                    System.out.print(IO.algebraicNotation(board, m) + " ");
+                }
+            }else{
+                System.out.print(IO.algebraicNotation(board, _bestMove));
             }
+
             System.out.println();
         }
         //</editor-fold>
@@ -504,18 +513,21 @@ public class PVSearchFast implements AI {
     public PVLine iteration(int depth, PVLine lastIteration) {
 
 
-        if(use_killer_heuristic)
-            _killerTable = new KillerTable(depth+1+null_move_reduction, killer_count);
 
         _depth              = depth;
         _terminalNodes      = 0;
         _visitedNodes       = 0;
         _quiesceNodes       = 0;
 
+
+        if(use_killer_heuristic)
+            _killerTable = new KillerTable(_depth+quiesce_depth+1+null_move_reduction, killer_count);
+
         PVLine pline        = new PVLine(_depth);
         long time           = System.currentTimeMillis();
 
         pvSearch(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, 0, depth, 0,true, pline, lastIteration);
+
 
 
         searchOverview.addIteration(

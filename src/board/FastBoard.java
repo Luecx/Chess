@@ -7,7 +7,9 @@ import board.moves.MoveListBuffer;
 import board.pieces.PieceList;
 import board.repetitions.RepetitionList;
 import board.setup.Setup;
+import game.Game;
 import game.Player;
+import game.ai.evaluator.Evaluator;
 import game.ai.evaluator.NoahEvaluator;
 import game.ai.evaluator.NoahEvaluator2;
 import io.IO;
@@ -520,40 +522,15 @@ public class FastBoard extends Board<FastBoard> {
 
     public static void main(String[] args) {
         FastBoard board = new FastBoard(Setup.DEFAULT);
+        Evaluator ev1 = new NoahEvaluator();
+        Evaluator ev2 = new NoahEvaluator2();
 
-        board = IO.read_FEN(board,"r1bq1rk1/ppp1bppp/4p3/n2pP3/3P3P/2PBBN2/P1P2PP1/1R1QK2R b Kq - 0 1");
-
-        NoahEvaluator2 ev = new NoahEvaluator2();
-//        MoveListBuffer buffer = new MoveListBuffer(10);
-//
-//        System.out.println(Testing.perft_pseudo(board, 3,buffer));
-
-
-        MoveList ml = new MoveList(90);
-        Move m = board.getPseudoLegalMoves(ml).get(0);
-        long t = System.currentTimeMillis();
-
-        for(int i = 0; i < 1E7; i++){
-            board.move(m);
-            board.undoMove();
-            //board.getPseudoLegalMoves(ml);
-            //ev.evaluate(board);
-        }
-        System.out.println(System.currentTimeMillis()-t);
-
-
-
-
-//
-//
-//        BitBoard.printBitmap(board.getAttackedSquaresFromWhite());
-//
-//
-//        System.out.println(BitBoard.bitCount(board.getAttackedSquaresFromWhite()));
-//        System.out.println(BitBoard.bitCount(board.getAttackedSquaresFromBlack()));
-//
-//        //System.out.println(board);
-//        new Frame(board, new Player(){}, new Player(){});
-
+        Frame f = new Frame(board, new Player() {}, new Player() {});
+        Game g = f.getGamePanel().getGame();
+        g.addBoardChangedListener(() -> {
+            System.out.println("ev1: " + ev1.evaluate(g.getBoard()));
+            System.out.println("ev2: " + ev2.evaluate(g.getBoard()));
+            System.out.println();
+        });
     }
 }
