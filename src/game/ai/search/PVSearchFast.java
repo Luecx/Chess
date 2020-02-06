@@ -1,6 +1,7 @@
 package game.ai.search;
 
 import board.Board;
+import board.FastBoard;
 import board.moves.Move;
 import board.moves.MoveListBuffer;
 import game.ai.evaluator.Evaluator;
@@ -803,9 +804,24 @@ public class PVSearchFast implements AI {
      */
     private double Quiesce(double alpha, double beta, int currentDepth, int depth_left) {
         _quiesceNodes++;
+
+
+        List<Move> allMoves =
+                use_move_lists ?
+                        _board.getCaptureMoves(_buffer.get(currentDepth)):
+                        _board.getCaptureMoves();
+
+
+
+
+        if(allMoves == null){
+            return Double.NaN; //return NaN if previous move was illegal.
+        }
+
         double stand_pat = evaluator.evaluate(_board) * _board.getActivePlayer();
 
-        if(_board.isGameOver()){
+
+        if(_board.isGameOver() || allMoves.size() == 0){
             return stand_pat;
         }
         if (depth_left == 0) {
@@ -819,16 +835,22 @@ public class PVSearchFast implements AI {
         if (alpha < stand_pat)
             alpha = stand_pat;
 
-        List<Move> allMoves =
-                use_move_lists ?
-                        _board.getCaptureMoves(_buffer.get(currentDepth)):
-                        _board.getCaptureMoves();
+
 
         orderer.sort(allMoves, 0, null, _board, false, null, null);
+        int legalMoves = 0;         //count the amount of legal captures.
+                                    // if its 0, we do a full research with all moves (most of them will be illegal as well)
         for (Move m : allMoves) {
+
             _board.move(m);
             double score = -Quiesce(-beta, -alpha, currentDepth + 1, depth_left - 1);
             _board.undoMove();
+
+            if(!Double.isNaN(score)){
+                legalMoves ++;
+                continue;
+            }
+
             if (score >= beta) {
                 return beta;
             }
@@ -836,6 +858,43 @@ public class PVSearchFast implements AI {
                 alpha = score;
 
         }
+
+        //full research
+        if(legalMoves == 0){
+            allMoves =
+                    use_move_lists ?
+                            _board.getPseudoLegalMoves(_buffer.get(currentDepth)):
+                            _board.getPseudoLegalMoves();
+            for (Move m : allMoves) {
+                _board.move(m);
+                double score = -Quiesce(-beta, -alpha, currentDepth + 1, depth_left - 1);
+                _board.undoMove();
+
+                if(!Double.isNaN(score)){
+                    legalMoves ++;
+                    continue;
+                }
+
+                if (score >= beta) {
+                    return beta;
+                }
+                if (score > alpha)
+                    alpha = score;
+
+            }
+        }
+
+        //check for gameover
+        if(legalMoves == 0){
+            //System.out.println(_board);
+            if(_board.isAtCheck(_board.getActivePlayer())){
+                return -LateGameEvaluator.INFTY;
+            }else{
+                return 0;
+            }
+        }
+
+
         return alpha;
     }
 }

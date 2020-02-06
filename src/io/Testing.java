@@ -419,10 +419,10 @@ public class Testing {
 
         PVSearchFast ai1 = new PVSearchFast(
                 new NoahEvaluator(),
-                new SystematicOrderer2(),
-                new SenpaiReducer(),
+                new SystematicOrderer(),
+                new SenpaiReducer(40),
                 2,
-                10,
+                8,
                 0);
         ai1.setUse_killer_heuristic(true);
         ai1.setUse_null_moves(true);
@@ -435,10 +435,10 @@ public class Testing {
 
         PVSearchFast ai2 = new PVSearchFast(
                 new NoahEvaluator(),
-                new SystematicOrderer2(),
-                new SenpaiReducer(),
+                new SystematicOrderer(),
+                new SenpaiReducer(40),
                 2,
-                10,
+                8,
                 0);
 
         ai2.setUse_killer_heuristic(true);

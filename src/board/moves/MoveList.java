@@ -147,26 +147,24 @@ public class MoveList implements Iterable<Move>, List<Move> {
         throw new RuntimeException();
     }
 
-    public void add(int from, int to, int pieceFrom, int pieceTo) {
-        this.add(from, to, pieceFrom, pieceTo, (short) 0);
+    public Move add(int from, int to, int pieceFrom, int pieceTo) {
+        return this.add(from, to, pieceFrom, pieceTo, (short) 0);
     }
 
-    public void add(int from, int to, Board board) {
-        this.add(from,to,board.getPiece(from),board.getPiece(to), (short)0);
+    public Move add(int from, int to, Board board) {
+        return this.add(from,to,board.getPiece(from),board.getPiece(to), (short)0);
     }
 
     public void add() {
-        System.out.println(this.size());
         this.add(0,0,0,0,(short)0);
         this.moves[size-1].isNull = true;
-        System.out.println("null move " + (size-1));
     }
 
-    public void add(int from, int to, Board board, short metaInformation) {
-        this.add(from,to,board.getPiece(from),board.getPiece(to), metaInformation);
+    public Move add(int from, int to, Board board, short metaInformation) {
+        return this.add(from,to,board.getPiece(from),board.getPiece(to), metaInformation);
     }
 
-    public void add(int from, int to, int pieceFrom, int pieceTo, short metaInformation) {
+    public Move add(int from, int to, int pieceFrom, int pieceTo, short metaInformation) {
         if(this.size == moves.length){
             this.setCapacity(moves.length * 2);
         }
@@ -177,7 +175,11 @@ public class MoveList implements Iterable<Move>, List<Move> {
         m.pieceFrom = pieceFrom;
         m.pieceTo = pieceTo;
         m.metaInformation = metaInformation;
+        m.castle_move = false;
+        m.en_passent_capture = false;
+        m.promotion = false;
         this.size ++;
+        return m;
     }
 
     @Override

@@ -13,7 +13,14 @@ public class Move {
     int to;
     int pieceFrom;
     int pieceTo;
+
+    boolean promotion;
+    boolean castle_move;
+    boolean en_passent_capture;
+
     short metaInformation;
+    long secureFields;
+    long enPassentField;
 
     boolean isNull; // true if it is a null-move ie a "pass"
     int orderPriority;
@@ -56,6 +63,8 @@ public class Move {
         this.metaInformation = metaInformation;
     }
 
+
+
     public short getMetaInformation() {
         return metaInformation;
     }
@@ -87,6 +96,46 @@ public class Move {
     }
 
     public int getOrderPriority() { return orderPriority; }
+
+    public long getSecureFields() {
+        return secureFields;
+    }
+
+    public void setSecureFields(long secureFields) {
+        this.secureFields = secureFields;
+    }
+
+    public long getEnPassentField() {
+        return enPassentField;
+    }
+
+    public void setEnPassentField(long enPassentField) {
+        this.enPassentField = enPassentField;
+    }
+
+    public boolean isCastle_move() {
+        return castle_move;
+    }
+
+    public void setCastle_move(boolean castle_move) {
+        this.castle_move = castle_move;
+    }
+
+    public boolean isEn_passent_capture() {
+        return en_passent_capture;
+    }
+
+    public void setEn_passent_capture(boolean en_passent_capture) {
+        this.en_passent_capture = en_passent_capture;
+    }
+
+    public boolean isPromotion() {
+        return promotion;
+    }
+
+    public void setPromotion(boolean promotion) {
+        this.promotion = promotion;
+    }
 
     @Override
     public boolean equals(Object o) {

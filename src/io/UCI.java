@@ -27,7 +27,7 @@ public class UCI {
     private static String ENGINENAME = "Waldi"; // we should decide on a name of the engine
     private static Board b = new SlowBoard(Setup.DEFAULT);
     private static PVSearch ai = new PVSearch(
-            new NoahEvaluator2(),
+            new NoahEvaluator(),
             new SystematicOrderer2(),
             new SenpaiReducer(),
             PVSearch.FLAG_TIME_LIMIT,

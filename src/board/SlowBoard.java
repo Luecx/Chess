@@ -775,6 +775,11 @@ public class SlowBoard extends Board<SlowBoard> {
     }
 
     @Override
+    public boolean previousMoveIsLegal() {
+        return false;
+    }
+
+    @Override
     public int getPiece(int x, int y) {
         return field[index(x, y)];
     }
@@ -861,9 +866,9 @@ public class SlowBoard extends Board<SlowBoard> {
 
 
     public static void main(String[] args) {
-        Board b = new FastBoard(Setup.DEFAULT);
+        FastBoard b = new FastBoard(Setup.DEFAULT);
 
-        //b = IO.read_FEN(b, "r2q1rk1/1pp1bppp/p1npbn2/4p1B1/B3P3/2NP1N2/PPPQ1PPP/2KR3R");
+        //b = IO.read_FEN(b, "8/2k1P1q1/8/8/8/8/2K5/8 w - - 0 1");
         //b = IO.read_FEN(b, "QBN2nbq/QBN2nbq/QBN2nbq/KBN2nbq/QBN2nbk/QBN2nbq/QBN2nbq/QBN2nbq w - - 0 1");
         //b = IO.read_FEN(b, "6k1/8/5K2/1Q6/8/8/8/8 w - - 0 1");
         //b = IO.read_FEN(b,"r1bq1rk1/ppp1bppp/4p3/n2pP3/3P3P/2PBBN2/P1P2PP1/1R1QK2R b Kq - 0 1");
@@ -873,9 +878,9 @@ public class SlowBoard extends Board<SlowBoard> {
                 new NoahEvaluator2(),
                 new SystematicOrderer2(),
                 new SenpaiReducer(2),
-                1,
-                1000,
-                0);
+                2,
+                12,
+                6);
         ai1.setUse_iteration(true);
         ai1.setUse_killer_heuristic(true);
         ai1.setUse_null_moves(true);
@@ -883,23 +888,30 @@ public class SlowBoard extends Board<SlowBoard> {
         ai1.setUse_transposition(false);
 
 
+        //ai1.bestMove(b);
 
-        PVSearch ai2 = new PVSearch(
-                new NoahEvaluator(),
-                new SystematicOrderer2(),
-                new SenpaiReducer(2),
-                1,
-                1000,
-                0);
-        ai2.setUse_killer_heuristic(true);
-        ai2.setUse_null_moves(true);
-        ai2.setUse_LMR(true);
-        ai2.setUse_transposition(false);
+//        PVSearch ai2 = new PVSearch(
+//                new NoahEvaluator(),
+//                new SystematicOrderer2(),
+//                new SenpaiReducer(2),
+//                1,
+//                5000,
+//                0);
+//        ai2.setUse_killer_heuristic(true);
+//        ai2.setUse_null_moves(true);
+//        ai2.setUse_LMR(true);
+//        ai2.setUse_transposition(false);
 
         //MCTS<ChessNodeData> mcts = new MCTS<>(new UCT(), new EvaluatingSimulator(),new ChessExpander());
 
 
-        new Frame(b, ai1,ai2);
+        new Frame(b, new Player(){},ai1).getGamePanel().getGame().addBoardChangedListener(new Runnable() {
+            @Override
+            public void run() {
+                //System.out.println(b);
+
+            }
+        });
     }
 
 }

@@ -7,6 +7,7 @@ import game.ai.tools.KillerTable;
 import game.ai.tools.PVLine;
 import game.ai.tools.TranspositionEntry;
 import game.ai.tools.TranspositionTable;
+import io.IO;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -55,7 +56,6 @@ public class SystematicOrderer2 implements Orderer {
                 }
             }
         }
-
 
         //hash moves
 

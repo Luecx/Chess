@@ -254,6 +254,8 @@ public abstract class Board<T extends Board<T>> {
      */
     public abstract void undoMove();
 
+    public abstract boolean previousMoveIsLegal();
+
     /**
      * the method is used to determine who won the game
      * @return +1 if white won/-1 if black won

@@ -124,7 +124,7 @@ public class RepetitionList {
         RepetitionList list = (RepetitionList) o;
         if (entries.size() != list.entries.size()) return false;
         for(int i = 0; i < entries.size(); i++){
-            if(!entries.get(i).equals(list.entries.size())) return false;
+            if(!entries.get(i).equals(list.entries.get(i))) return false;
         }
         return true;
     }

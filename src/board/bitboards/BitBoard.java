@@ -6,14 +6,15 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Random;
 
 public class BitBoard {
+
+
+    public static final long empty_set                              = 0x0000000000000000L;
+    public static final long universal_set                          = 0xffffffffffffffffL;
 
     public static final long h_file                                 = 0x8080808080808080L;
     public static final long g_file                                 = h_file >>> 1;
@@ -88,12 +89,32 @@ public class BitBoard {
             anti_diagonal_0, anti_diagonal_1, anti_diagonal_2, anti_diagonal_3, anti_diagonal_4,
             anti_diagonal_5, anti_diagonal_6, anti_diagonal_7, anti_diagonal_8, anti_diagonal_9,
             anti_diagonal_10, anti_diagonal_11, anti_diagonal_12, anti_diagonal_13, anti_diagonal_14};
-    
-    public static final long empty_set                              = 0x0000000000000000L;
-    public static final long universal_set                          = 0xffffffffffffffffL;
 
 
-    public static final long[] bishopRelevantOccupancy = new long[] {
+    public static final long castling_white_queenside_mask          = 0x000000000000000EL;
+    public static final long castling_white_kingside_mask           = 0x0000000000000060L;
+    public static final long castling_black_queenside_mask          = castling_white_queenside_mask << (7 * 8);
+    public static final long castling_black_kingside_mask           = castling_white_kingside_mask  << (7 * 8);
+
+    //describes the fields that must not be attacked
+    public static final long castling_white_queenside_safe          = 0x000000000000001CL;
+    public static final long castling_white_kingside_safe           = castling_white_queenside_safe << 2;
+    public static final long castling_black_queenside_safe          = castling_white_queenside_safe << (7 * 8);
+    public static final long castling_black_kingside_safe           = castling_white_kingside_safe  << (7 * 8);
+
+
+    public static final boolean VALIDATE_MAGICS                     = false;
+    public static final boolean GENERATE_SLIDING_ATTACKS            = false;
+    public static final String  SLIDING_ATTACKS_SOURCE              = "resources/slidingAttacks.txt";
+    public static final long    NEW_LINE                            = 0xFFFFFFFFFFFFFFFFL;
+
+
+    public static final long[][] all_hashes                         = new long[12][64];        //12 * 64
+    public static final long[][] white_hashes                       = new long[6][64];      //6 * 64
+    public static final long[][] black_hashes                       = new long[6][64];      //6 * 64
+
+
+    public static final long[] bishopMasks = new long[] {
             0x0040201008040200L, 0x0000402010080400L, 0x0000004020100a00L, 0x0000000040221400L,
             0x0000000002442800L, 0x0000000204085000L, 0x0000020408102000L, 0x0002040810204000L,
             0x0020100804020000L, 0x0040201008040000L, 0x00004020100a0000L, 0x0000004022140000L,
@@ -112,7 +133,7 @@ public class BitBoard {
             0x0028440200000000L, 0x0050080402000000L, 0x0020100804020000L, 0x0040201008040200L
     };
 
-    public static final long[] rookRelevantOccupancy = new long[] {
+    public static final long[] rookMasks = new long[] {
             0x000101010101017eL, 0x000202020202027cL, 0x000404040404047aL, 0x0008080808080876L,
             0x001010101010106eL, 0x002020202020205eL, 0x004040404040403eL, 0x008080808080807eL,
             0x0001010101017e00L, 0x0002020202027c00L, 0x0004040404047a00L, 0x0008080808087600L,
@@ -190,17 +211,6 @@ public class BitBoard {
             0x00FFFCDDFCED714AL, 0x007FFCDDFCED714AL, 0x003FFFCDFFD88096L, 0x0000040810002101L,
             0x0001000204080011L, 0x0001000204000801L, 0x0001000082000401L, 0x0001FFFAABFAD1A2L
     };
-
-
-    public static final boolean VALIDATE_MAGICS                     = false;
-    public static final boolean GENERATE_SLIDING_ATTACKS            = false;
-    public static final String  SLIDING_ATTACKS_SOURCE              = "resources/slidingAttacks.txt";
-    public static final long    NEW_LINE                            = 0xFFFFFFFFFFFFFFFFL;
-
-
-    public static final long[][] all_hashes                         = new long[12][64];        //12 * 64
-    public static final long[][] white_hashes                       = new long[6][64];      //6 * 64
-    public static final long[][] black_hashes                       = new long[6][64];      //6 * 64
 
 
     public static final long[]                      KING_ATTACKS    = new long[]{
@@ -291,9 +301,9 @@ public class BitBoard {
 
     public static void generateBuffers() {
         for (int i = 0; i < 64; i++){
-            long relevant = bishopRelevantOccupancy[i];
+            long relevant = bishopMasks[i];
             BISHOP_BUFFER[i] = new SlidingPieceBuffer(relevant, bishopMagics[i], bishopShifts[i]);
-            relevant = rookRelevantOccupancy[i];
+            relevant = rookMasks[i];
             ROOK_BUFFER[i] = new SlidingPieceBuffer(relevant, rookMagics[i], rookShifts[i]);
         }
     }
@@ -495,11 +505,11 @@ public class BitBoard {
      * can be used to recalculate the tables above
      */
     public static void generateMagicRookNumber(int square, int attempts){
-        int offset = bitCount(rookRelevantOccupancy[square]);
-        long magic = generateMagic(rookRelevantOccupancy[square], square, offset, false, attempts);
+        int offset = bitCount(rookMasks[square]);
+        long magic = generateMagic(rookMasks[square], square, offset, false, attempts);
         while (magic == 0) {
             offset++;
-            magic = generateMagic(rookRelevantOccupancy[square], square, offset, false, attempts);
+            magic = generateMagic(rookMasks[square], square, offset, false, attempts);
         }
         System.out.println("generated magic for rook: index=" + square + " shift=" + (64-offset) + " number=" + String.format("0x%016xL", magic));
     }
@@ -508,11 +518,11 @@ public class BitBoard {
      * can be used to recalculate the tables above
      */
     public static void generateMagicBishopNumber(int square, int attempts){
-        int offset = bitCount(bishopRelevantOccupancy[square]);
-        long magic = generateMagic(bishopRelevantOccupancy[square], square, offset, true, attempts);
+        int offset = bitCount(bishopMasks[square]);
+        long magic = generateMagic(bishopMasks[square], square, offset, true, attempts);
         while (magic == 0) {
             offset++;
-            magic = generateMagic(bishopRelevantOccupancy[square], square, offset, true, attempts);
+            magic = generateMagic(bishopMasks[square], square, offset, true, attempts);
         }
         System.out.println("generated magic for bishop: index=" + square + " offset=" + offset + " number=" + String.format("0x%016xL", magic));
     }
@@ -847,7 +857,7 @@ public class BitBoard {
      * @param bb
      * @return
      */
-    public static final int bitscanForward(long bb){
+    public static final int bitscanForward  (long bb){
         return Long.numberOfTrailingZeros(bb);
 //        assert bb != 0;
 //        return index64[(int)(((bb ^ (bb-1L)) * debruijn64) >>> 58)];
@@ -885,8 +895,13 @@ public class BitBoard {
 
     public static void main(String[] args) {
 
-        generateKingAndRookAttacks();
+        //generateKingAndRookAttacks();
         //writeAttackTables(SLIDING_ATTACKS_SOURCE);
+
+
+        BitBoard.printBitmap(castling_white_queenside_safe);
+        BitBoard.printBitmap(castling_white_kingside_safe);
+
 
     }
 

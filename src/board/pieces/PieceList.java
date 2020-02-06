@@ -1,6 +1,7 @@
 package board.pieces;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 public class PieceList {
 
@@ -60,6 +61,27 @@ public class PieceList {
             }
         }
         size--;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        PieceList list = (PieceList) o;
+        if(piece != list.piece || size != list.size) return false;
+        for(int i = 0; i < size; i++){
+            if(list.indices[i] != indices[i]){
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hash(piece, size);
+        result = 31 * result + Arrays.hashCode(indices);
+        return result;
     }
 
     @Override
