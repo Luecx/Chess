@@ -61,7 +61,7 @@ public class SystematicOrderer2 implements Orderer {
         long zobrist = board.zobrist();
         if (transpositionTable != null && pvMoves.size() == 0) {
             TranspositionEntry en = (TranspositionEntry) transpositionTable.get(zobrist);
-            if (en != null) {
+            if (en != null && en.getNode_type() != TranspositionEntry.ALL_NODE) {
                 Move hashMove = en.getBestMove();
                 int index = collection.indexOf(hashMove);
                 if (hashMove != null && index != -1) {

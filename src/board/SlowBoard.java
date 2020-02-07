@@ -1,5 +1,6 @@
 package board;
 
+import ai.search.PVSearch;
 import board.bitboards.BitBoard;
 import board.moves.Move;
 import board.moves.MoveList;
@@ -853,9 +854,9 @@ public class SlowBoard extends Board<SlowBoard> {
 
 
     public static void main(String[] args) {
-        FastBoard b = new FastBoard(Setup.DEFAULT);
+        Board b = new FastBoard(Setup.DEFAULT);
 
-        b = IO.read_FEN(b, "8/2q1P1k1/8/8/8/8/8/4KQ2 w - - 0 1");
+        //b = IO.read_FEN(b, "8/2q1P1k1/8/8/8/8/8/4KQ2 w - - 0 1");
         //b = IO.read_FEN(b, "QBN2nbq/QBN2nbq/QBN2nbq/KBN2nbq/QBN2nbk/QBN2nbq/QBN2nbq/QBN2nbq w - - 0 1");
         //b = IO.read_FEN(b, "6k1/8/5K2/1Q6/8/8/8/8 w - - 0 1");
         //b = IO.read_FEN(b,"r1bq1rk1/ppp1bppp/4p3/n2pP3/3P3P/2PBBN2/P1P2PP1/1R1QK2R b Kq - 0 1");
@@ -863,11 +864,11 @@ public class SlowBoard extends Board<SlowBoard> {
 
 
         PVSearchFast ai1 = new PVSearchFast(
-                new NoahEvaluator2(),
+                new NoahEvaluator(),
                 new SystematicOrderer2(),
-                new SenpaiReducer(2),
+                new SenpaiReducer(5),
                 1,
-                2000,
+                1000,
                 0);
         ai1.setUse_iteration(true);
         ai1.setUse_killer_heuristic(true);
@@ -876,36 +877,8 @@ public class SlowBoard extends Board<SlowBoard> {
         ai1.setUse_transposition(false);
         ai1.setUse_move_lists(true);
 
+        ai1.bestMove(b);
 
-
-//        NoahEvaluator2 ev2 = new NoahEvaluator2();
-//        ev2.setEvolvableValues(new double[]{+25.0, -25.0, +22.8, +64.1, +10.1, +23.8, +25.0, +10.0, +15.5});
-//        PVSearchFast ai2 = new PVSearchFast(
-//                ev2,
-//                new SystematicOrderer2(),
-//                new SenpaiReducer(2),
-//                1,
-//                2000,
-//                0);
-//        ai2.setUse_iteration(true);
-//        ai2.setUse_killer_heuristic(true);
-//        ai2.setUse_null_moves(true);
-//        ai2.setUse_LMR(true);
-//        ai2.setUse_transposition(false);
-
-        //ai1.bestMove(b);
-
-//        PVSearch ai2 = new PVSearch(
-//                new NoahEvaluator(),
-//                new SystematicOrderer2(),
-//                new SenpaiReducer(2),
-//                1,
-//                5000,
-//                0);
-//        ai2.setUse_killer_heuristic(true);
-//        ai2.setUse_null_moves(true);
-//        ai2.setUse_LMR(true);
-//        ai2.setUse_transposition(false);
 
         //MCTS<ChessNodeData> mcts = new MCTS<>(new UCT(), new EvaluatingSimulator(),new ChessExpander());
 

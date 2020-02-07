@@ -1,4 +1,4 @@
-package game.ai.tools.tensor;
+package ai.tools.tensor;
 
 import java.util.Arrays;
 import java.util.Random;

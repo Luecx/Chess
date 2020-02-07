@@ -1,13 +1,12 @@
-package game.ai.ordering;
+package ai.ordering;
 
 import board.Board;
 import board.moves.Move;
-import game.ai.evaluator.NoahEvaluator;
-import game.ai.tools.KillerTable;
-import game.ai.tools.PVLine;
-import game.ai.tools.TranspositionTable;
+import ai.evaluator.NoahEvaluator;
+import ai.tools.KillerTable;
+import ai.tools.PVLine;
+import ai.tools.TranspositionTable;
 
-import java.util.Comparator;
 import java.util.List;
 
 public class NoahOrderer implements Orderer {

@@ -1,4 +1,4 @@
-package game.ai.tools.tensor;
+package ai.tools.tensor;
 
 
 public class Tensor3D extends Tensor {

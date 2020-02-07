@@ -687,7 +687,7 @@ public class PVSearch implements AI {
             }
             //</editor-fold>
             //<editor-fold desc="recursion">
-            if (bSearchPv) {
+            if (index == 1 && pv) {
                 //<editor-fold desc="pv node search">
                 score = -pvSearch(
                         -beta,
@@ -710,10 +710,6 @@ public class PVSearch implements AI {
                         false,
                         line,
                         null);
-
-
-
-
                 if (score > alpha && score < beta || (to_reduce != 0 && score > beta))
                     score = -pvSearch(
                             -beta,

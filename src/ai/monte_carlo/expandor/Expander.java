@@ -1,8 +1,8 @@
-package game.ai.monte_carlo.expandor;
+package ai.monte_carlo.expandor;
 
 
-import game.ai.monte_carlo.Node;
-import game.ai.monte_carlo.nodedata.NodeData;
+import ai.monte_carlo.Node;
+import ai.monte_carlo.nodedata.NodeData;
 
 import java.util.List;
 

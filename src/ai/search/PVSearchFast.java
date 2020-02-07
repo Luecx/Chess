@@ -563,8 +563,7 @@ public class PVSearchFast implements AI {
         if (use_transposition == false || !use_transposition || depth > transposition_store_depth + 2) return null;
         TranspositionEntry en = _transpositionTable.get(zobrist);
         if (en != null && _board.getActivePlayer() == en.getColor() && en.getDepthLeft() >= depthLeft) {
-            //&& en.getDepthLeft() >= (_depth - depth) why is this here? it creates an error if removed
-            return en;
+                return en;
         }
         return null;
     }
@@ -615,19 +614,18 @@ public class PVSearchFast implements AI {
 
         double origonalAlpha = alpha;
         //<editor-fold desc="Transposition lookup">
-        //long zobrist = ((SlowBoard) _board).oldZobrist();
-//        long zobrist = _board.zobrist();
+        long zobrist = _board.zobrist();
+
 //        TranspositionEntry transposition = transpositionLookUp(zobrist, currentDepth, depthLeft);
 //        if (transposition != null) {
 //            if (transposition.getNode_type() == TranspositionEntry.PV_NODE) {
-//                //System.out.println("PV transposition");
 //                return transposition.getVal();
 //            } else if (transposition.getNode_type() == TranspositionEntry.CUT_NODE) {
-//                //System.out.println("CUT transposition");
-//                alpha = transposition.getVal();
+//                if(alpha < transposition.getVal()){
+//                    alpha = transposition.getVal();
+//                }
 //                if (alpha >= beta) return beta;
 //            } else if (transposition.getNode_type() == TranspositionEntry.ALL_NODE) {
-//                //System.out.println("ALL transposition");
 //                beta = transposition.getVal();
 //                if (beta <= alpha) return alpha;
 //            }
@@ -635,7 +633,6 @@ public class PVSearchFast implements AI {
         //</editor-fold>
         //<editor-fold desc="zugzwang">
         List<Move> allMoves = _board.getPseudoLegalMoves(_buffer.get(currentDepth));
-
 
         if(allMoves == null){
             return Double.NaN;
@@ -652,7 +649,7 @@ public class PVSearchFast implements AI {
         PVLine line = new PVLine(_depth - currentDepth);
         //<editor-fold desc="Null moves">
         double score = Double.NEGATIVE_INFINITY;
-        if (use_null_moves && !zugzwang) {
+        if (use_null_moves && allMoves.size() > 1) {
             Move nullMove = new Move();
             _board.move(nullMove);
             score = -pvSearch(
@@ -674,7 +671,6 @@ public class PVSearchFast implements AI {
         orderer.sort(allMoves, currentDepth, lastIteration, _board, pv, _killerTable, _transpositionTable);
         //</editor-fold>
         //<editor-fold desc="Searching">
-        boolean bSearchPv = true;
         Move bestMove = allMoves.get(0);
         double bestSoFar = Double.NEGATIVE_INFINITY;
         int legalMoveCounter = 0;
@@ -690,15 +686,15 @@ public class PVSearchFast implements AI {
             }
             //</editor-fold>
             //<editor-fold desc="recursion">
-            if (bSearchPv) {
+            if (legalMoveCounter == 0) {
                 //<editor-fold desc="pv node search">
                 score = -pvSearch(
                         -beta,
                         -alpha,
                         currentDepth + 1,
                         depthLeft - 1 - to_reduce,
-                        index,
-                        bSearchPv && pv,
+                        legalMoveCounter,
+                        true,
                         line,
                         lastIteration);
                 //</editor-fold>
@@ -709,21 +705,18 @@ public class PVSearchFast implements AI {
                         -alpha,
                         currentDepth + 1,
                         depthLeft - 1 - to_reduce,
-                        index,
+                        legalMoveCounter,
                         false,
                         line,
                         null);
 
-
-
-
-                if (score > alpha && score < beta || (to_reduce != 0 && score > beta))
+                if (score > alpha && score < beta)
                     score = -pvSearch(
                             -beta,
                             -alpha,
                             currentDepth + 1,
                             depthLeft - 1 - to_reduce,
-                            index,
+                            legalMoveCounter,
                             false,
                             line,
                             null); // re-search
@@ -764,7 +757,6 @@ public class PVSearchFast implements AI {
                     _bestScore = score;
                     _bestMove = bestMove;
                 }
-                bSearchPv = false;
             }
             //</editor-fold>
         }

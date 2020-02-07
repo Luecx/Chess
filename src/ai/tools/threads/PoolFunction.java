@@ -1,4 +1,4 @@
-package game.ai.tools.threads;
+package ai.tools.threads;
 
 public interface PoolFunction {
 

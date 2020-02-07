@@ -868,7 +868,7 @@ public class FastBoard extends Board<FastBoard> {
 
     public static void main(String[] args) {
         FastBoard board = new FastBoard(Setup.DEFAULT);
-        board = IO.read_FEN(board, "2r1kbq1/4pp2/5p1p/p7/1p2Q3/8/PPPB1PPP/R2R2K1 b - - 2 19");
+        //board = IO.read_FEN(board, "2r1kbq1/4pp2/5p1p/p7/1p2Q3/8/PPPB1PPP/R2R2K1 b - - 2 19");
         FastBoard finalBoard = board;
         new Frame(board, new Player() {}, new Player(){}).getGamePanel().getGame().addBoardChangedListener(new Runnable() {
             @Override

@@ -27,9 +27,9 @@ public class SenpaiReducer implements Reducer {
 
 
         if(depth > 4){
-            return 2;
+            return 0;
         }else{
-            return 1;
+            return 0;
         }
 
 //
