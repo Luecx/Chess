@@ -2,8 +2,7 @@ package game;
 
 import board.Board;
 import board.moves.Move;
-import game.ai.search.AI;
-import io.IO;
+import ai.search.AI;
 
 import java.util.ArrayList;
 

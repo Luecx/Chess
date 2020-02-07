@@ -6,12 +6,7 @@ import board.moves.MoveList;
 import board.pieces.PieceList;
 import board.repetitions.RepetitionList;
 import board.setup.Setup;
-import game.Game;
 import game.Player;
-import game.ai.evaluator.Evaluator;
-import game.ai.evaluator.NoahEvaluator;
-import game.ai.evaluator.NoahEvaluator2;
-import io.Generator;
 import io.IO;
 import visual.Frame;
 
@@ -233,7 +228,6 @@ public class FastBoard extends Board<FastBoard> {
             this.moveHistory.push(m);
             return;
         }
-
         short changingInformation = (short) (0);
 
         //TODO: Big NONO to look at this code... unless you want to get a stroke and/or cardiac arrest
@@ -874,7 +868,7 @@ public class FastBoard extends Board<FastBoard> {
 
     public static void main(String[] args) {
         FastBoard board = new FastBoard(Setup.DEFAULT);
-        board = IO.read_FEN(board, "r1bqkb1r/pppp2pP/2n5/8/5b2/5N2/PPPP2PP/RNB1KB1R w KQkq - 0 1");
+        board = IO.read_FEN(board, "2r1kbq1/4pp2/5p1p/p7/1p2Q3/8/PPPB1PPP/R2R2K1 b - - 2 19");
         FastBoard finalBoard = board;
         new Frame(board, new Player() {}, new Player(){}).getGamePanel().getGame().addBoardChangedListener(new Runnable() {
             @Override

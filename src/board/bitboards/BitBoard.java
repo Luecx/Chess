@@ -171,7 +171,7 @@ public class BitBoard {
             53, 54, 54, 54, 54, 54, 54, 53,
             53, 54, 54, 54, 54, 54, 54, 53,
             53, 54, 54, 54, 54, 54, 54, 53,
-            52, 54, 54, 53, 53, 53, 53, 52
+            52, 53, 53, 53, 53, 53, 53, 52
     };
 
     public static final long[] bishopMagics = new long[]{
@@ -353,14 +353,14 @@ public class BitBoard {
 
             while(fis.read(in) != -1){
                 counter++;
-                long l = ((long) in[7] << 56)
-                        | ((long) in[6] & 0xff) << 48
-                        | ((long) in[5] & 0xff) << 40
-                        | ((long) in[4] & 0xff) << 32
-                        | ((long) in[3] & 0xff) << 24
-                        | ((long) in[2] & 0xff) << 16
-                        | ((long) in[1] & 0xff) << 8
-                        | ((long) in[0] & 0xff);
+                long l = ((long) in[0] << 56)
+                        | ((long) in[1] & 0xff) << 48
+                        | ((long) in[2] & 0xff) << 40
+                        | ((long) in[3] & 0xff) << 32
+                        | ((long) in[4] & 0xff) << 24
+                        | ((long) in[5] & 0xff) << 16
+                        | ((long) in[6] & 0xff) << 8
+                        | ((long) in[7] & 0xff);
 
                 //long l = ByteBuffer.allocate(8).putLong(in).array();
 
@@ -532,6 +532,7 @@ public class BitBoard {
         SlidingPieceBuffer buff = ROOK_BUFFER[index];
         return ROOK_ATTACKS[index][(int)((occupied & buff.getMask()) *
                 buff.getMagic() >>> (buff.getShift()))];
+
         //return generateRookAttack(index, occupied);
     }
 
@@ -895,12 +896,14 @@ public class BitBoard {
 
     public static void main(String[] args) {
 
-        //generateKingAndRookAttacks();
-        //writeAttackTables(SLIDING_ATTACKS_SOURCE);
 
 
-        BitBoard.printBitmap(castling_white_queenside_safe);
-        BitBoard.printBitmap(castling_white_kingside_safe);
+        //System.out.println("written");
+
+        writeAttackTables(SLIDING_ATTACKS_SOURCE);
+
+//        BitBoard.printBitmap(castling_white_queenside_safe);
+//        BitBoard.printBitmap(castling_white_kingside_safe);
 
 
     }

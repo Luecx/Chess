@@ -1,10 +1,8 @@
 package visual;
 
-import board.SlowBoard;
 import board.moves.Move;
 import game.Game;
-import game.ai.evaluator.FinnEvaluator;
-import game.ai.search.AI;
+import ai.search.AI;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;

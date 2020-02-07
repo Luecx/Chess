@@ -1,8 +1,6 @@
 package board.moves;
 
 import board.Board;
-import board.SlowBoard;
-import game.ai.evaluator.NoahEvaluator;
 
 import java.util.Objects;
 
@@ -92,7 +90,14 @@ public class Move {
     public boolean getIsNull() { return isNull; }
 
     public Move copy() {
-        return new Move(from, to, pieceFrom, pieceTo, metaInformation);
+        Move copy = new Move(from, to, pieceFrom, pieceTo, metaInformation);
+        copy.setPromotion(promotion);
+        copy.setSecureFields(secureFields);
+        copy.setEnPassentField(enPassentField);
+        copy.setCastle_move(castle_move);
+        copy.setEn_passent_capture(en_passent_capture);
+        copy.setOrderPriority(orderPriority);
+        return copy;
     }
 
     public int getOrderPriority() { return orderPriority; }

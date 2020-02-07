@@ -5,12 +5,11 @@ import board.SlowBoard;
 import board.moves.Move;
 import board.setup.Setup;
 import game.Game;
-import game.ai.evaluator.FinnEvaluator;
-import game.ai.ordering.SystematicOrderer;
-import game.ai.reducing.SimpleReducer;
-import game.ai.search.AI;
-import game.ai.search.PVSearch;
-import visual.GamePanel;
+import ai.evaluator.FinnEvaluator;
+import ai.ordering.SystematicOrderer;
+import ai.reducing.SimpleReducer;
+import ai.search.AI;
+import ai.search.PVSearch;
 
 import java.text.NumberFormat;
 import java.util.HashMap;

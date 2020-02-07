@@ -3,27 +3,14 @@ package board;
 import board.bitboards.BitBoard;
 import board.moves.Move;
 import board.moves.MoveList;
-import board.moves.MoveListBuffer;
 import board.repetitions.RepetitionList;
 import board.setup.Setup;
 import game.Player;
-import game.ai.evaluator.*;
-import game.ai.monte_carlo.MCTS;
-import game.ai.monte_carlo.expandor.ChessExpander;
-import game.ai.monte_carlo.nodedata.ChessNodeData;
-import game.ai.monte_carlo.selection.UCT;
-import game.ai.monte_carlo.simulator.EvaluatingSimulator;
-import game.ai.ordering.NoOrderer;
-import game.ai.ordering.SimpleOrderer;
-import game.ai.ordering.SystematicOrderer;
-import game.ai.ordering.SystematicOrderer2;
-import game.ai.reducing.Reducer;
-import game.ai.reducing.SenpaiReducer;
-import game.ai.reducing.SimpleReducer;
-import game.ai.search.PVSearch;
-import game.ai.search.PVSearchFast;
+import ai.evaluator.*;
+import ai.ordering.SystematicOrderer2;
+import ai.reducing.SenpaiReducer;
+import ai.search.PVSearchFast;
 import io.IO;
-import io.Testing;
 import visual.Frame;
 
 import java.util.*;
@@ -868,25 +855,43 @@ public class SlowBoard extends Board<SlowBoard> {
     public static void main(String[] args) {
         FastBoard b = new FastBoard(Setup.DEFAULT);
 
-        //b = IO.read_FEN(b, "8/2k1P1q1/8/8/8/8/2K5/8 w - - 0 1");
+        b = IO.read_FEN(b, "8/2q1P1k1/8/8/8/8/8/4KQ2 w - - 0 1");
         //b = IO.read_FEN(b, "QBN2nbq/QBN2nbq/QBN2nbq/KBN2nbq/QBN2nbk/QBN2nbq/QBN2nbq/QBN2nbq w - - 0 1");
         //b = IO.read_FEN(b, "6k1/8/5K2/1Q6/8/8/8/8 w - - 0 1");
         //b = IO.read_FEN(b,"r1bq1rk1/ppp1bppp/4p3/n2pP3/3P3P/2PBBN2/P1P2PP1/1R1QK2R b Kq - 0 1");
         //b = IO.read_FEN(b,"8/8/8/8/5q2/5k2/8/4K3_w_-_-_0_1");
 
+
         PVSearchFast ai1 = new PVSearchFast(
                 new NoahEvaluator2(),
                 new SystematicOrderer2(),
                 new SenpaiReducer(2),
-                2,
-                12,
-                6);
+                1,
+                2000,
+                0);
         ai1.setUse_iteration(true);
         ai1.setUse_killer_heuristic(true);
         ai1.setUse_null_moves(true);
         ai1.setUse_LMR(true);
         ai1.setUse_transposition(false);
+        ai1.setUse_move_lists(true);
 
+
+
+//        NoahEvaluator2 ev2 = new NoahEvaluator2();
+//        ev2.setEvolvableValues(new double[]{+25.0, -25.0, +22.8, +64.1, +10.1, +23.8, +25.0, +10.0, +15.5});
+//        PVSearchFast ai2 = new PVSearchFast(
+//                ev2,
+//                new SystematicOrderer2(),
+//                new SenpaiReducer(2),
+//                1,
+//                2000,
+//                0);
+//        ai2.setUse_iteration(true);
+//        ai2.setUse_killer_heuristic(true);
+//        ai2.setUse_null_moves(true);
+//        ai2.setUse_LMR(true);
+//        ai2.setUse_transposition(false);
 
         //ai1.bestMove(b);
 
@@ -905,7 +910,7 @@ public class SlowBoard extends Board<SlowBoard> {
         //MCTS<ChessNodeData> mcts = new MCTS<>(new UCT(), new EvaluatingSimulator(),new ChessExpander());
 
 
-        new Frame(b, new Player(){},ai1).getGamePanel().getGame().addBoardChangedListener(new Runnable() {
+        new Frame(b,ai1, new Player(){}).getGamePanel().getGame().addBoardChangedListener(new Runnable() {
             @Override
             public void run() {
                 //System.out.println(b);

@@ -6,13 +6,10 @@ import board.SlowBoard;
 import board.setup.Setup;
 import game.Game;
 import game.Player;
-import game.ai.evaluator.NoahEvaluator;
-import game.ai.ordering.SystematicOrderer;
-import game.ai.reducing.SenpaiReducer;
-import game.ai.reducing.SimpleReducer;
-import game.ai.evaluator.FinnEvaluator;
-import game.ai.search.PVSearch;
-import io.IO;
+import ai.evaluator.NoahEvaluator;
+import ai.ordering.SystematicOrderer;
+import ai.reducing.SenpaiReducer;
+import ai.search.PVSearch;
 
 import javax.swing.*;
 import java.awt.event.ComponentAdapter;

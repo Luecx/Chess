@@ -2,20 +2,15 @@ package io;
 
 import board.Board;
 import board.FastBoard;
-import board.SlowBoard;
 import board.moves.Move;
 import board.moves.MoveListBuffer;
-import board.setup.Setup;
-import game.ai.evaluator.FinnEvaluator;
-import game.ai.evaluator.NoahEvaluator;
-import game.ai.ordering.SystematicOrderer;
-import game.ai.ordering.SystematicOrderer2;
-import game.ai.reducing.SenpaiReducer;
-import game.ai.reducing.SimpleReducer;
-import game.ai.search.AI;
-import game.ai.search.PVSearch;
-import game.ai.search.PVSearchFast;
-import game.ai.tools.SearchOverview;
+import ai.evaluator.NoahEvaluator;
+import ai.ordering.SystematicOrderer;
+import ai.reducing.SenpaiReducer;
+import ai.search.AI;
+import ai.search.PVSearch;
+import ai.search.PVSearchFast;
+import ai.tools.SearchOverview;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,19 +1,14 @@
 package io;
 
 import board.Board;
-import board.SlowBoard;
+import board.FastBoard;
 import board.moves.Move;
 import board.setup.Setup;
-import game.ai.evaluator.NoahEvaluator;
-import game.ai.evaluator.NoahEvaluator2;
-import game.ai.ordering.SystematicOrderer;
-import game.ai.ordering.SystematicOrderer2;
-import game.ai.reducing.SenpaiReducer;
-import game.ai.reducing.SimpleReducer;
-import game.ai.search.PVSearch;
-import io.IO;
-
-
+import ai.evaluator.NoahEvaluator2;
+import ai.ordering.SystematicOrderer2;
+import ai.reducing.SenpaiReducer;
+import ai.search.PVSearch;
+import ai.search.PVSearchFast;
 //// coppied from someone else, probabally not using it, and will instead try to do something with Python
 /// because I already have some thing for that.
 import java.io.File;
@@ -25,11 +20,11 @@ import java.util.*;
 public class UCI {
 
     private static String ENGINENAME = "Waldi"; // we should decide on a name of the engine
-    private static Board b = new SlowBoard(Setup.DEFAULT);
-    private static PVSearch ai = new PVSearch(
-            new NoahEvaluator(),
+    private static Board b = new FastBoard(Setup.DEFAULT);
+    private static PVSearchFast ai = new PVSearchFast(
+            new NoahEvaluator2(),
             new SystematicOrderer2(),
-            new SenpaiReducer(),
+            new SenpaiReducer(2),
             PVSearch.FLAG_TIME_LIMIT,
             1000,4);
     public static void uciCommunication() {
@@ -110,11 +105,11 @@ public class UCI {
         input=input.substring(9).concat(" ");
         if (input.contains("startpos ")) {
             input=input.substring(9);
-            b = new SlowBoard(Setup.DEFAULT);
+            b = new FastBoard(Setup.DEFAULT);
         }
         else if (input.contains("fen")) {
             input=input.substring(4);
-            b = IO.read_FEN(new SlowBoard(), input);
+            b = IO.read_FEN(new FastBoard(), input);
         }
         if (input.contains("moves")) {
             input=input.substring(input.indexOf("moves")+6);
@@ -183,6 +178,7 @@ public class UCI {
         Move best = ai.bestMove(b);
 
         log(IO.moveToUCI(best,b)+" info " + ai.getSearchOverview().getInfo() + "\n");
+        log(IO.write_FEN(b) + "\n");
         System.out.println("info " + ai.getSearchOverview().getInfo());
         System.out.println("bestmove " + IO.moveToUCI(best,b));
     }
