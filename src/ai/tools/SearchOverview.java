@@ -160,15 +160,13 @@ public class SearchOverview {
     }
 
     public String getInfo(){
-
-
         return
                 "depth " + depth +
                         " seldepth " + (depth+qDepth) +
                         " nodes " + totalNodes.get(totalNodes.size()-1) +
                         " time " + totalTime +
                         " score " + evaluation +
-                        " nps " + (totalNodes.get(totalNodes.size()-1)/timings.get(timings.size()-1) * 1000);
+                        " nps " + ((totalNodes.get(totalNodes.size()-1) + qSearchNodes.get(timings.size() - 1))/timings.get(timings.size()-1) * 1000);
 
 
     }

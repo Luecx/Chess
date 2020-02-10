@@ -10,3 +10,13 @@ RNBQKBNR
 
 d2d4 info depth 11 seldepth 15 nodes 1287628 time 1340 score 16.0 nps 2283000
 rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - -
+e2e3 info depth 9 seldepth 13 nodes 1620264 time 1500 score 30.0 nps 1940000
+rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - -
+e2e3 info depth 9 seldepth 13 nodes 1620264 time 889 score 30.0 nps 2400000
+rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - -
+e2e3 info depth 9 seldepth 13 nodes 1620264 time 863 score 30.0 nps 2473000
+rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - -
+e2e3 info depth 9 seldepth 13 nodes 1620264 time 879 score 30.0 nps 2421000
+rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - -
+e2e3 info depth 9 seldepth 13 nodes 1620264 time 860 score 30.0 nps 2466000
+rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - -
