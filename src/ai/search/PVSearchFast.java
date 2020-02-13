@@ -16,6 +16,8 @@ import java.util.List;
 public class PVSearchFast implements AI {
 
 
+    public static final int MAXIMUM_STORE_DEPTH = 128;
+
     public static final int FLAG_TIME_LIMIT = 1;
     public static final int FLAG_DEPTH_LIMIT = 2;
 
@@ -26,7 +28,7 @@ public class PVSearchFast implements AI {
     private int limit;                                      //limit for searching. could be a time in ms or a depth
     private int limit_flag;                                 //limit flag to determine if limit is max depth or time
 
-    private int quiesce_depth;                              //max search depth after the full-search has completed
+    private boolean use_qSearch             = true;
     private boolean use_iteration           = true;         //flag for iterative deepening
     private boolean use_transposition       = false;        //flag for transposition tables
     private boolean print_overview          = true;         //flag for output-printing
@@ -42,13 +44,12 @@ public class PVSearchFast implements AI {
 
     private SearchOverview searchOverview;
 
-    public PVSearchFast(Evaluator evaluator, Orderer orderer, Reducer reducer, int limit_flag, int limit, int quiesce_depth) {
+    public PVSearchFast(Evaluator evaluator, Orderer orderer, Reducer reducer, int limit_flag, int limit) {
         this.evaluator = evaluator;
         this.limit_flag = limit_flag;
         this.reducer = reducer;
         this.limit = limit;
         this.orderer = orderer;
-        this.quiesce_depth = quiesce_depth;
     }
 
     /**
@@ -136,28 +137,10 @@ public class PVSearchFast implements AI {
     }
 
     /**
-     * quiesce_depth determines the depth that is searched
-     * after the full depth is completed. It is useful for stability
-     * @return  the quiesce depth
-     */
-    public int getQuiesce_depth() {
-        return quiesce_depth;
-    }
-
-    /**
-     * quiesce_depth determines the depth that is searched
-     * after the full depth is completed. It is useful for stability
-     * @param quiesce_depth   the new quiesce depth
-     */
-    public void setQuiesce_depth(int quiesce_depth) {
-        this.quiesce_depth = quiesce_depth;
-    }
-
-    /**
      * iterative deepening is used to speed up the search process.
      * It searches the game tree multiple time and begins at a
      * depth of 1 and ends up at limit.
-     * By using the information from the previous iteration, it reduces
+     * By using the information from the previous iterationGradient, it reduces
      * the nodes that need to be evaluated.
      * @return  the flag to use iterative deepening
      */
@@ -169,7 +152,7 @@ public class PVSearchFast implements AI {
      * iterative deepening is used to speed up the search process.
      * It searches the game tree multiple time and begins at a
      * depth of 1 and ends up at limit.
-     * By using the information from the previous iteration, it reduces
+     * By using the information from the previous iterationGradient, it reduces
      * the nodes that need to be evaluated.
      * @param use_iteration   new flag to use iterative deepening
      */
@@ -281,6 +264,21 @@ public class PVSearchFast implements AI {
     }
 
     /**
+     * This method sets the use_qSearch flag
+     * @return      a flag for using qSearch
+     */
+    public boolean isUse_qSearch() {
+        return use_qSearch;
+    }
+    /**
+     * This method sets the use_qSearch flag
+     * @param use_qSearch      a flag for using qSearch
+     */
+    public void setUse_qSearch(boolean use_qSearch) {
+        this.use_qSearch = use_qSearch;
+    }
+
+    /**
      * this method returns the last search overview containing information
      * about the iterations, the flags used etc.
      * The search overview resets every time the bestMove() method is called.
@@ -359,6 +357,7 @@ public class PVSearchFast implements AI {
     }
 
     private int _depth;
+    private int _qdepth;
     private int _quiesceNodes;
     private int _visitedNodes;
     private int _terminalNodes;
@@ -379,8 +378,6 @@ public class PVSearchFast implements AI {
         if(!use_iteration && limit_flag == FLAG_TIME_LIMIT){
             throw new RuntimeException("Cannot limit non iterative deepening on time");
         }
-
-
 
         //<editor-fold desc="engame check">
         int totalMaterial = 0;
@@ -408,7 +405,6 @@ public class PVSearchFast implements AI {
                 use_killer_heuristic ? "KILLER HEURISTIC":"",
                 use_LMR ? "LATE_MOVE_REDUCTION":""
         );
-        searchOverview.setqDepth(quiesce_depth);
         //</editor-fold>
 
         long time = System.currentTimeMillis();
@@ -423,29 +419,6 @@ public class PVSearchFast implements AI {
         if (use_iteration) {
             if(limit_flag == FLAG_TIME_LIMIT){
                 //<editor-fold desc="time limited iterative deepening">
-//                final boolean[] stop = new boolean[]{false};
-//                final Move[] move = new Move[]{null};
-//                Thread running = new Thread(() -> {
-//                    try{
-//                        PVLine line = null;
-//                        int depth = 0;
-//                        while(!stop[0]){
-//                            move[0] = _bestMove;
-//                            line = iteration(depth++, line);
-//                        }
-//                    }catch (Exception e){
-//                        System.out.println(e);
-//                    }
-//                });
-//                try {
-//                    running.start();
-//                    Thread.sleep(limit);
-//                    running.interrupt();
-//                    stop[0] = true;
-//                } catch (InterruptedException e) {
-//                    e.printStackTrace();
-//                }
-
                 int depth = 1;
                 long prevTime = System.currentTimeMillis();
                 long prevNode = 1;
@@ -466,7 +439,6 @@ public class PVSearchFast implements AI {
 
                 }
 
-
                 //</editor-fold>
             }else{
                 //<editor-fold desc="depth limited iterative deepening">
@@ -478,6 +450,9 @@ public class PVSearchFast implements AI {
         } else {
             iteration(limit, null);
         }
+
+
+        System.out.println(_qdepth);
 
         //<editor-fold desc="search overview">
         searchOverview.setDepth(this._depth);
@@ -503,9 +478,9 @@ public class PVSearchFast implements AI {
 
 
     /**
-     * processes one iteration to the given depth.
+     * processes one iterationGradient to the given depth.
      * it resets internal values like the best move.
-     * It will also print an overview of the iteration.
+     * It will also print an overview of the iterationGradient.
      * @param depth
      * @param lastIteration
      * @return
@@ -518,10 +493,12 @@ public class PVSearchFast implements AI {
         _terminalNodes      = 0;
         _visitedNodes       = 0;
         _quiesceNodes       = 0;
+        _qdepth             = 0;
+
 
 
         if(use_killer_heuristic)
-            _killerTable = new KillerTable(_depth+quiesce_depth+1+null_move_reduction, killer_count);
+            _killerTable = new KillerTable(MAXIMUM_STORE_DEPTH, killer_count);
 
         PVLine pline        = new PVLine(_depth);
         long time           = System.currentTimeMillis();
@@ -532,6 +509,7 @@ public class PVSearchFast implements AI {
 
         searchOverview.addIteration(
                 _depth,
+                _qdepth,
                 _visitedNodes + _quiesceNodes,
                 _visitedNodes,
                 _terminalNodes,
@@ -549,6 +527,7 @@ public class PVSearchFast implements AI {
             }
             //System.out.println();
         }
+
 
         return pline;
     }
@@ -598,7 +577,7 @@ public class PVSearchFast implements AI {
      * @param pLine             pvLine
      * @param loopIndex         the loop index from the previous recursive call
      * @param depthLeft         the depth left to search
-     * @param lastIteration     pvLine from prev iteration (nullable)
+     * @param lastIteration     pvLine from prev iterationGradient (nullable)
      * @return
      */
     private double pvSearch(
@@ -616,42 +595,45 @@ public class PVSearchFast implements AI {
         //<editor-fold desc="Transposition lookup">
         long zobrist = _board.zobrist();
 
-//        TranspositionEntry transposition = transpositionLookUp(zobrist, currentDepth, depthLeft);
-//        if (transposition != null) {
-//            if (transposition.getNode_type() == TranspositionEntry.PV_NODE) {
-//                return transposition.getVal();
-//            } else if (transposition.getNode_type() == TranspositionEntry.CUT_NODE) {
-//                if(alpha < transposition.getVal()){
-//                    alpha = transposition.getVal();
-//                }
-//                if (alpha >= beta) return beta;
-//            } else if (transposition.getNode_type() == TranspositionEntry.ALL_NODE) {
-//                beta = transposition.getVal();
-//                if (beta <= alpha) return alpha;
-//            }
-//        }
+        TranspositionEntry transposition = transpositionLookUp(zobrist, currentDepth, depthLeft);
+        if (transposition != null) {
+            if (transposition.getNode_type() == TranspositionEntry.PV_NODE) {
+                return transposition.getVal();
+            } else if (transposition.getNode_type() == TranspositionEntry.CUT_NODE) {
+                if(alpha < transposition.getVal()){
+                    alpha = transposition.getVal();
+                }
+                if (alpha >= beta) return beta;
+            } else if (transposition.getNode_type() == TranspositionEntry.ALL_NODE) {
+                beta = transposition.getVal();
+                if (beta <= alpha) return alpha;
+            }
+        }
         //</editor-fold>
         //<editor-fold desc="zugzwang">
-        List<Move> allMoves = _board.getPseudoLegalMoves(_buffer.get(currentDepth));
 
-        if(allMoves == null){
+
+        if(!_board.previousMoveIsLegal()){
             return Double.NaN;
         }
+        List<Move> allMoves = _board.getPseudoLegalMoves(_buffer.get(currentDepth));
 
-        //allMoves will be empty if its checkmate and contain a null move if its a stalemate!
-        boolean zugzwang = allMoves.size() <= 1;
+        if(_board.isDraw()){
+            return 0;
+        }
         //</editor-fold>
         //<editor-fold desc="QSearch">
-        if (depthLeft <= 0 || allMoves.size() == 0 || _board.isGameOver()) {
-            return Quiesce(alpha, beta, currentDepth + 1, quiesce_depth);
+        if (depthLeft <= 0 || allMoves.size() == 0) {
+            return Quiesce(alpha, beta, currentDepth + 1);
         }
         //</editor-fold>
         PVLine line = new PVLine(_depth - currentDepth);
         //<editor-fold desc="Null moves">
         double score = Double.NEGATIVE_INFINITY;
         if (use_null_moves && allMoves.size() > 1) {
-            Move nullMove = new Move();
-            _board.move(nullMove);
+            _board.move_null();
+//            Move nullMove = new Move();
+//            _board.move(nullMove);
             score = -pvSearch(
                     -alpha - 1,
                     -alpha,
@@ -661,10 +643,15 @@ public class PVSearchFast implements AI {
                     false,
                     line,
                     lastIteration);
-            _board.undoMove();
-            if (score >= beta) {
-                return beta;
+            _board.undoMove_null();
+//            _board.undoMove();
+            if(Double.isNaN(score)){
+                score = Double.NEGATIVE_INFINITY;
+            }else if (score >= beta) {
+                    return beta;
             }
+
+
         }
         //</editor-fold>
         //<editor-fold desc="move-ordering">
@@ -778,11 +765,11 @@ public class PVSearchFast implements AI {
             }
         }
 
-//        if (score > origonalAlpha) {
-//            transpositionPlacement(zobrist, currentDepth, depthLeft, alpha, TranspositionEntry.PV_NODE, bestMove);
-//        } else {
-//            transpositionPlacement(zobrist, currentDepth, depthLeft, alpha, TranspositionEntry.ALL_NODE, bestMove);
-//        }
+        if (score > origonalAlpha) {
+            transpositionPlacement(zobrist, currentDepth, depthLeft, alpha, TranspositionEntry.PV_NODE, bestMove);
+        } else {
+            transpositionPlacement(zobrist, currentDepth, depthLeft, alpha, TranspositionEntry.ALL_NODE, bestMove);
+        }
         return alpha;
     }
 
@@ -790,33 +777,37 @@ public class PVSearchFast implements AI {
      * Qsearch after main search
      * @param alpha         lower limit
      * @param beta          upper limit
-     * @param depth_left    depth left until stop
      * @return
      */
-    private double Quiesce(double alpha, double beta, int currentDepth, int depth_left) {
-        _quiesceNodes++;
+    private double Quiesce(double alpha, double beta, int currentDepth) {
 
 
+        if(!use_qSearch){
+            return evaluator.evaluate(_board) * _board.getActivePlayer();
+        }
+
+
+        if(_qdepth < currentDepth){
+            _qdepth = currentDepth;
+        }
+
+        if(!_board.previousMoveIsLegal()){
+            return Double.NaN; //return NaN if previous move was illegal.
+        }
         List<Move> allMoves =
                 use_move_lists ?
                         _board.getCaptureMoves(_buffer.get(currentDepth)):
                         _board.getCaptureMoves();
 
 
-
-
-        if(allMoves == null){
-            return Double.NaN; //return NaN if previous move was illegal.
-        }
+        _quiesceNodes++;
 
         double stand_pat = evaluator.evaluate(_board) * _board.getActivePlayer();
 
-
-        if(_board.isGameOver() || allMoves.size() == 0){
-            return stand_pat;
+        if(_board.isDraw()){
+            return 0;
         }
-        if (depth_left == 0) {
-            _terminalNodes++;
+        if(allMoves.size() == 0){
             return stand_pat;
         }
         if (stand_pat >= beta){
@@ -826,21 +817,25 @@ public class PVSearchFast implements AI {
         if (alpha < stand_pat)
             alpha = stand_pat;
 
-
-
         orderer.sort(allMoves, 0, null, _board, false, null, null);
         int legalMoves = 0;         //count the amount of legal captures.
                                     // if its 0, we do a full research with all moves (most of them will be illegal as well)
         for (Move m : allMoves) {
 
+
+//            if(m.getPieceTo() == 0){
+//                System.out.println(m);
+//            }
+
             _board.move(m);
-            double score = -Quiesce(-beta, -alpha, currentDepth + 1, depth_left - 1);
+            double score = -Quiesce(-beta, -alpha, currentDepth + 1);
             _board.undoMove();
 
-            if(!Double.isNaN(score)){
-                legalMoves ++;
+            if(Double.isNaN(score)){
                 continue;
             }
+            legalMoves ++;
+
 
             if (score >= beta) {
                 return beta;
@@ -850,40 +845,44 @@ public class PVSearchFast implements AI {
 
         }
 
-        //full research
-        if(legalMoves == 0){
-            allMoves =
-                    use_move_lists ?
-                            _board.getPseudoLegalMoves(_buffer.get(currentDepth)):
-                            _board.getPseudoLegalMoves();
-            for (Move m : allMoves) {
-                _board.move(m);
-                double score = -Quiesce(-beta, -alpha, currentDepth + 1, depth_left - 1);
-                _board.undoMove();
-
-                if(!Double.isNaN(score)){
-                    legalMoves ++;
-                    continue;
-                }
-
-                if (score >= beta) {
-                    return beta;
-                }
-                if (score > alpha)
-                    alpha = score;
-
-            }
-        }
-
-        //check for gameover
-        if(legalMoves == 0){
-            //System.out.println(_board);
-            if(_board.isAtCheck(_board.getActivePlayer())){
-                return -LateGameEvaluator.INFTY;
-            }else{
-                return 0;
-            }
-        }
+//        if(legalMoves == 0){
+//            return stand_pat;
+//        }
+//
+//        //full research
+//        if(legalMoves == 0){
+//            allMoves =
+//                    use_move_lists ?
+//                            _board.getPseudoLegalMoves(_buffer.get(currentDepth)):
+//                            _board.getPseudoLegalMoves();
+//            for (Move m : allMoves) {
+//                _board.move(m);
+//                double score = -Quiesce(-beta, -alpha, currentDepth + 1, depth_left - 1);
+//                _board.undoMove();
+//
+//                if(!Double.isNaN(score)){
+//                    legalMoves ++;
+//                    continue;
+//                }
+//
+//                if (score >= beta) {
+//                    return beta;
+//                }
+//                if (score > alpha)
+//                    alpha = score;
+//
+//            }
+//        }
+//
+//        //check for gameover
+//        if(legalMoves == 0){
+//            //System.out.println(_board);
+//            if(_board.isAtCheck(_board.getActivePlayer())){
+//                return -LateGameEvaluator.INFTY;
+//            }else{
+//                return 0;
+//            }
+//        }
 
 
         return alpha;

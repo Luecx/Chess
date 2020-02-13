@@ -4,13 +4,12 @@ import ai.evaluator.Evaluator;
 import ai.evaluator.LateGameEvaluator;
 import ai.ordering.Orderer;
 import board.Board;
-import board.FastBoard;
 import board.moves.Move;
 import board.moves.MoveListBuffer;
 
 import java.util.List;
 
-public class AdvancedSearch {
+public class AdvancedSearch implements AI {
 
 
 
@@ -22,24 +21,26 @@ public class AdvancedSearch {
 
     private int qDepth;
 
-    private double pvSearch(double alpha, double beta,int currentDepth, int depthLeft) {
+
+    private double pvSearch(double alpha, double beta,int currentDepth, int depthLeft, boolean pv) {
         List<Move> allMoves = _board.getCaptureMoves(_buffer.get(currentDepth));
         if(allMoves == null){
             return Double.NaN;
         }
-        if(depthLeft == 0 || _board.isGameOver()) {
+        if(depthLeft == 0 || _board.isDraw()) {
             return qSearch(alpha, beta, currentDepth, qDepth);
         }
+        //orderer.sort(allMoves, );
         int legalMoves = 0;
         double score;
         for (Move m:allMoves)  {
             _board.move(m);
             if (legalMoves == 0) {
-                score = -pvSearch(-beta, -alpha, currentDepth+1, depthLeft-1);
+                score = -pvSearch(-beta, -alpha, currentDepth+1, depthLeft-1, pv);
             } else {
                 score = -zwSearch(-alpha, currentDepth+1, depthLeft-1);
-                if ( score > alpha && score < beta) // in fail-soft ... && score < beta ) is common
-                    score = -pvSearch(-beta, -alpha, currentDepth+1, depthLeft-1); // re-search
+                if (score > alpha && score < beta) // in fail-soft ... && score < beta ) is common
+                    score = -pvSearch(-beta, -alpha, currentDepth+1, depthLeft-1, false); // re-search
             }
             _board.undoMove();
             if( score >= beta )
@@ -74,7 +75,7 @@ public class AdvancedSearch {
         if( depthLeft == 0 ) {
             return qSearch(beta-1, beta, currentDepth, qDepth);
         }
-        int legalMoves = 0;
+        //int legalMoves = 0;
         for (Move m:allMoves)  {
             _board.move(m);
             double score = -zwSearch(1-beta, currentDepth+1, depthLeft - 1);
@@ -107,7 +108,7 @@ public class AdvancedSearch {
         double stand_pat = evaluator.evaluate(_board) * _board.getActivePlayer();
 
         //3-fold reps
-        if (_board.isGameOver() || allMoves.size() == 0){
+        if (_board.isDraw() || allMoves.size() == 0){
             return stand_pat;
         }
         if (depthLeft == 0) {
@@ -139,6 +140,11 @@ public class AdvancedSearch {
             if (score > alpha)
                 alpha = score;
 
+        }
+
+
+        if(legalMoves == 0){
+            return stand_pat;
         }
 
         //full research
@@ -178,4 +184,8 @@ public class AdvancedSearch {
         return alpha;
     }
 
+    @Override
+    public Move bestMove(Board board) {
+        return null;
+    }
 }

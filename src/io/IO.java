@@ -2,6 +2,7 @@ package io;
 
 import board.Board;
 import board.SlowBoard;
+import board.bitboards.BitBoard;
 import board.moves.Move;
 import board.setup.Setup;
 import game.Game;
@@ -107,8 +108,8 @@ public class IO {
         //<editor-fold desc="parsing en passant">
         if(split.length >= 4){
             if(!split[3].equals("-")){
-                int rankIndex = split[3].toLowerCase().charAt(0)-'a';
-                board.setEnPassantChance(rankIndex, true);
+                int square = IO.getSquareIndex(split[3]);
+                board.setEnPassantChance(square, true);
             }
         }
         //</editor-fold>
@@ -400,7 +401,7 @@ public class IO {
      *      nulls           [Boolean]       enables/disables null moves
      *      lmr             [Boolean]       enables/disables late move reduction
      *      debug           [Boolean]       enables/disables output printing
-     *      iteration       [Boolean]       enables/disables iterative deepening
+     *      iterationGradient       [Boolean]       enables/disables iterative deepening
      *      killers         [Boolean]       enables/disables killer heuristic
      *
      * @param map
@@ -443,8 +444,8 @@ public class IO {
             pvSearch.setUse_transposition((Boolean)map.get("transposition"));
         }if(map.containsKey("nulls")){
             pvSearch.setUse_null_moves((Boolean)map.get("nulls"));
-        }if(map.containsKey("iteration")){
-            pvSearch.setUse_iteration((Boolean)map.get("iteration"));
+        }if(map.containsKey("iterationGradient")){
+            pvSearch.setUse_iteration((Boolean)map.get("iterationGradient"));
         }if(map.containsKey("lmr")){
             pvSearch.setUse_LMR((Boolean)map.get("lmr"));
         }if(map.containsKey("debug")){
@@ -555,56 +556,23 @@ public class IO {
     }
 
     //give the rank as a letter, get it back as an int
-    private static int rankToIndex(char rank) {
+    public static int fileToIndex(char rank) {
         return "abcdefgh".indexOf(rank);
     }
-    private static char indexToRank(int index) {
+
+    public static char indexToFile(int index) {
         return "abcdefgh".charAt(index);
     }
 
-    /**
-     * take a move in UCI notation (e2e4) and
-     * transforms it to move object
-     * @param input the UCI notation
-     * @param board the board state
-     * @return the move object
-     */
-    public static Move uciToMove(String input, Board board) {
-        int fromx;
-        int fromy;
-        int tox;
-        int toy;
-        int from;
-        int to;
-        fromx = rankToIndex(input.charAt(0));
-        tox = rankToIndex(input.charAt(2));
-        fromy = Character.getNumericValue(input.charAt(1)) - 1;
-        toy = Character.getNumericValue(input.charAt(3)) - 1;
-        from = board.index(fromx,fromy);
-        to = board.index(tox,toy);
 
-        return new Move(from,to,board);
+
+    public static String getSquareString(int index){
+        return "" + indexToFile(BitBoard.fileIndex(index)) + (BitBoard.rankIndex(index) + 1);
     }
 
-    //Move object -> e2e4
-    public static String moveToUCI(Move move, Board board) {
-        String toReturn = "";
-        int tox = board.x(move.getTo());
-        int toy = board.y(move.getTo());
-        int fromx = board.x(move.getFrom());
-        int fromy = board.y(move.getFrom());
-
-        toReturn = toReturn + indexToRank(fromx);
-        toReturn = toReturn + Integer.toString(fromy+1);
-        toReturn = toReturn + indexToRank(tox);
-        toReturn = toReturn + Integer.toString(toy+1);
-        if(Math.abs(move.getPieceFrom()) == 1 && (toy == 0 || toy == 7)){
-            toReturn += "q";
-        }
-
-        return toReturn;
+    public static int getSquareIndex(String st){
+        return BitBoard.squareIndex(Integer.parseInt(""+st.charAt(1))-1, fileToIndex(st.charAt(0)));
     }
-
 
     public static void main(String[] args) {
         //System.exit(parseInputForBestMove(args));

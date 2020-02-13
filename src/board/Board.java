@@ -3,6 +3,7 @@ package board;
 import board.moves.Move;
 import board.moves.MoveList;
 import board.setup.Setup;
+import io.IO;
 
 import java.util.List;
 import java.util.Stack;
@@ -49,6 +50,37 @@ public abstract class Board<T extends Board<T>> {
     public void setup(Setup setup){
         setup.apply(this);
     }
+
+    /**
+     * returns the board represented as a string.
+     * Capital letters for white pieces.
+     */
+    @Override
+    public String toString() {
+
+        StringBuilder builder = new StringBuilder();
+        builder.append(" ┌───┬───┬───┬───┬───┬───┬───┬───┐\n");
+
+        for (int r = 7; r >= 0; --r)
+        {
+            for (int f = 0; f <= 7; ++f)
+                builder.append(" | " + IO.getPieceChar(getPiece(f,r)));
+
+            if(r != 0){
+                builder.append(" |\n ├───┼───┼───┼───┼───┼───┼───┼───┤\n");
+            }else{
+                builder.append(" |\n └───┴───┴───┴───┴───┴───┴───┴───┘\n");
+            }
+        }
+        builder.append("fen: " + IO.write_FEN(this));
+
+
+        return builder.toString();
+
+    }
+
+
+
 
     /**
      * It returns a list of all moves that are available for the current
@@ -106,12 +138,27 @@ public abstract class Board<T extends Board<T>> {
      */
     public abstract List<Move> getCaptureMoves(MoveList list);
 
+
+
+
     /**
-     * The method returns true if one side has won the game
+     * the method returns true if the given players king is at check
+     *
+     * @param player
+     * @return
+     */
+    public abstract boolean isAtCheck(int player);
+
+    /**
+     * The method returns true if the game is over due to repetitions/50-move rule
+     *
      *
      * @return      true if the game is over, otherwise false.
      */
-    public abstract boolean isGameOver();
+    public abstract boolean isDraw();
+
+
+
 
     /**
      * The method transforms the internally stored index that is
@@ -123,14 +170,6 @@ public abstract class Board<T extends Board<T>> {
      * @return corresponding x-coordinate.
      */
     public abstract int x(int index);
-
-    /**
-     * the method returns true if the given players king is at check
-     *
-     * @param player
-     * @return
-     */
-    public abstract boolean isAtCheck(int player);
 
     /**
      * The method transforms the internally stored index that is
@@ -231,6 +270,9 @@ public abstract class Board<T extends Board<T>> {
      */
     public abstract int getPiece(int index);
 
+
+
+
     /**
      * the method changes the active player that has to move next.
      *
@@ -254,12 +296,52 @@ public abstract class Board<T extends Board<T>> {
      */
     public abstract void undoMove();
 
+    /**
+     * does a null move
+     */
+    public abstract void move_null();
+
+    /**
+     * undoes a null move
+     */
+    public abstract void undoMove_null();
+
+    /**
+     * tests if the given move is legal or not
+     * @param m
+     * @return
+     */
+    public abstract boolean isLegal(Move m);
+
+    /**
+     * returns true if the move puts the opponent king into check
+     * @param m
+     * @return
+     */
+    public abstract boolean isCheck(Move m);
+
+    /**
+     * returns true if the previous move is legal
+     * if returned false, the previous move was illegal
+     * @return
+     */
+    @Deprecated
     public abstract boolean previousMoveIsLegal();
+
+    /**
+     * generates a new move object that can later be used for the move() method.
+     * @param from
+     * @param to
+     * @param promotionTarget
+     * @return
+     */
+    public abstract Move generateMove(int from, int to, int promotionTarget);
 
     /**
      * the method is used to determine who won the game
      * @return +1 if white won/-1 if black won
      */
+    @Deprecated
     public abstract int winner();
 
     /**
@@ -287,6 +369,10 @@ public abstract class Board<T extends Board<T>> {
      * @return      the zobrist key for the board
      */
     public abstract long zobrist();
+
+
+
+
 
     /**
      * returns true if its possible to castle according to the following list:
@@ -324,6 +410,8 @@ public abstract class Board<T extends Board<T>> {
     public abstract void setEnPassantChance(int file, boolean value);
 
 
+
+
     /**
      * the method returns +1 if white is to move next.
      * If black has to move next, it will return -1.
@@ -348,4 +436,6 @@ public abstract class Board<T extends Board<T>> {
     public void setEndgame(boolean endgame) {
         isEndgame = endgame;
     }
+
+
 }

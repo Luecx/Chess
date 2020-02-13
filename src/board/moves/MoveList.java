@@ -175,12 +175,11 @@ public class MoveList implements Iterable<Move>, List<Move> {
         m.pieceFrom = pieceFrom;
         m.pieceTo = pieceTo;
         m.metaInformation = metaInformation;
-        m.castle_move = false;
-        m.en_passent_capture = false;
-        m.promotion = false;
+        m.type = 0;
         this.size ++;
         return m;
     }
+
 
     @Override
     public int size() {

@@ -2,6 +2,7 @@ package io;
 
 import board.Board;
 import board.FastBoard;
+import board.bitboards.BitBoard;
 import board.moves.Move;
 import board.moves.MoveListBuffer;
 import ai.evaluator.NoahEvaluator;
@@ -13,6 +14,7 @@ import ai.search.PVSearchFast;
 import ai.tools.SearchOverview;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class Testing {
@@ -246,7 +248,6 @@ public class Testing {
             line1[1 + 2 * n] = "limit:";
             line1[1 + 2 * n + 1] = ""+ais[n].getLimit();
             line2[1 + 2 * n] = "qDepth:";
-            line2[1 + 2 * n + 1] = ""+ais[n].getQuiesce_depth();
         }
         System.out.format(format+"\n", line1);
         System.out.format(format+"\n", line2);
@@ -390,23 +391,32 @@ public class Testing {
     }
 
 
-    public static int perft_pseudo(Board board, int depth, MoveListBuffer buffer){
-        if(depth == 0) {
+    public static int perft_pseudo(Board board, int depthLeft, MoveListBuffer buffer,boolean printDiv){
+        if(depthLeft == 0) {
             return 1;
         }
         int nodes = 0;
 
-        List<Move> moves = board.getPseudoLegalMoves(buffer.get(depth));
-
-        if(depth == 1){
-            return moves.size();
-        }
+        List<Move> moves = board.getPseudoLegalMoves(buffer.get(depthLeft));
 
         for(Object m:moves){
+            if(!board.isLegal((Move)m)){
+                continue;
+            }
             board.move((Move)m);
-            nodes += perft_pseudo(board, depth-1,buffer);
+
+            int nd = perft_pseudo(board, depthLeft-1,buffer, false);
+            nodes += nd;
+
             board.undoMove();
+
+            if(printDiv){
+                System.out.println(IO.getSquareString(((Move) m).getFrom())+ IO.getSquareString(((Move) m).getTo()) + "  " + nd);
+                //System.out.println(IO.algebraicNotation(board, (Move)m) + " "  + nd);
+            }
+
         }
+
         return nodes;
     }
 
@@ -417,8 +427,7 @@ public class Testing {
                 new SystematicOrderer(),
                 new SenpaiReducer(40),
                 2,
-                8,
-                0);
+                8);
         ai1.setUse_killer_heuristic(true);
         ai1.setUse_null_moves(true);
         ai1.setUse_LMR(true);
@@ -433,8 +442,7 @@ public class Testing {
                 new SystematicOrderer(),
                 new SenpaiReducer(40),
                 2,
-                8,
-                0);
+                8);
 
         ai2.setUse_killer_heuristic(true);
         ai2.setUse_null_moves(true);
@@ -464,6 +472,41 @@ public class Testing {
 
     }
 
+
+    public static void comparePerftResults(String s1, String s2){
+        HashMap<Integer, String> m1 = new HashMap<>();
+        HashMap<Integer, String> m2 = new HashMap<>();
+
+        for(String s:s1.split("\n")){
+            s = s.replaceAll("\\s+", " ").trim();
+            m1.put(Integer.parseInt(s.split(" ")[1]), s.split(" ")[0]);
+        }
+
+        for(String s:s2.split("\n")){
+            s = s.replaceAll("\\s+", " ").trim();
+            m2.put(Integer.parseInt(s.split(" ")[1]), s.split(" ")[0]);
+        }
+
+//        for(Integer i:m2.keySet()){
+//            if(!m1.containsKey(i)){
+//                System.out.println("move not existing: " + m2.get(i));
+//            }
+//        }
+//
+//        for(Integer i:m1.keySet()){
+//            if(!m2.containsKey(i)){
+//                System.out.println("move too much: " + m2.get(i));
+//            }
+//        }
+
+
+
+        for(Integer i:m1.keySet()){
+            if(!m2.containsKey(i)){
+                System.out.println(m1.get(i));
+            }
+        }
+    }
 
 
 

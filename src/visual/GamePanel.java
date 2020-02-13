@@ -7,6 +7,7 @@ import ai.search.AI;
 import javax.swing.*;
 import javax.swing.border.LineBorder;
 import java.awt.*;
+import java.util.function.Consumer;
 
 /**
  * A Panel that contains 64 buttons.
@@ -54,12 +55,9 @@ public class GamePanel extends JPanel {
         super();
 
         this.g = g;
-        this.g.addBoardChangedListener(new Runnable() {
-            @Override
-            public void run() {
-                selected = -1;
-                render();
-            }
+        this.g.addBoardChangedListener((Consumer<Move>) (m) -> {
+            selected = -1;
+            render();
         });
         this.setLayout(new GridLayout(8, 8));
 

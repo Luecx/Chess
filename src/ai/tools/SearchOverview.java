@@ -9,12 +9,12 @@ public class SearchOverview {
 
     private int totalTime;
     private int depth;
-    private int qDepth;
 
     private Move move;
     private double evaluation;
 
     private ArrayList<Integer> depths;
+    private ArrayList<Integer> selDepths;
     private ArrayList<Integer> totalNodes;
     private ArrayList<Integer> fullDepthNodes;
     private ArrayList<Integer> qSearchNodes;
@@ -44,13 +44,15 @@ public class SearchOverview {
         this.timings = new ArrayList<>();
         this.terminalNodes = new ArrayList<>();
         this.qSearchNodes = new ArrayList<>();
+        this.selDepths = new ArrayList<>();
     }
 
 
 
-    public void addIteration(int depth, int totalNodes, int fullDepthNodes, int terminal, int qNodes, int time) {
+    public void addIteration(int depth, int selDepth, int totalNodes, int fullDepthNodes, int terminal, int qNodes, int time) {
         this.depths.add(depth);
         this.timings.add(time);
+        this.selDepths.add(selDepth);
         this.totalNodes.add(totalNodes);
         this.fullDepthNodes.add(fullDepthNodes);
         this.terminalNodes.add(terminal);
@@ -110,14 +112,6 @@ public class SearchOverview {
         this.depth = depth;
     }
 
-    public int getqDepth() {
-        return qDepth;
-    }
-
-    public void setqDepth(int qDepth) {
-        this.qDepth = qDepth;
-    }
-
     public static String timeToString(long mills) {
 
         int min = (int) (mills / (60 * 1E3) % 60);
@@ -128,7 +122,7 @@ public class SearchOverview {
     }
 
     /**
-     * prints a summary of the last iteration.
+     * prints a summary of the last iterationGradient.
      * <p>
      * It prints the time in [mm:ss:uuu] followed by the following parameters:
      * - total visited nodes: the total amount of nodes that have been visited including quiesce-search
@@ -141,15 +135,16 @@ public class SearchOverview {
         int sec = (int) (timings.get(timings.size() - 1) / 1E3 % 60);
         int mil = (int) (timings.get(timings.size() - 1) % 1E3);
         System.out.format(
-                "depth: %02d(+" + qDepth + ")\t" +
+                "depth: %02d(+%02d)\t" +
                         "time[m:s:ms]: %02d:%02d:%03d\t" +
                         "total: %9d\t" +
                         "terminal : %9d\t" +
                         "fullNodes: %9d\t" +
                         "qNodes: %9d\n",
                 depths.get(timings.size() - 1),
+                selDepths.get(timings.size()-1),
                 min, sec, mil,
-                totalNodes.get(timings.size() - 1) + qSearchNodes.get(timings.size() - 1),
+                totalNodes.get(timings.size() - 1),
                 terminalNodes.get(timings.size() - 1),
                 fullDepthNodes.get(timings.size() - 1),
                 qSearchNodes.get(timings.size() - 1));
@@ -162,7 +157,7 @@ public class SearchOverview {
     public String getInfo(){
         return
                 "depth " + depth +
-                        " seldepth " + (depth+qDepth) +
+                        " seldepth " + (depth+selDepths.get(totalNodes.size()-1)) +
                         " nodes " + totalNodes.get(totalNodes.size()-1) +
                         " time " + totalTime +
                         " score " + evaluation +

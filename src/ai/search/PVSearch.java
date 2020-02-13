@@ -157,7 +157,7 @@ public class PVSearch implements AI {
      * iterative deepening is used to speed up the search process.
      * It searches the game tree multiple time and begins at a
      * depth of 1 and ends up at limit.
-     * By using the information from the previous iteration, it reduces
+     * By using the information from the previous iterationGradient, it reduces
      * the nodes that need to be evaluated.
      * @return  the flag to use iterative deepening
      */
@@ -169,7 +169,7 @@ public class PVSearch implements AI {
      * iterative deepening is used to speed up the search process.
      * It searches the game tree multiple time and begins at a
      * depth of 1 and ends up at limit.
-     * By using the information from the previous iteration, it reduces
+     * By using the information from the previous iterationGradient, it reduces
      * the nodes that need to be evaluated.
      * @param use_iteration   new flag to use iterative deepening
      */
@@ -408,7 +408,6 @@ public class PVSearch implements AI {
                 use_killer_heuristic ? "KILLER HEURISTIC":"",
                 use_LMR ? "LATE_MOVE_REDUCTION":""
         );
-        searchOverview.setqDepth(quiesce_depth);
         //</editor-fold>
 
         long time = System.currentTimeMillis();
@@ -429,7 +428,7 @@ public class PVSearch implements AI {
 //                        int depth = 0;
 //                        while(!stop[0]){
 //                            move[0] = _bestMove;
-//                            line = iteration(depth++, line);
+//                            line = iterationGradient(depth++, line);
 //                        }
 //                    }catch (Exception e){
 //                        System.out.println(e);
@@ -493,9 +492,9 @@ public class PVSearch implements AI {
 
 
     /**
-     * processes one iteration to the given depth.
+     * processes one iterationGradient to the given depth.
      * it resets internal values like the best move.
-     * It will also print an overview of the iteration.
+     * It will also print an overview of the iterationGradient.
      * @param depth
      * @param lastIteration
      * @return
@@ -519,6 +518,7 @@ public class PVSearch implements AI {
 
         searchOverview.addIteration(
                 _depth,
+                quiesce_depth,
                 _visitedNodes + _quiesceNodes,
                 _visitedNodes,
                 _terminalNodes,
@@ -586,7 +586,7 @@ public class PVSearch implements AI {
      * @param pLine             pvLine
      * @param loopIndex         the loop index from the previous recursive call
      * @param depthLeft         the depth left to search
-     * @param lastIteration     pvLine from prev iteration (nullable)
+     * @param lastIteration     pvLine from prev iterationGradient (nullable)
      * @return
      */
     private double pvSearch(
@@ -643,7 +643,7 @@ public class PVSearch implements AI {
         }
         //</editor-fold>
         //<editor-fold desc="QSearch">
-        if (depthLeft <= 0 || allMoves.size() == 0 || _board.isGameOver()) {
+        if (depthLeft <= 0 || allMoves.size() == 0 || _board.isDraw()) {
             return Quiesce(alpha, beta, currentDepth + 1, quiesce_depth);
         }
         //</editor-fold>
@@ -669,10 +669,12 @@ public class PVSearch implements AI {
         }
         //</editor-fold>
         //<editor-fold desc="move-ordering">
+        if(pv){
+            System.out.println(currentDepth);
+        }
         orderer.sort(allMoves, currentDepth, lastIteration, _board, pv, _killerTable, _transpositionTable);
         //</editor-fold>
         //<editor-fold desc="Searching">
-        boolean bSearchPv = true;
         Move bestMove = allMoves.get(0);
         double bestSoFar = Double.NEGATIVE_INFINITY;
 
@@ -687,7 +689,7 @@ public class PVSearch implements AI {
             }
             //</editor-fold>
             //<editor-fold desc="recursion">
-            if (index == 1 && pv) {
+            if (index == 0) {
                 //<editor-fold desc="pv node search">
                 score = -pvSearch(
                         -beta,
@@ -695,7 +697,7 @@ public class PVSearch implements AI {
                         currentDepth + 1,
                         depthLeft - 1 - to_reduce,
                         index,
-                        bSearchPv && pv,
+                        index == 0 && pv,
                         line,
                         lastIteration);
                 //</editor-fold>
@@ -710,7 +712,7 @@ public class PVSearch implements AI {
                         false,
                         line,
                         null);
-                if (score > alpha && score < beta || (to_reduce != 0 && score > beta))
+                if (score >= alpha && score < beta)
                     score = -pvSearch(
                             -beta,
                             -alpha,
@@ -750,8 +752,8 @@ public class PVSearch implements AI {
                     _bestScore = score;
                     _bestMove = m;
                 }
-                bSearchPv = false;
             }
+
             //</editor-fold>
         }
         //</editor-fold>
@@ -776,7 +778,7 @@ public class PVSearch implements AI {
         _quiesceNodes++;
         double stand_pat = evaluator.evaluate(_board) * _board.getActivePlayer();
 
-        if(_board.isGameOver()){
+        if(_board.isDraw()){
             return stand_pat;
         }
         if (depth_left == 0) {

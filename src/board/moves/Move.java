@@ -7,14 +7,19 @@ import java.util.Objects;
 public class Move {
 
 
+
+    public static final byte DEFAULT = 0;
+    public static final byte EN_PASSENT = 1;
+    public static final byte PROMOTION = 2;
+    public static final byte CASTLING = 3;
+
     int from;
     int to;
+
     int pieceFrom;
     int pieceTo;
 
-    boolean promotion;
-    boolean castle_move;
-    boolean en_passent_capture;
+    byte    type;
 
     short metaInformation;
     long secureFields;
@@ -61,8 +66,6 @@ public class Move {
         this.metaInformation = metaInformation;
     }
 
-
-
     public short getMetaInformation() {
         return metaInformation;
     }
@@ -91,11 +94,9 @@ public class Move {
 
     public Move copy() {
         Move copy = new Move(from, to, pieceFrom, pieceTo, metaInformation);
-        copy.setPromotion(promotion);
         copy.setSecureFields(secureFields);
         copy.setEnPassentField(enPassentField);
-        copy.setCastle_move(castle_move);
-        copy.setEn_passent_capture(en_passent_capture);
+        copy.setType(type);
         copy.setOrderPriority(orderPriority);
         return copy;
     }
@@ -118,28 +119,45 @@ public class Move {
         this.enPassentField = enPassentField;
     }
 
-    public boolean isCastle_move() {
-        return castle_move;
+
+    public byte getType() {
+        return type;
     }
 
-    public void setCastle_move(boolean castle_move) {
-        this.castle_move = castle_move;
+    public void setType(byte type) {
+        this.type = type;
+    }
+
+    public boolean isCastle_move() {
+        return type == CASTLING;
     }
 
     public boolean isEn_passent_capture() {
-        return en_passent_capture;
-    }
-
-    public void setEn_passent_capture(boolean en_passent_capture) {
-        this.en_passent_capture = en_passent_capture;
+        return type == EN_PASSENT;
     }
 
     public boolean isPromotion() {
-        return promotion;
+        return type == PROMOTION;
     }
 
-    public void setPromotion(boolean promotion) {
-        this.promotion = promotion;
+    public void setFrom(int from) {
+        this.from = from;
+    }
+
+    public void setTo(int to) {
+        this.to = to;
+    }
+
+    public void setPieceFrom(int pieceFrom) {
+        this.pieceFrom = pieceFrom;
+    }
+
+    public void setPieceTo(int pieceTo) {
+        this.pieceTo = pieceTo;
+    }
+
+    public void setNull(boolean aNull) {
+        isNull = aNull;
     }
 
     @Override

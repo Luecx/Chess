@@ -132,7 +132,7 @@ public class AlphaBeta implements AI {
      * iterative deepening is used to speed up the search process.
      * It searches the game tree multiple time and begins at a
      * depth of 1 and ends up at max_depth.
-     * By using the information from the previous iteration, it reduces
+     * By using the information from the previous iterationGradient, it reduces
      * the nodes that need to be evaluated.
      * @return  the flag to use iterative deepening
      */
@@ -144,7 +144,7 @@ public class AlphaBeta implements AI {
      * iterative deepening is used to speed up the search process.
      * It searches the game tree multiple time and begins at a
      * depth of 1 and ends up at max_depth.
-     * By using the information from the previous iteration, it reduces
+     * By using the information from the previous iterationGradient, it reduces
      * the nodes that need to be evaluated.
      * @param use_iteration   new flag to use iterative deepening
      */
@@ -222,7 +222,7 @@ public class AlphaBeta implements AI {
     }
 
     /**
-     * prints a summary of the current iteration after is has finished.
+     * prints a summary of the current iterationGradient after is has finished.
      * If print_overview is disabled, the method will not do anything.
      *
      * It prints the time in [mm:ss:uuu:nnnnnn] followed by the following parameters:
@@ -253,7 +253,7 @@ public class AlphaBeta implements AI {
     }
 
     /**
-     * processes one iteration to the given depth.
+     * processes one iterationGradient to the given depth.
      * it resets internal values like the best move.
      * It will also call printIterationSummary().
      * @param depth
@@ -315,7 +315,7 @@ public class AlphaBeta implements AI {
 
 
         List<Move> allMoves = currentDepth == 0 ? _board.getLegalMoves() : _board.getPseudoLegalMoves();
-        if (currentDepth == _depth || allMoves.size() == 0 || _board.isGameOver()) {
+        if (currentDepth == _depth || allMoves.size() == 0 || _board.isDraw()) {
             double val = Quiesce(alpha, beta, quiesce_depth);
             return val;
         }

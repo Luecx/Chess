@@ -184,7 +184,7 @@ public class NoahEvaluator extends GeneticEvaluator<NoahEvaluator> implements Ev
     @Override
     public double evaluate(Board board) {
 
-        if (board.isGameOver()) {
+        if (board.isDraw()) {
             switch (board.winner()) {
                 case 1:
                     return LateGameEvaluator.INFTY-1;

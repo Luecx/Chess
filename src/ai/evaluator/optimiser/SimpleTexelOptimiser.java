@@ -2,6 +2,8 @@ package ai.evaluator.optimiser;
 
 import ai.evaluator.GeneticEvaluator;
 import ai.evaluator.NoahEvaluator2;
+import ai.tools.threads.Pool;
+import ai.tools.threads.PoolFunction;
 import board.Board;
 import board.FastBoard;
 import io.IO;
@@ -14,8 +16,8 @@ import java.util.Arrays;
 public class SimpleTexelOptimiser {
 
 
-    public static double loss_probability = 0.3;
-    public static double win_probability = 0.7;
+    public static double loss_probability = 0.2;
+    public static double win_probability = 0.8;
 
 
     public static int WHITE_WIN = 1;
@@ -25,6 +27,8 @@ public class SimpleTexelOptimiser {
     private ArrayList<Board> fen_strings = new ArrayList<>();
     private ArrayList<Integer>  results = new ArrayList<>();
 
+
+    private Pool pool;
 
     public void readFile(String file, Board template, int count){
         try {
@@ -64,7 +68,7 @@ public class SimpleTexelOptimiser {
         }
     }
 
-    public void iteration(GeneticEvaluator evaluator, double K, double eta) {
+    public void iterationGradient(GeneticEvaluator evaluator, double K, double eta) {
         double[] params = evaluator.getEvolvableValues();
 
         double drX = 0.1;   //value to compute gradients
@@ -127,6 +131,45 @@ public class SimpleTexelOptimiser {
         System.out.println();
     }
 
+    public double[] iterationLocally(GeneticEvaluator evaluator, double K){
+
+        pool = new Pool(Pool.getAvailableProcessors());
+
+        double[] params = evaluator.getEvolvableValues();
+        int nParams = params.length;
+        double bestE = error(evaluator, K);
+        boolean improved = true;
+        while ( improved ) {
+            improved = false;
+            for (int pi = 0; pi < nParams; pi++) {
+                System.out.print("\rparam: " + pi);
+                double[] newParams = Arrays.copyOf(params, params.length);
+                newParams[pi] += 1;
+                evaluator.setEvolvableValues(newParams);
+                double newE = error(evaluator, K);
+                if (newE < bestE) {
+                    bestE = newE;
+                    params = newParams;
+                    improved = true;
+                } else {
+                    newParams[pi] -= 2;
+                    evaluator.setEvolvableValues(newParams);
+                    newE =  error(evaluator, K);
+                    if (newE < bestE) {
+                        bestE = newE;
+                        params = newParams;
+                        improved = true;
+                    }
+                }
+            }
+            System.out.println();
+            System.out.println("bestE:"+bestE);
+            System.out.println(Arrays.toString(params));
+        }
+        pool.stop();
+        return params;
+    }
+
     public double score(GeneticEvaluator evaluator){
         double total = 0;
         for(int i = 0; i < fen_strings.size(); i++){
@@ -149,6 +192,7 @@ public class SimpleTexelOptimiser {
      * @return
      */
     public double computeK(GeneticEvaluator evaluator, double min_dEdK, double init_K, double eta) {
+        pool = new Pool(Pool.getAvailableProcessors());
         double K = init_K;
         double dK = 0.01;
         double dEdK = 1;
@@ -158,19 +202,51 @@ public class SimpleTexelOptimiser {
             System.out.format("K: %-2.6f  Error: %-2.6f  dE/dK: %-1.2E\n", K,error(evaluator, K),dEdK);
             K -= dEdK * eta;
         }
+        pool.stop();
         return K;
     }
 
     public double error(GeneticEvaluator evaluator, double K){
-        double total = 0;
-        for(int i = 0; i < fen_strings.size(); i++){
-            double qi = (int)evaluator.evaluate(fen_strings.get(i));
-            double expected = results.get(i) == DRAW ? 0.5:
-                    results.get(i) == WHITE_WIN ? win_probability:loss_probability;
-            double sig = sigmoid(qi, K);
-            total += (expected - sig) * (expected - sig);
+
+        if(pool != null){
+            final Double[] score = {0d};
+
+            int tasks = fen_strings.size();
+            int threads = pool.getAvailableThreads();
+
+            pool.execute(index -> {
+
+                double pScore = 0;
+                double lower = (double) (tasks) / threads * index;
+                double upper = (double) (tasks) / threads * (index+1);
+
+                for(int i = (int)lower; i < (int)upper; i++){
+                    double qi = (int)evaluator.evaluate(fen_strings.get(i));
+                    double expected = results.get(i) == DRAW ? 0.5:
+                            results.get(i) == WHITE_WIN ? win_probability:loss_probability;
+                    double sig = sigmoid(qi, K);
+                    pScore += (expected-sig) * (expected-sig);
+                }
+
+                synchronized (score){
+                    score[0] += pScore;
+                }
+
+
+            }, threads, false);
+            return score[0] / tasks;
+        }else{
+            double total = 0;
+            for(int i = 0; i < fen_strings.size(); i++){
+                double qi = (int)evaluator.evaluate(fen_strings.get(i));
+                double expected = results.get(i) == DRAW ? 0.5:
+                        results.get(i) == WHITE_WIN ? win_probability:loss_probability;
+                double sig = sigmoid(qi, K);
+                total += (expected - sig) * (expected - sig);
+            }
+            return total / fen_strings.size();
         }
-        return total / fen_strings.size();
+
     }
 
     public double sigmoid(double s, double K){
@@ -187,17 +263,15 @@ public class SimpleTexelOptimiser {
 
     public static void main(String[] args) {
         SimpleTexelOptimiser tex = new SimpleTexelOptimiser();
-        tex.readFile("resources/quiet-labeled.epd", new FastBoard(), 1000000);
-//        System.out.println(tex.score(new NoahEvaluator2()));
-
-        double K = tex.computeK(new NoahEvaluator2(), 1E-5, 0.6173, 10);
-
+        tex.readFile("resources/quiet-labeled.epd", new FastBoard(), 60000000);
         NoahEvaluator2 evaluator2 = new NoahEvaluator2();
+        evaluator2.setEvolvableValues(new double[]{100.0, 100.0, 100.0, 100.0, 100.0, 66.0, 123.0, 492.0, 354.0, 314.0, 914.0, 20005.0, 6.0, 5.0, -1.0, 2.0, 14.0, 25.0, -25.0, 0.0, 61.0, 5.0, 27.7, 13.0, 25.0, 9.0});
 
-        for(int i = 0; i < 500; i++)
-            tex.iteration(evaluator2, K, 1E6);
+        double K = tex.computeK(evaluator2, 1E-5, 1.160404, 10);
 
-        //System.out.println(tex.error(new NoahEvaluator2(), 600));
+
+        double[] best = tex.iterationLocally(evaluator2, K);
+
 
     }
 

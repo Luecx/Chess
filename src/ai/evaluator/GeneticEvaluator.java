@@ -218,7 +218,7 @@ public abstract class GeneticEvaluator<T extends GeneticEvaluator<T>> implements
         Game game = new Game(new SlowBoard(Setup.DEFAULT), ai1, ai2);
         NoahEvaluator evaluator = new NoahEvaluator();
         final int[] moves = {0};
-        game.addBoardChangedListener(() -> {
+        game.addBoardChangedListener((m) -> {
             moves[0]++;
             if(moves[0] % 2 == 0)
                 //System.out.print("\r move: " + moves[0] +  "   rated: " + evaluator.evaluate(game.getBoard()));
@@ -227,7 +227,7 @@ public abstract class GeneticEvaluator<T extends GeneticEvaluator<T>> implements
             }
         });
         game.move(null);
-        if(game.getBoard().isGameOver()){
+        if(game.getBoard().isDraw()){
             return game.getBoard().winner();
         }
 

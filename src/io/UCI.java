@@ -21,14 +21,19 @@ public class UCI {
 
     private static String ENGINENAME = "Waldi"; // we should decide on a name of the engine
     private static Board b = new FastBoard(Setup.DEFAULT);
+    private static NoahEvaluator2 evaluator = new NoahEvaluator2();
     private static PVSearchFast ai = new PVSearchFast(
-            new NoahEvaluator2(),
+            evaluator,
             new SystematicOrderer2(),
-            new SenpaiReducer(2),
+            new SenpaiReducer(1),
             PVSearch.FLAG_TIME_LIMIT,
-            1000,4);
+            1000);
     public static void uciCommunication() {
 
+        evaluator.setEvolvableValues(
+                new double[]{100.0, 100.0, 100.0, 100.0, 100.0, 60.0, 125.0, 495.0, 354.0, 315.0, 922.0,
+                        20003.0, 6.0, 5.0, -1.0, 2.0, 14.0, 27.0, -24.0, 41.0, 66.0, 5.0, 27.7, 20.0, 28.0, 8.0});
+        ai.setUse_transposition(true);
 
         Scanner input = new Scanner(System.in);
         while (true)
@@ -71,7 +76,6 @@ public class UCI {
         System.out.println("option name killers type check default true");
         System.out.println("option name transpositions type check default false");
         System.out.println("option name iterative type check default true");
-        System.out.println("option name qdepth type spin min 0 max 50 default 10");
 
         System.out.println("uciok");
     }
@@ -90,7 +94,6 @@ public class UCI {
             case "killers": ai.setUse_killer_heuristic(Boolean.parseBoolean(value));break;
             case "transpositions": ai.setUse_transposition(Boolean.parseBoolean(value));break;
             case "iterative": ai.setUse_iteration(Boolean.parseBoolean(value));break;
-            case "qdepth": ai.setQuiesce_depth(Integer.parseInt(value));break;
         }
 
         //set options
@@ -115,7 +118,7 @@ public class UCI {
             input=input.substring(input.indexOf("moves")+6);
             String[] moveArr = input.split("\\s+");
             for (String uciMove : moveArr) {
-                Move move = IO.uciToMove(uciMove, b);
+                Move move = uciToMove(uciMove, b);
                 b.move(move);
                 //System.out.println(b);
             }
@@ -164,23 +167,31 @@ public class UCI {
         }if(commands.contains("mate")){
             throw new RuntimeException("Not yet supported");
         }
-        if (b.getActivePlayer() == 1) {
-            ai.setLimit(wtime/30);
+
+
+        ai.setLimit(limit);
+        ai.setLimit_flag(mode);
+
+        if(ai.getLimit_flag() == PVSearchFast.FLAG_TIME_LIMIT){
+            if (b.getActivePlayer() == 1) {
+                ai.setLimit(wtime/30);
+            }
+            if (b.getActivePlayer() == -1) {
+                ai.setLimit(btime/30);
+            }
+            ai.setPrint_overview(false);
+            if(ai.getLimit_flag() == PVSearch.FLAG_TIME_LIMIT && ai.getLimit() > 10000){
+                ai.setLimit(10000);
+            }
         }
-        if (b.getActivePlayer() == -1) {
-            ai.setLimit(btime/30);
-        }
-        ai.setPrint_overview(false);
-        if(ai.getLimit_flag() == PVSearch.FLAG_TIME_LIMIT && ai.getLimit() > 10000){
-            ai.setLimit(10000);
-        }
+
 
         Move best = ai.bestMove(b);
 
-        log(IO.moveToUCI(best,b)+" info " + ai.getSearchOverview().getInfo() + "\n");
+        log(moveToUCI(best,b)+" info " + ai.getSearchOverview().getInfo() + "\n");
         log(IO.write_FEN(b) + "\n");
         System.out.println("info " + ai.getSearchOverview().getInfo());
-        System.out.println("bestmove " + IO.moveToUCI(best,b));
+        System.out.println("bestmove " + moveToUCI(best,b));
     }
 
     public static void log(String s){
@@ -190,6 +201,52 @@ public class UCI {
         }catch (IOException e) {
             //exception handling left as an exercise for the reader
         }
+    }
+
+    /**
+     * take a move in UCI notation (e2e4) and
+     * transforms it to move object
+     * @param input the UCI notation
+     * @param board the board state
+     * @return the move object
+     */
+    public static Move uciToMove(String input, Board board) {
+        int fromx;
+        int fromy;
+        int tox;
+        int toy;
+        int from;
+        int to;
+        fromx = IO.fileToIndex(input.charAt(0));
+        tox = IO.fileToIndex(input.charAt(2));
+        fromy = Character.getNumericValue(input.charAt(1)) - 1;
+        toy = Character.getNumericValue(input.charAt(3)) - 1;
+        from = board.index(fromx,fromy);
+        to = board.index(tox,toy);
+
+        int promotionTarget = input.length() > 4 ? "00rkbq".indexOf(input.charAt(4)) : 0;
+
+        return board.generateMove(from, to, promotionTarget);
+    }
+
+    //Move object -> e2e4
+    public static String moveToUCI(Move move, Board board) {
+        String toReturn = "";
+        int tox = board.x(move.getTo());
+        int toy = board.y(move.getTo());
+        int fromx = board.x(move.getFrom());
+        int fromy = board.y(move.getFrom());
+
+        toReturn = toReturn + IO.indexToFile(fromx);
+        toReturn = toReturn + Integer.toString(fromy+1);
+        toReturn = toReturn + IO.indexToFile(tox);
+        toReturn = toReturn + Integer.toString(toy+1);
+
+        if(move.isEn_passent_capture()){
+            toReturn += "00rkbq".toCharArray()[Math.abs(move.getPieceTo())];
+        }
+
+        return toReturn;
     }
 
     public static void inputPrint() {

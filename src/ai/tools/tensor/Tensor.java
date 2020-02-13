@@ -123,10 +123,11 @@ public class Tensor {
         this.scale(1d / max());
     }
 
-    public void scale(double scalar) {
+    public Tensor scale(double scalar) {
         for(int i = 0; i < this.size; i++){
             data[i] *= scalar;
         }
+        return this;
     }
 
     public double min() {

@@ -17,7 +17,7 @@ public class SimpleOrderer implements Orderer {
     /**
      * this methods sorts a list of moves by the following ranking:
      *
-     *   1: PV-Moves from the last iteration (if lastIteration != null)
+     *   1: PV-Moves from the last iterationGradient (if lastIteration != null)
      *   2: Ranking by the evaluation price of the piece that moves + the piece that has been taken.
      *      This uses the EVALUATE_PRICE variable in the FinnEvaluator.
      * @param collection

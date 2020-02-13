@@ -124,7 +124,7 @@ public class FinnEvaluator implements Evaluator {
     @Override
     public double evaluate(Board board) {
 
-        if(board.isGameOver()){
+        if(board.isDraw()){
             switch (board.winner()){
                 case 1: return 1000000000;
                 case 0: return 0;

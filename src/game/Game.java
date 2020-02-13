@@ -5,6 +5,7 @@ import board.moves.Move;
 import ai.search.AI;
 
 import java.util.ArrayList;
+import java.util.function.Consumer;
 
 /**
  * This class can be used to play a game of chess.
@@ -20,7 +21,8 @@ public class Game {
 
     private boolean isInterrupted = false;
 
-    private ArrayList<Runnable> listeners = new ArrayList<>();
+    private ArrayList<Consumer<Move>> afterMoveConsumer = new ArrayList<>();
+    private ArrayList<Consumer<Move>> beforeMoveConsumer = new ArrayList<>();
 
     /**
      * the constructor takes a board to be played on and two player instances.
@@ -61,12 +63,21 @@ public class Game {
     }
 
     /**
-     * listeners can be added which are called once a move has been done by either
+     * a consumer can be added which is called once a move has been done by either
      * a human or the AI.
      * @param onChange the listener implementing run()
      */
-    public void addBoardChangedListener(Runnable onChange){
-        listeners.add(onChange);
+    public void addBoardChangedListener(Consumer<Move> onChange){
+        afterMoveConsumer.add(onChange);
+    }
+
+    /**
+     * a consumer can be added which is called before a move has been done by either
+     * a human or the AI.
+     * @param onChange the listener implementing run()
+     */
+    public void addMoveAboutToHappenListener(Consumer<Move> onChange){
+        beforeMoveConsumer.add(onChange);
     }
 
     /**
@@ -78,21 +89,19 @@ public class Game {
      * @param m
      */
     public void move(Move m){
-        if(board.isGameOver()) return;
+        if(board.isDraw()) return;
         if (humansTurn()){
-            //System.out.println("Moving: " + IO.algebraicNotation(board, m));
+            for (Consumer<Move> listener : beforeMoveConsumer) { listener.accept(m); }
             board.move(m);
-            listeners.forEach(Runnable::run);
-            //System.out.println(board.isGameOver() + "  " + board.winner());
-        }while(!humansTurn() && !board.isGameOver() && !isInterrupted){
+            for (Consumer<Move> listener : afterMoveConsumer) { listener.accept(m); }
+        }while(!humansTurn() && !board.isDraw() && !isInterrupted){
             AI AI = board.getActivePlayer() == 1 ? (AI) playerWhite: (AI) playerBlack;
             Move move = AI.bestMove(board.copy());
             if(move == null)
                 return;
-            //System.out.println("Moving: " + IO.algebraicNotation(board, move));
-            //System.out.println("fen: " + IO.write_FEN(board));
+            for (Consumer<Move> listener : beforeMoveConsumer) { listener.accept(m); }
             board.move(move);
-            listeners.forEach(Runnable::run);
+            for (Consumer<Move> listener : afterMoveConsumer) { listener.accept(m); }
         }
         this.isInterrupted = false;
     }
