@@ -318,7 +318,7 @@ public abstract class Board<T extends Board<T>> {
      * @param m
      * @return
      */
-    public abstract boolean isCheck(Move m);
+    public abstract boolean givesCheck(Move m);
 
     /**
      * returns true if the previous move is legal

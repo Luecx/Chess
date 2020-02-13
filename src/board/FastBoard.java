@@ -1002,8 +1002,110 @@ public class FastBoard extends Board<FastBoard> {
         }
     }
 
-    public boolean isCheck(Move m){
+
+
+    public boolean givesCheck(Move m){
+        long thisPos = 1L << m.getFrom();
+        int  opponentKingPos;
+        long opponentKing;
+        long thisQueenBitboard;
+        long thisRookBitboard;
+        long thisBishopBitboard;
+
+
+        if(this.getActivePlayer() == -1){
+            opponentKingPos =       white_pieces[5].get(0);
+            opponentKing =          1L << opponentKingPos;
+            thisQueenBitboard =     black_values[4];
+            thisRookBitboard =      black_values[1];
+            thisBishopBitboard =    black_values[3];
+        }else{
+            opponentKingPos =       black_pieces[5].get(0);
+            opponentKing =          1L << opponentKingPos;
+            thisQueenBitboard =     white_values[4];
+            thisRookBitboard =      white_values[1];
+            thisBishopBitboard =    white_values[3];
+        }
+
+
+        //direct check
+        switch (Math.abs(m.getPieceFrom())){
+            case 5: {
+                if (((BitBoard.lookUpBishopAttack(m.getTo(), occupied) | (BitBoard.lookUpRookAttack(m.getTo(), occupied))) & opponentKing) != 0){
+                    return true;
+                }
+                break;
+            }case 4: {
+                if (((BitBoard.lookUpBishopAttack(m.getTo(), occupied)) & opponentKing) != 0){
+                    return true;
+                }
+                break;
+            }case 2: {
+                if (((BitBoard.lookUpRookAttack(m.getTo(), occupied)) & opponentKing) != 0){
+                    return true;
+                }
+                break;
+            }case 3: {
+                if (((BitBoard.KNIGHT_ATTACKS[m.getTo()]) & opponentKing) != 0){
+                    return true;
+                }
+                break;
+            }case 1: {
+                if(getActivePlayer() == 1){
+                    if(((BitBoard.shiftNorthEast(thisPos) | BitBoard.shiftNorthWest(thisPos)) & opponentKing)!= 0){
+                        return true;
+                    }
+                }else{
+                    if(((BitBoard.shiftSouthEast(thisPos) | BitBoard.shiftSouthWest(thisPos)) & opponentKing)!= 0){
+                        return true;
+                    }
+                }
+                break;
+            }
+        }
+
+
+
+        //discovered check
+        this.occupied = BitBoard.unsetBit(this.occupied, m.getFrom());
+        if(isUnderAttack(opponentKingPos, getActivePlayer())){
+            this.occupied = BitBoard.unsetBit(this.occupied, m.getFrom());
+            return true;
+        }
+        this.occupied = BitBoard.unsetBit(this.occupied, m.getFrom());
+
+
+        if(m.isCastle_move()){
+            this.occupied = BitBoard.unsetBit(this.occupied, m.getFrom());
+            int rookSquare = getActivePlayer() == 1 ?
+                    m.getTo()-m.getFrom()>0?5:3:
+                    m.getTo()-m.getFrom()>0?5+56:3+56;
+            if((BitBoard.lookUpRookAttack(rookSquare, occupied) & opponentKing) != 0){
+                this.occupied = BitBoard.unsetBit(this.occupied, m.getFrom());
+                return true;
+            }
+            this.occupied = BitBoard.unsetBit(this.occupied, m.getFrom());
+        }
+
+        if(m.isEn_passent_capture()){
+            if(this.getActivePlayer() == 1){
+                this.occupied = BitBoard.unsetBit(this.occupied, m.getTo()-8);
+                if(isUnderAttack(opponentKingPos, 1)){
+                    this.occupied = BitBoard.setBit(this.occupied, m.getTo()-8);
+                    return true;
+                }
+                this.occupied = BitBoard.setBit(this.occupied, m.getTo()-8);
+            }else{
+                this.occupied = BitBoard.unsetBit(this.occupied, m.getTo()+8);
+                if(isUnderAttack(opponentKingPos, -1)){
+                    this.occupied = BitBoard.setBit(this.occupied, m.getTo()+8);
+                    return true;
+                }
+                this.occupied = BitBoard.setBit(this.occupied, m.getTo()+8);
+            }
+        }
         return false;
+
     }
 
     @Override
@@ -1128,12 +1230,19 @@ public class FastBoard extends Board<FastBoard> {
 
     public static void main(String[] args) {
         FastBoard board = new FastBoard(Setup.DEFAULT);
-        board = IO.read_FEN(board, "r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10 ");
-        System.out.println(Testing.perft_pseudo(board, 4, new MoveListBuffer(100),true));
+        board = IO.read_FEN(board, "6k1/3p4/8/2P5/8/1Q6/8/8 b - - 0 1");
         FastBoard finalBoard = board;
         Game g = new Frame(board, new Player(){}, new Player() {}).getGamePanel().getGame();
-        g.addMoveAboutToHappenListener(move -> System.out.println(finalBoard.isLegal(move)));
-        g.addBoardChangedListener(move -> System.out.println(finalBoard));
+        g.addMoveAboutToHappenListener(move -> {
+            System.out.println("is legal:" + finalBoard.isLegal(move));
+            System.out.println("gives check:" + finalBoard.givesCheck(move));
+        });
+        //g.addBoardChangedListener(move -> System.out.println(finalBoard));
+
+        Move m = board.getPseudoLegalMoves().get(0);
+        board.move(m);
+        System.out.println(board);
+        board.undoMove();
 
 
     }

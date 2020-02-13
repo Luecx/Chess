@@ -77,12 +77,15 @@ public class SystematicOrderer2 implements Orderer {
             NoahOrderer.setOrderPriority(m, board);
             if(killerTable != null && killerTable.isKillerMove(depth, m)){
                 killerMoves.add(m);
-            } else if(m.getPieceTo() != 0){
-
+            }
+//            else if(board.givesCheck(m)){
+//                goodCaptures.add(m);
+//            }
+            else if(m.getPieceTo() != 0){
                 if(FinnEvaluator.EVALUATE_PRICE[Math.abs(m.getPieceTo())] >= FinnEvaluator.EVALUATE_PRICE[Math.abs(m.getPieceFrom())]){
                     goodCaptures.add(m);
                 }else{
-                    badCaptures.add(m);
+                    goodCaptures.add(m);
                 }
 
             } else{

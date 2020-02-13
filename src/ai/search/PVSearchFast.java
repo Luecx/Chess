@@ -452,8 +452,6 @@ public class PVSearchFast implements AI {
         }
 
 
-        System.out.println(_qdepth);
-
         //<editor-fold desc="search overview">
         searchOverview.setDepth(this._depth);
         searchOverview.setTotalTime((int)(System.currentTimeMillis()-time));
@@ -665,6 +663,9 @@ public class PVSearchFast implements AI {
         for (int index = 0; index < allMoves.size(); index++) {
             Move m = allMoves.get(index);
 
+            if(!_board.isLegal(m)){
+                continue;
+            }
             _board.move(m);
             //<editor-fold desc="LMR">
             int to_reduce = 0;
@@ -712,11 +713,7 @@ public class PVSearchFast implements AI {
             //</editor-fold>
             _board.undoMove();
 
-            if(Double.isNaN(score)){
-                continue;
-            }else{
-                legalMoveCounter ++;
-            }
+            legalMoveCounter++;
 
             //<editor-fold desc="beta cutoff">
             if (score >= beta) {
@@ -791,13 +788,7 @@ public class PVSearchFast implements AI {
             _qdepth = currentDepth;
         }
 
-        if(!_board.previousMoveIsLegal()){
-            return Double.NaN; //return NaN if previous move was illegal.
-        }
-        List<Move> allMoves =
-                use_move_lists ?
-                        _board.getCaptureMoves(_buffer.get(currentDepth)):
-                        _board.getCaptureMoves();
+
 
 
         _quiesceNodes++;
@@ -807,13 +798,20 @@ public class PVSearchFast implements AI {
         if(_board.isDraw()){
             return 0;
         }
-        if(allMoves.size() == 0){
-            return stand_pat;
-        }
+
         if (stand_pat >= beta){
             _terminalNodes++;
             return beta;
         }
+
+        List<Move> allMoves =
+                use_move_lists ?
+                        _board.getCaptureMoves(_buffer.get(currentDepth)):
+                        _board.getCaptureMoves();
+        if(allMoves.size() == 0){
+            return stand_pat;
+        }
+
         if (alpha < stand_pat)
             alpha = stand_pat;
 
@@ -826,14 +824,13 @@ public class PVSearchFast implements AI {
 //            if(m.getPieceTo() == 0){
 //                System.out.println(m);
 //            }
+            if(!_board.isLegal(m)){
+                continue;
+            }
 
             _board.move(m);
             double score = -Quiesce(-beta, -alpha, currentDepth + 1);
             _board.undoMove();
-
-            if(Double.isNaN(score)){
-                continue;
-            }
             legalMoves ++;
 
 

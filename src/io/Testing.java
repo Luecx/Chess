@@ -1,5 +1,6 @@
 package io;
 
+import ai.ordering.SystematicOrderer2;
 import board.Board;
 import board.FastBoard;
 import board.bitboards.BitBoard;
@@ -400,20 +401,25 @@ public class Testing {
         List<Move> moves = board.getPseudoLegalMoves(buffer.get(depthLeft));
 
         for(Object m:moves){
+
             if(!board.isLegal((Move)m)){
                 continue;
             }
-            board.move((Move)m);
 
-            int nd = perft_pseudo(board, depthLeft-1,buffer, false);
-            nodes += nd;
+            if(depthLeft == 1){
+                nodes ++;
+            }else{
+                board.move((Move)m);
+                int nd = perft_pseudo(board, depthLeft-1,buffer, false);
+                nodes += nd;
+                board.undoMove();
 
-            board.undoMove();
-
-            if(printDiv){
-                System.out.println(IO.getSquareString(((Move) m).getFrom())+ IO.getSquareString(((Move) m).getTo()) + "  " + nd);
-                //System.out.println(IO.algebraicNotation(board, (Move)m) + " "  + nd);
+                if(printDiv){
+                    System.out.println(IO.getSquareString(((Move) m).getFrom())+ IO.getSquareString(((Move) m).getTo()) + "  " + nd);
+                    //System.out.println(IO.algebraicNotation(board, (Move)m) + " "  + nd);
+                }
             }
+
 
         }
 
@@ -427,28 +433,29 @@ public class Testing {
                 new SystematicOrderer(),
                 new SenpaiReducer(40),
                 2,
-                8);
+                7);
         ai1.setUse_killer_heuristic(true);
         ai1.setUse_null_moves(true);
         ai1.setUse_LMR(true);
         ai1.setUse_transposition(false);
         ai1.setUse_move_lists(true);
-        ai1.setUse_iteration(false);
+        ai1.setUse_iteration(true);
 
 
 
         PVSearchFast ai2 = new PVSearchFast(
                 new NoahEvaluator(),
-                new SystematicOrderer(),
+                new SystematicOrderer2(),
                 new SenpaiReducer(40),
                 2,
-                8);
+                7);
 
         ai2.setUse_killer_heuristic(true);
         ai2.setUse_null_moves(true);
         ai2.setUse_LMR(true);
         ai2.setUse_transposition(false);
         ai2.setUse_move_lists(true);
+        ai1.setUse_iteration(true);
 
 
         String[] midgames = new String[]{

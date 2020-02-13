@@ -112,7 +112,7 @@ public class SlowBoard extends Board<SlowBoard> {
     }
 
     @Override
-    public boolean isCheck(Move m) {
+    public boolean givesCheck(Move m) {
         return false;
     }
 
@@ -880,6 +880,7 @@ public class SlowBoard extends Board<SlowBoard> {
     public static void main(String[] args) {
         Board b = new FastBoard(Setup.DEFAULT);
 
+        b = IO.read_FEN(b, "k7/1r1P4/5b2/3q4/8/8/2R1NK2/4Q3 w - - 0 1");
         //b = IO.read_FEN(b, "k2N4/7R/8/4K3/8/8/8/8 w - - 0 1");
         //b = IO.read_FEN(b, "8/2q1P1k1/8/8/8/8/8/4KQ2 w - - 0 1");
         //b = IO.read_FEN(b, "QBN2nbq/QBN2nbq/QBN2nbq/KBN2nbq/QBN2nbk/QBN2nbq/QBN2nbq/QBN2nbq w - - 0 1");
