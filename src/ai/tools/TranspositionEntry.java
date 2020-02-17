@@ -9,14 +9,14 @@ public class TranspositionEntry {
     public static final int ALL_NODE = 3;
 
     private double val;
-    private int depth;
+    private int depthLeft;
     private int node_type;
     private int color;
     private Move bestMove;
 
-    public TranspositionEntry(double val, int depth, int node_type, int color, Move bestMove) {
+    public TranspositionEntry(double val, int depthLeft, int node_type, int color, Move bestMove) {
         this.val = val;
-        this.depth = depth;
+        this.depthLeft = depthLeft;
         this.node_type = node_type;
         this.color = color;
         this.bestMove = bestMove;
@@ -47,11 +47,11 @@ public class TranspositionEntry {
     }
 
     public int getDepthLeft() {
-        return depth;
+        return depthLeft;
     }
 
-    public void setDepth(int depth) {
-        this.depth = depth;
+    public void setDepthLeft(int depthLeft) {
+        this.depthLeft = depthLeft;
     }
 
     public Move getBestMove() {

@@ -205,7 +205,7 @@ public class AlphaBeta implements AI {
     public Move bestMove(Board board) {
         _board = board;
         if (use_transposition){
-            _transpositionTable = new TranspositionTable<>((int) (50E6));
+            _transpositionTable = new TranspositionTable<>();
         }
         long time = System.currentTimeMillis();
         if (use_iteration) {
@@ -284,7 +284,7 @@ public class AlphaBeta implements AI {
     }
 
     private void transpositionPlacement(long key, int depth, double alpha, int nodeType) {
-        if (!use_transposition || _transpositionTable == null || _transpositionTable.isFull()) return;
+        if (!use_transposition || _transpositionTable == null) return;
         TranspositionEntry en = _transpositionTable.get(key);
         if (en == null) {
             _transpositionTable.put(key, new TranspositionEntry(alpha, _depth - depth, nodeType, _board.getActivePlayer(), null));

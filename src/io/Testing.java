@@ -1,5 +1,6 @@
 package io;
 
+import ai.evaluator.NoahEvaluator2;
 import ai.ordering.SystematicOrderer2;
 import board.Board;
 import board.FastBoard;
@@ -429,11 +430,11 @@ public class Testing {
     public static void main(String[] args) {
 
         PVSearchFast ai1 = new PVSearchFast(
-                new NoahEvaluator(),
-                new SystematicOrderer(),
-                new SenpaiReducer(40),
+                new NoahEvaluator2(),
+                new SystematicOrderer2(),
+                new SenpaiReducer(1),
                 2,
-                7);
+                8);
         ai1.setUse_killer_heuristic(true);
         ai1.setUse_null_moves(true);
         ai1.setUse_LMR(true);
@@ -444,16 +445,16 @@ public class Testing {
 
 
         PVSearchFast ai2 = new PVSearchFast(
-                new NoahEvaluator(),
+                new NoahEvaluator2(),
                 new SystematicOrderer2(),
-                new SenpaiReducer(40),
+                new SenpaiReducer(1),
                 2,
-                7);
+                8);
 
         ai2.setUse_killer_heuristic(true);
         ai2.setUse_null_moves(true);
         ai2.setUse_LMR(true);
-        ai2.setUse_transposition(false);
+        ai2.setUse_transposition(true);
         ai2.setUse_move_lists(true);
         ai1.setUse_iteration(true);
 
@@ -473,7 +474,7 @@ public class Testing {
                 "8/5K2/6P1/1p2P1k1/8/P6n/7R/2n5"
         };
 
-        compare(new FastBoard(), new PVSearchFast[]{ai1,ai2},midgames);
+        compare(new FastBoard(), new PVSearchFast[]{ai1,ai2},endgames);
 
 
 

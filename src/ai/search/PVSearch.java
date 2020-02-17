@@ -413,7 +413,7 @@ public class PVSearch implements AI {
         long time = System.currentTimeMillis();
 
         if (use_transposition){
-            _transpositionTable = new TranspositionTable<>((int) (5E6));//50E6
+            _transpositionTable = new TranspositionTable<>();//50E6
         }
 
         PVLine pvLine = null;
@@ -564,7 +564,7 @@ public class PVSearch implements AI {
      * @param nodeType
      */
     private void transpositionPlacement(long key, int depth, int depthLeft, double alpha, int nodeType, Move bestMove) {
-        if (!use_transposition || _transpositionTable == null || _transpositionTable.isFull() || depth > transposition_store_depth) {
+        if (!use_transposition || _transpositionTable == null || depth > transposition_store_depth) {
             return;
         }
         TranspositionEntry en = _transpositionTable.get(key);

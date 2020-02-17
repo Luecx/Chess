@@ -21,26 +21,26 @@ public class PVSearchFast implements AI {
     public static final int FLAG_TIME_LIMIT = 1;
     public static final int FLAG_DEPTH_LIMIT = 2;
 
-    private Evaluator evaluator;
-    private Orderer orderer;
-    private Reducer reducer;
+    protected Evaluator evaluator;
+    protected Orderer orderer;
+    protected Reducer reducer;
 
-    private int limit;                                      //limit for searching. could be a time in ms or a depth
-    private int limit_flag;                                 //limit flag to determine if limit is max depth or time
+    protected int limit;                                      //limit for searching. could be a time in ms or a depth
+    protected int limit_flag;                                 //limit flag to determine if limit is max depth or time
 
-    private boolean use_qSearch             = true;
-    private boolean use_iteration           = true;         //flag for iterative deepening
-    private boolean use_transposition       = false;        //flag for transposition tables
-    private boolean print_overview          = true;         //flag for output-printing
-    private boolean use_null_moves          = true;         //flag for null moves
-    private boolean use_move_lists          = true;         //flag for move lists
-    private boolean use_LMR                 = true;         //flag for LMR
+    protected boolean use_qSearch             = true;
+    protected boolean use_iteration           = true;         //flag for iterative deepening
+    protected boolean use_transposition       = false;        //flag for transposition tables
+    protected boolean print_overview          = true;         //flag for output-printing
+    protected boolean use_null_moves          = true;         //flag for null moves
+    protected boolean use_move_lists          = true;         //flag for move lists
+    protected boolean use_LMR                 = true;         //flag for LMR
 
 
-    private boolean use_killer_heuristic    = true;         //flag for killer tables
-    private int killer_count                = 2;            //amount of killer moves
-    private int transposition_store_depth   = 100;          //the depth after which we stop storing transpositions.
-    private int null_move_reduction         = 2;            //how much to reduce null moves
+    protected boolean use_killer_heuristic    = true;         //flag for killer tables
+    protected int killer_count                = 2;            //amount of killer moves
+    protected int transposition_store_depth   = 100;          //the depth after which we stop storing transpositions.
+    protected int null_move_reduction         = 2;            //how much to reduce null moves
 
     private SearchOverview searchOverview;
 
@@ -410,7 +410,7 @@ public class PVSearchFast implements AI {
         long time = System.currentTimeMillis();
 
         if (use_transposition){
-            _transpositionTable = new TranspositionTable<>((int) (5E6));//50E6
+            _transpositionTable = new TranspositionTable<>();//50E6
         }
 
 
@@ -533,14 +533,14 @@ public class PVSearchFast implements AI {
     /**
      * a function used do look up a value in the transposition table
      * @param zobrist
-     * @param depth
+     * @param depthLeft
      * @return
      */
-    private TranspositionEntry transpositionLookUp(long zobrist, int depth, int depthLeft) {
-        if (use_transposition == false || !use_transposition || depth > transposition_store_depth + 2) return null;
+    private TranspositionEntry transpositionLookUp(long zobrist, int depthLeft) {
+        if (!use_transposition || depthLeft > transposition_store_depth + 2) return null;
         TranspositionEntry en = _transpositionTable.get(zobrist);
         if (en != null && _board.getActivePlayer() == en.getColor() && en.getDepthLeft() >= depthLeft) {
-                return en;
+            return en;
         }
         return null;
     }
@@ -548,12 +548,12 @@ public class PVSearchFast implements AI {
     /**
      * a function used to place a value in the transposition table
      * @param key
-     * @param depth
+     * @param depthLeft
      * @param alpha
      * @param nodeType
      */
-    private void transpositionPlacement(long key, int depth, int depthLeft, double alpha, int nodeType, Move bestMove) {
-        if (!use_transposition || _transpositionTable == null || _transpositionTable.isFull() || depth > transposition_store_depth) {
+    private void transpositionPlacement(long key, int depthLeft, double alpha, int nodeType, Move bestMove) {
+        if (!use_transposition || _transpositionTable == null || depthLeft > transposition_store_depth) {
             return;
         }
         TranspositionEntry en = _transpositionTable.get(key);
@@ -561,7 +561,11 @@ public class PVSearchFast implements AI {
             _transpositionTable.put(key, new TranspositionEntry(alpha, depthLeft, nodeType, _board.getActivePlayer(), bestMove.copy()));
         } else {
             if (en.getDepthLeft() < depthLeft) {
+                en.setNode_type(nodeType);
                 en.setVal(alpha);
+                en.setDepthLeft(depthLeft);
+                en.setColor(_board.getActivePlayer());
+                en.setBestMove(bestMove.copy());
             }
         }
     }
@@ -579,21 +583,22 @@ public class PVSearchFast implements AI {
      * @return
      */
     private double pvSearch(
-            double alpha,
-            double beta,
-            int currentDepth,
-            int depthLeft,
-            int loopIndex,
-            boolean pv,
-            PVLine pLine,
-            PVLine lastIteration) {
+            double      alpha,
+            double      beta,
+            int         currentDepth,
+            int         depthLeft,
+            int         loopIndex,
+            boolean     pv,
+            PVLine      pLine,
+            PVLine      lastIteration) {
+
         _visitedNodes++;
 
         double origonalAlpha = alpha;
         //<editor-fold desc="Transposition lookup">
         long zobrist = _board.zobrist();
 
-        TranspositionEntry transposition = transpositionLookUp(zobrist, currentDepth, depthLeft);
+        TranspositionEntry transposition = transpositionLookUp(zobrist, depthLeft);
         if (transposition != null) {
             if (transposition.getNode_type() == TranspositionEntry.PV_NODE) {
                 return transposition.getVal();
@@ -611,9 +616,6 @@ public class PVSearchFast implements AI {
         //<editor-fold desc="zugzwang">
 
 
-        if(!_board.previousMoveIsLegal()){
-            return Double.NaN;
-        }
         List<Move> allMoves = _board.getPseudoLegalMoves(_buffer.get(currentDepth));
 
         if(_board.isDraw()){
@@ -628,10 +630,9 @@ public class PVSearchFast implements AI {
         PVLine line = new PVLine(_depth - currentDepth);
         //<editor-fold desc="Null moves">
         double score = Double.NEGATIVE_INFINITY;
-        if (use_null_moves && allMoves.size() > 1) {
+        if (use_null_moves && allMoves.size() > 1 && !pv) {
             _board.move_null();
-//            Move nullMove = new Move();
-//            _board.move(nullMove);
+
             score = -pvSearch(
                     -alpha - 1,
                     -alpha,
@@ -642,10 +643,7 @@ public class PVSearchFast implements AI {
                     line,
                     lastIteration);
             _board.undoMove_null();
-//            _board.undoMove();
-            if(Double.isNaN(score)){
-                score = Double.NEGATIVE_INFINITY;
-            }else if (score >= beta) {
+            if (score >= beta) {
                     return beta;
             }
 
@@ -720,7 +718,7 @@ public class PVSearchFast implements AI {
                 if (_killerTable != null && m.getPieceTo() == 0) {
                     _killerTable.put(currentDepth, m.copy());
                 }
-                //transpositionPlacement(zobrist, currentDepth, depthLeft, beta, TranspositionEntry.CUT_NODE, m);
+                transpositionPlacement(zobrist, depthLeft, beta, TranspositionEntry.CUT_NODE, m);
                 return beta;
             }
             //</editor-fold>
@@ -747,7 +745,7 @@ public class PVSearchFast implements AI {
         //</editor-fold>
 
         if(legalMoveCounter == 0){
-            if(_board.isAtCheck(_board.getActivePlayer())){
+            if(_board.isInCheck(_board.getActivePlayer())){
                 if (currentDepth == 0) {
                     _bestScore = -LateGameEvaluator.INFTY;
                     _bestMove = null;
@@ -763,9 +761,9 @@ public class PVSearchFast implements AI {
         }
 
         if (score > origonalAlpha) {
-            transpositionPlacement(zobrist, currentDepth, depthLeft, alpha, TranspositionEntry.PV_NODE, bestMove);
+            transpositionPlacement(zobrist, depthLeft, alpha, TranspositionEntry.PV_NODE, bestMove);
         } else {
-            transpositionPlacement(zobrist, currentDepth, depthLeft, alpha, TranspositionEntry.ALL_NODE, bestMove);
+            transpositionPlacement(zobrist, depthLeft, alpha, TranspositionEntry.ALL_NODE, bestMove);
         }
         return alpha;
     }
@@ -874,7 +872,7 @@ public class PVSearchFast implements AI {
 //        //check for gameover
 //        if(legalMoves == 0){
 //            //System.out.println(_board);
-//            if(_board.isAtCheck(_board.getActivePlayer())){
+//            if(_board.isInCheck(_board.getActivePlayer())){
 //                return -LateGameEvaluator.INFTY;
 //            }else{
 //                return 0;
@@ -883,5 +881,13 @@ public class PVSearchFast implements AI {
 
 
         return alpha;
+    }
+
+    public static void main(String[] args) {
+        TranspositionTable<Integer> transpositionTable = new TranspositionTable<>();
+        for(int i = 0; i< 20; i++){
+            transpositionTable.put((long)(Math.random() * 1000000L), 123123);
+        }
+        System.out.println(transpositionTable);
     }
 }

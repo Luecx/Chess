@@ -1109,11 +1109,11 @@ public class FastBoard extends Board<FastBoard> {
     }
 
     @Override
-    public boolean isAtCheck(int player) {
+    public boolean isInCheck(int player) {
         if(player == 1){
-            return (getAttackedSquaresFromBlack() & white_values[5]) != 0;
+            return isUnderAttack(white_pieces[5].get(0), -1);
         }else{
-            return (getAttackedSquaresFromWhite() & black_values[5]) != 0;
+            return isUnderAttack(black_pieces[5].get(0), 1);
         }
     }
 

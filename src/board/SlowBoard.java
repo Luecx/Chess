@@ -1,6 +1,7 @@
 package board;
 
 import ai.ordering.SystematicOrderer;
+import ai.search.AdvancedSearch;
 import ai.search.PVSearch;
 import board.bitboards.BitBoard;
 import board.moves.Move;
@@ -360,7 +361,7 @@ public class SlowBoard extends Board<SlowBoard> {
     }
 
     @Override
-    public boolean isAtCheck(int player) {
+    public boolean isInCheck(int player) {
         return false;
     }
 
@@ -880,7 +881,8 @@ public class SlowBoard extends Board<SlowBoard> {
     public static void main(String[] args) {
         Board b = new FastBoard(Setup.DEFAULT);
 
-        b = IO.read_FEN(b, "k7/1r1P4/5b2/3q4/8/8/2R1NK2/4Q3 w - - 0 1");
+        //b = IO.read_FEN(b,"r2q1rk1/1pp1bppp/p1npbn2/4p1B1/B3P3/2NP1N2/PPPQ1PPP/2KR3R");
+        //b = IO.read_FEN(b, "k7/1r1P4/5b2/3q4/8/8/2R1NK2/4Q3 w - - 0 1");
         //b = IO.read_FEN(b, "k2N4/7R/8/4K3/8/8/8/8 w - - 0 1");
         //b = IO.read_FEN(b, "8/2q1P1k1/8/8/8/8/8/4KQ2 w - - 0 1");
         //b = IO.read_FEN(b, "QBN2nbq/QBN2nbq/QBN2nbq/KBN2nbq/QBN2nbk/QBN2nbq/QBN2nbq/QBN2nbq w - - 0 1");
@@ -903,7 +905,17 @@ public class SlowBoard extends Board<SlowBoard> {
         ai1.setUse_transposition(false);
         ai1.setUse_move_lists(true);
 
-        new Frame(b,new Player() {},ai1).getGamePanel().getGame().addBoardChangedListener((Consumer<Move>) (m) -> {
+
+        AdvancedSearch search = new AdvancedSearch(new NoahEvaluator2(),
+                                                   new SystematicOrderer2(),
+                                                   new SenpaiReducer(1),1,10000);
+
+////        System.out.println(b);
+////
+////        b.move(b.generateMove(29,50, 0));
+//        System.out.println(ai2.bestMove(b));
+//
+        new Frame(b,search,ai1).getGamePanel().getGame().addBoardChangedListener((Consumer<Move>) (m) -> {
             //System.out.println(b);
 
         });

@@ -46,22 +46,22 @@ public class SystematicOrderer2 implements Orderer {
 //        }
 
         //PV nodes
-        if(lastIteration != null && pvNode){
-            if(depth < lastIteration.getLine().length){
-                int index = collection.indexOf(lastIteration.getLine()[depth]);
-                if(index != -1){
-                    pvMoves.add(collection.get(index));
-                    collection.remove(index);
-                }
-            }
-        }
+//        if(lastIteration != null && pvNode){
+//            if(depth < lastIteration.getLine().length){
+//                int index = collection.indexOf(lastIteration.getLine()[depth]);
+//                if(index != -1){
+//                    pvMoves.add(collection.get(index));
+//                    collection.remove(index);
+//                }
+//            }
+//        }
 
         //hash moves
 
         long zobrist = board.zobrist();
         if (transpositionTable != null && pvMoves.size() == 0) {
             TranspositionEntry en = (TranspositionEntry) transpositionTable.get(zobrist);
-            if (en != null && en.getNode_type() != TranspositionEntry.ALL_NODE) {
+            if (en != null) {
                 Move hashMove = en.getBestMove();
                 int index = collection.indexOf(hashMove);
                 if (hashMove != null && index != -1) {
@@ -97,7 +97,7 @@ public class SystematicOrderer2 implements Orderer {
             int p1 = o1.getOrderPriority();
             int p2 = o2.getOrderPriority();
 
-            return -Integer.compare(p1,p2);
+            return Integer.compare(p1,p2);
         });
         goodCaptures.sort((o1, o2) -> {
             int p1 = o1.getOrderPriority();

@@ -26,8 +26,8 @@ public class SenpaiReducer implements Reducer {
 
 
 
-        if(depth > 4){
-            return Math.max(2, depthLeft / 2);
+        if(depth > 3){
+            return Math.max(2, depthLeft / 3);
         }else{
             return 1;
         }

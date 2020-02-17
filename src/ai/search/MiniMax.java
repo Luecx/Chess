@@ -27,7 +27,7 @@ public class MiniMax implements AI {
     private int _evaluatedNodes;
     private int _visitedNodes;
 
-    private TranspositionTable _hashed_positions = new TranspositionTable<int[]>((int)50E6);
+    private TranspositionTable _hashed_positions = new TranspositionTable<int[]>();
 
     @Override
     public Move bestMove(Board board) {

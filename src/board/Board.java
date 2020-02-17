@@ -147,7 +147,7 @@ public abstract class Board<T extends Board<T>> {
      * @param player
      * @return
      */
-    public abstract boolean isAtCheck(int player);
+    public abstract boolean isInCheck(int player);
 
     /**
      * The method returns true if the game is over due to repetitions/50-move rule

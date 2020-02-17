@@ -1,5 +1,8 @@
 package io;
 
+import ai.evaluator.Evaluator;
+import ai.evaluator.NoahEvaluator;
+import ai.search.AdvancedSearch;
 import board.Board;
 import board.FastBoard;
 import board.moves.Move;
@@ -21,18 +24,19 @@ public class UCI {
 
     private static String ENGINENAME = "Waldi"; // we should decide on a name of the engine
     private static Board b = new FastBoard(Setup.DEFAULT);
-    private static NoahEvaluator2 evaluator = new NoahEvaluator2();
-    private static PVSearchFast ai = new PVSearchFast(
+    private static Evaluator evaluator = new NoahEvaluator2();
+    private static AdvancedSearch ai = new AdvancedSearch(
             evaluator,
             new SystematicOrderer2(),
             new SenpaiReducer(1),
             PVSearch.FLAG_TIME_LIMIT,
             1000);
+
     public static void uciCommunication() {
 
-        evaluator.setEvolvableValues(
-                new double[]{100.0, 100.0, 100.0, 100.0, 100.0, 60.0, 125.0, 495.0, 354.0, 315.0, 922.0,
-                        20003.0, 6.0, 5.0, -1.0, 2.0, 14.0, 27.0, -24.0, 41.0, 66.0, 5.0, 27.7, 20.0, 28.0, 8.0});
+//        evaluator.setEvolvableValues(
+//                new double[]{100.0, 100.0, 100.0, 100.0, 100.0, 60.0, 125.0, 495.0, 354.0, 315.0, 922.0,
+//                        20003.0, 6.0, 5.0, -1.0, 2.0, 14.0, 27.0, -24.0, 41.0, 66.0, 5.0, 27.7, 20.0, 28.0, 8.0});
         ai.setUse_transposition(true);
 
         Scanner input = new Scanner(System.in);
@@ -74,7 +78,7 @@ public class UCI {
         System.out.println("option name null_moves type check default true");
         System.out.println("option name lmr type check default true");
         System.out.println("option name killers type check default true");
-        System.out.println("option name transpositions type check default false");
+        System.out.println("option name transpositions type check default true");
         System.out.println("option name iterative type check default true");
 
         System.out.println("uciok");
@@ -188,9 +192,10 @@ public class UCI {
 
         Move best = ai.bestMove(b);
 
-        log(moveToUCI(best,b)+" info " + ai.getSearchOverview().getInfo() + "\n");
-        log(IO.write_FEN(b) + "\n");
-        System.out.println("info " + ai.getSearchOverview().getInfo());
+        //log(moveToUCI(best,b)+" info " + ai.getSearchOverview().getInfo() + "\n");
+        //log("tt:" + ai.isUse_transposition()+"\n");
+        //log(IO.write_FEN(b) + "\n");
+        //System.out.println("info " + ai.getSearchOverview().getInfo());
         System.out.println("bestmove " + moveToUCI(best,b));
     }
 
