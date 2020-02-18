@@ -9,17 +9,40 @@ public class TranspositionEntry {
     public static final int ALL_NODE = 3;
 
     private double val;
+
+    private long zobrist;
+
     private int depthLeft;
+
     private int node_type;
     private int color;
     private Move bestMove;
 
     public TranspositionEntry(double val, int depthLeft, int node_type, int color, Move bestMove) {
         this.val = val;
+        this.zobrist = zobrist;
         this.depthLeft = depthLeft;
         this.node_type = node_type;
         this.color = color;
         this.bestMove = bestMove;
+    }
+
+    public TranspositionEntry(long zobrist, double val, int depthLeft, int node_type, int color, Move bestMove) {
+        this.val = val;
+        this.zobrist = zobrist;
+        this.depthLeft = depthLeft;
+        this.node_type = node_type;
+        this.color = color;
+        this.bestMove = bestMove;
+    }
+
+
+    public long getZobrist() {
+        return zobrist;
+    }
+
+    public void setZobrist(long zobrist) {
+        this.zobrist = zobrist;
     }
 
     public int getColor() {

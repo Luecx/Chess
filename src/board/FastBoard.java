@@ -292,12 +292,14 @@ public class FastBoard extends Board<FastBoard> {
         BoardStatus newBoardStatus = new BoardStatus(0L,
                                                      previousStatus.getMetaInformation(),
                                                      previousStatus.getFiftyMoveCounter()+1);
+        zobrist = ~zobrist;
         boardStatus.add(newBoardStatus);
         this.changeActivePlayer();
     }
 
     @Override
     public void undoMove_null() {
+        zobrist = ~zobrist;
         boardStatus.pop();
         this.changeActivePlayer();
     }

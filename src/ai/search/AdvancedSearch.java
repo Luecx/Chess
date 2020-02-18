@@ -55,8 +55,8 @@ public class AdvancedSearch implements AI {
     private Board                                       _board;
     private MoveListBuffer                              _buffer;
 
+    private double                                      _score;
     private int                                         _nodes;
-    private int                                         _depth;
     private int                                         _selDepth;
 
     public AdvancedSearch(Evaluator evaluator, Orderer orderer, Reducer reducer, int limit_flag, int limit) {
@@ -374,8 +374,10 @@ public class AdvancedSearch implements AI {
         this.razor_offset = razor_offset;
     }
 
+
+
+
     private double pvSearch(double alpha, double beta, int currentDepth, int depthLeft, boolean pv, boolean extension) {
-        _depth = Math.max(_depth, extension ? 0:currentDepth);
         _selDepth = Math.max(_selDepth, currentDepth);
 
 
@@ -401,7 +403,7 @@ public class AdvancedSearch implements AI {
 
 
         if(use_transposition){
-            TranspositionEntry tt = retrieveFromTT(zobrist, depthLeft);
+            TranspositionEntry tt = retrieveFromTT(zobrist, currentDepth, depthLeft);
             if(tt != null){
                 if (tt.getNode_type() == TranspositionEntry.PV_NODE){
                     return tt.getVal();
@@ -439,7 +441,7 @@ public class AdvancedSearch implements AI {
 
 
         if (use_null_moves) {
-            if(!pv){
+            if(!pv && !_board.isInCheck(_board.getActivePlayer())){
                 _board.move_null();
                 score = -pvSearch(-alpha-1, -alpha, currentDepth+1, depthLeft-1-null_move_reduction, false, false);
                 _board.undoMove_null();
@@ -476,7 +478,7 @@ public class AdvancedSearch implements AI {
                 if (m.getPieceTo() == 0) {
                     _killerTable.put(currentDepth, m.copy());
                 }
-                if(use_transposition) placeInTT(zobrist, depthLeft, alpha, TranspositionEntry.CUT_NODE, m.copy());
+                if(use_transposition) placeInTT(zobrist, currentDepth, depthLeft, alpha, TranspositionEntry.CUT_NODE, m.copy());
                 return beta;   // fail-hard beta-cutoff
             }
             if(score > highestScore){
@@ -500,13 +502,17 @@ public class AdvancedSearch implements AI {
                 return 0;
             }
         }
-        if (score > origonalAlpha) {
-            placeInTT(zobrist, depthLeft, alpha, TranspositionEntry.PV_NODE, bestMove);
-        } else {
-            if (use_transposition) {
-                placeInTT(zobrist, depthLeft, alpha, TranspositionEntry.ALL_NODE, bestMove);
+
+        if(bestMove != null){
+            if (score > origonalAlpha) {
+                placeInTT(zobrist, currentDepth, depthLeft, alpha, TranspositionEntry.PV_NODE, bestMove);
+            } else {
+                if (use_transposition) {
+                    placeInTT(zobrist, currentDepth, depthLeft, alpha, TranspositionEntry.ALL_NODE, bestMove);
+                }
             }
         }
+
 
 
 
@@ -604,10 +610,6 @@ public class AdvancedSearch implements AI {
     }
 
 
-
-
-
-
     @Override
     public Move bestMove(Board board) {
 
@@ -636,7 +638,7 @@ public class AdvancedSearch implements AI {
 
         if(!use_iteration && limit_flag == FLAG_DEPTH_LIMIT){
             iteration(limit);
-            if(print_overview)  System.out.println("info depth " + _depth + " seldepth " + _selDepth + " nodes " + _nodes + " " + extractPV());
+            System.out.println(buildInfoString(limit));
             return _transpositionTable.get(board.zobrist()).getBestMove();
         }
 
@@ -649,7 +651,7 @@ public class AdvancedSearch implements AI {
             double expectedTime = 0;
             while (System.currentTimeMillis() - time + expectedTime < limit) {
                 iteration(depth++);
-                if(print_overview)  System.out.println("info depth " + _depth + " seldepth " + _selDepth + " nodes " + _nodes + " " + extractPV());
+                System.out.println(buildInfoString(depth));
                 long iterationTime = System.currentTimeMillis() - prevTime;
                 prevTime = System.currentTimeMillis();
                 branchingFactor = Math.min(2, (double) (_nodes) / prevNode);
@@ -662,9 +664,9 @@ public class AdvancedSearch implements AI {
             if(limit > MAXIMUM_STORE_DEPTH/2){
                 limit = MAXIMUM_STORE_DEPTH/2;
             }
-            for(int i = 0; i < limit; i++){
+            for(int i = 1; i <= limit; i++){
                 iteration(i);
-                if(print_overview)  System.out.println("info depth " + _depth + " seldepth " + _selDepth + " nodes " + _nodes + " " + extractPV());
+                System.out.println(buildInfoString(i));
             }
         }
 
@@ -673,25 +675,43 @@ public class AdvancedSearch implements AI {
 
     public void iteration(int depth) {
         _nodes = 0;
-        _depth = 0;
         _selDepth = 0;
-        pvSearch(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, 0, depth, true, false);
+        _score = pvSearch(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, 0, depth, true, false);
     }
 
-    public void placeInTT(long zobrist, int depthLeft, double alpha, int type, Move bestMove){
+    public void placeInTT(long zobrist, int depth, int depthLeft, double alpha, int type, Move bestMove){
         TranspositionEntry en = _transpositionTable.get(zobrist);
-        if(en != null && en.getNode_type() == TranspositionEntry.PV_NODE && en.getNode_type() != TranspositionEntry.PV_NODE){
-            return;
-        }
+
+        if(en != null && en.getNode_type() == TranspositionEntry.PV_NODE && type != TranspositionEntry.PV_NODE) return;
+
         _transpositionTable.put(zobrist, new TranspositionEntry(alpha, depthLeft, type, _board.getActivePlayer(), bestMove));
     }
 
-    public TranspositionEntry retrieveFromTT(long zobrist, int depthLeft){
+    public TranspositionEntry retrieveFromTT(long zobrist, int depth, int depthLeft){
         TranspositionEntry en = _transpositionTable.get(zobrist);
-        if(en != null && en.getDepthLeft() >= depthLeft){
+        if(en != null && en.getDepthLeft() >= depthLeft && en.getZobrist() == zobrist){
+            //System.out.println("adwji");
+
             return en;
         }
         return null;
+    }
+
+    public String buildInfoString(int depth){
+        StringBuilder builder = new StringBuilder();
+
+
+        builder.append("info ");
+        builder.append("depth "         + depth         + " ");
+        builder.append("seldepth "      + _selDepth     + " ");
+        builder.append("score cp "      + (int)_score   + " ");
+        builder.append("nodes "         + _nodes        + " ");
+        builder.append("nps "           + 0             + " ");
+        builder.append("tbhits "        + 0             + " ");
+        builder.append("time "          + 1             + " ");
+        builder.append("pv "            + extractPV());
+
+        return builder.toString();
     }
 
     public String extractPV(){
@@ -704,7 +724,6 @@ public class AdvancedSearch implements AI {
             counter++;
             builder.append(UCI.moveToUCI(en.getBestMove(), _board) + " ");
             _board.move(en.getBestMove());
-            //System.out.println(counter + "  " + en.getBestMove());
             en = _transpositionTable.get(_board.zobrist());
         }
 
@@ -718,9 +737,16 @@ public class AdvancedSearch implements AI {
 
     public static void main(String[] args) {
         FastBoard fb = new FastBoard(Setup.DEFAULT);
-        //fb = IO.read_FEN(fb, "r2q1rk1/1pp1bppp/p1npbn2/4p1B1/B3P3/2NP1N2/PPPQ1PPP/2KR3R");
+        fb = IO.read_FEN(fb, "rnb1k2r/ppq2ppp/2pbpn2/3p4/3PP3/1PNB1N1P/P1PB1PP1/R2QK2R b KQkq - 0 1");
 
-        AdvancedSearch advancedSearch = new AdvancedSearch(new NoahEvaluator2(), new SystematicOrderer2(), new SenpaiReducer(1), 1, 10000);
+
+        System.out.println(fb);
+
+        AdvancedSearch advancedSearch = new AdvancedSearch(new NoahEvaluator2(), new SystematicOrderer2(), new SenpaiReducer(1), 2, 12);
+        advancedSearch.setUse_null_moves(true);
+        advancedSearch.setUse_transposition(true);
+        advancedSearch.setUse_razoring(true);
+        advancedSearch.setUse_LMR(true);
         advancedSearch.limit = 10000;
         advancedSearch.limit_flag = 1;
         advancedSearch.bestMove(fb);

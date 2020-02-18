@@ -37,7 +37,7 @@ public class UCI {
 //        evaluator.setEvolvableValues(
 //                new double[]{100.0, 100.0, 100.0, 100.0, 100.0, 60.0, 125.0, 495.0, 354.0, 315.0, 922.0,
 //                        20003.0, 6.0, 5.0, -1.0, 2.0, 14.0, 27.0, -24.0, 41.0, 66.0, 5.0, 27.7, 20.0, 28.0, 8.0});
-        ai.setUse_transposition(true);
+//        ai.setUse_transposition(true);
 
         Scanner input = new Scanner(System.in);
         while (true)
@@ -80,6 +80,7 @@ public class UCI {
         System.out.println("option name killers type check default true");
         System.out.println("option name transpositions type check default true");
         System.out.println("option name iterative type check default true");
+        System.out.println("option name razoring type check default false");
 
         System.out.println("uciok");
     }
@@ -98,6 +99,7 @@ public class UCI {
             case "killers": ai.setUse_killer_heuristic(Boolean.parseBoolean(value));break;
             case "transpositions": ai.setUse_transposition(Boolean.parseBoolean(value));break;
             case "iterative": ai.setUse_iteration(Boolean.parseBoolean(value));break;
+            case "razoring": ai.setUse_razoring(Boolean.parseBoolean(value));break;
         }
 
         //set options
@@ -139,8 +141,8 @@ public class UCI {
             commands.add(s);
         }
 
-        int wtime = (int) 60E3;
-        int btime = (int) 60E3;
+        int wtime = (int) 3600E3;
+        int btime = (int) 3600E3;
 
         int winc = 0;
         int binc = 0;
@@ -148,16 +150,20 @@ public class UCI {
         int movestogo = 0;
 
         int mode = PVSearch.FLAG_TIME_LIMIT;
-        int limit = 5000;
+        int limit = 50000;
 
         if(commands.contains("wtime")){
             wtime = Integer.parseInt(commands.get(commands.indexOf("wtime")+1));
+            mode = PVSearch.FLAG_TIME_LIMIT;
         }if(commands.contains("btime")){
             btime = Integer.parseInt(commands.get(commands.indexOf("btime")+1));
+            mode = PVSearch.FLAG_TIME_LIMIT;
         }if(commands.contains("winc")){
             winc = Integer.parseInt(commands.get(commands.indexOf("winc")+1));
+            mode = PVSearch.FLAG_TIME_LIMIT;
         }if(commands.contains("binc")){
             binc = Integer.parseInt(commands.get(commands.indexOf("binc")+1));
+            mode = PVSearch.FLAG_TIME_LIMIT;
         }if(commands.contains("movestogo")){
             movestogo = Integer.parseInt(commands.get(commands.indexOf("movestogo")+1));
         }if(commands.contains("depth")){
@@ -173,21 +179,24 @@ public class UCI {
         }
 
 
+
         ai.setLimit(limit);
         ai.setLimit_flag(mode);
 
         if(ai.getLimit_flag() == PVSearchFast.FLAG_TIME_LIMIT){
             if (b.getActivePlayer() == 1) {
-                ai.setLimit(wtime/30);
+                ai.setLimit(wtime/30 + winc);
             }
             if (b.getActivePlayer() == -1) {
-                ai.setLimit(btime/30);
+                ai.setLimit(btime/30 + binc);
             }
             ai.setPrint_overview(false);
             if(ai.getLimit_flag() == PVSearch.FLAG_TIME_LIMIT && ai.getLimit() > 10000){
                 ai.setLimit(10000);
             }
         }
+
+        System.out.println(ai.getLimit());
 
 
         Move best = ai.bestMove(b);
@@ -247,8 +256,8 @@ public class UCI {
         toReturn = toReturn + IO.indexToFile(tox);
         toReturn = toReturn + Integer.toString(toy+1);
 
-        if(move.isEn_passent_capture()){
-            toReturn += "00rkbq".toCharArray()[Math.abs(move.getPieceTo())];
+        if(move.isPromotion()){
+            toReturn += "00rkbq".toCharArray()[Math.abs(move.getPieceFrom())];
         }
 
         return toReturn;
