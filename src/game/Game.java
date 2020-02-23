@@ -99,9 +99,12 @@ public class Game {
             Move move = AI.bestMove(board.copy());
             if(move == null)
                 return;
-            for (Consumer<Move> listener : beforeMoveConsumer) { listener.accept(m); }
+            System.err.println(move);
+            for (Consumer<Move> listener : beforeMoveConsumer) {
+                listener.accept(move);
+            }
             board.move(move);
-            for (Consumer<Move> listener : afterMoveConsumer) { listener.accept(m); }
+            for (Consumer<Move> listener : afterMoveConsumer) { listener.accept(move); }
         }
         this.isInterrupted = false;
     }

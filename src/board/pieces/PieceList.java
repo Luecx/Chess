@@ -19,14 +19,28 @@ public class PieceList {
         this(piece, 10);
     }
 
+    /**
+     * returns the amount of pieces represented
+     * @return
+     */
     public int size(){
         return size;
     }
 
+    /**
+     * returns the position of the piece at the given index
+     * @param index
+     * @return
+     */
     public int get(int index){
         return indices[index];
     }
 
+    /**
+     * checks if there is a piece on the given square
+     * @param position
+     * @return
+     */
     public boolean contains(int position){
         for(int i = 0; i < this.size; i++){
             if(this.indices[i] == position){
@@ -36,10 +50,17 @@ public class PieceList {
         return false;
     }
 
+    /**
+     * clears all positions
+     */
     public void clear() {
         this.size = 0;
     }
 
+    /**
+     * copied this object
+     * @return
+     */
     public PieceList copy() {
         PieceList copy = new PieceList(this.piece, this.size);
         copy.indices = Arrays.copyOf(this.indices, this.indices.length);
@@ -47,11 +68,19 @@ public class PieceList {
         return copy;
     }
 
+    /**
+     * adds a new position to this object and increase the size by 1
+     * @param position
+     */
     public void add(int position){
         this.indices[size] = position;
         this.size ++;
     }
 
+    /**
+     * removes a given position from this list
+     * @param position
+     */
     public void remove(int position){
         for(int i = 0; i < this.size; i++){
             if(this.indices[i] == position){
@@ -63,6 +92,12 @@ public class PieceList {
         size--;
     }
 
+    /**
+     * checks if this list equals another list.
+     * this also checks if the positions are equal
+     * @param o
+     * @return
+     */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -77,6 +112,10 @@ public class PieceList {
         return true;
     }
 
+    /**
+     * hashcode (not used afaik)
+     * @return
+     */
     @Override
     public int hashCode() {
         int result = Objects.hash(piece, size);
@@ -84,6 +123,10 @@ public class PieceList {
         return result;
     }
 
+    /**
+     * returns this list represented as a string
+     * @return
+     */
     @Override
     public String toString() {
 
@@ -100,7 +143,4 @@ public class PieceList {
         return builder.toString();
     }
 
-    public void move() {
-
-    }
 }

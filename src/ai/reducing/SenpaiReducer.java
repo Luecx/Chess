@@ -1,5 +1,6 @@
 package ai.reducing;
 
+import board.Board;
 import board.moves.Move;
 
 public class SenpaiReducer implements Reducer {
@@ -15,11 +16,12 @@ public class SenpaiReducer implements Reducer {
     }
 
     @Override
-    public int reduce(Move move, int depth, int depthLeft, int moveIndex, boolean pv_node) {
+    public int reduce(Board board, Move move, int depth, int depthLeft, int moveIndex, boolean pv_node) {
         if (
                 moveIndex < num_moves_not_reduced ||
-                        pv_node
-                        || move.getPieceTo() != 0
+                pv_node ||
+                board.givesCheck(move) ||
+                move.getPieceTo() != 0
         ) {
             return 0;
         }

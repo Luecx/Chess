@@ -159,7 +159,8 @@ public class GamePanel extends JPanel {
     public void renderAttacks() {
         if (selected != -1) {
 
-            for (Object obj : g.getBoard().getLegalMoves()) {
+            for (Object obj : g.getBoard().getPseudoLegalMoves()) {
+                if(!g.getBoard().isLegal((Move)obj)) continue;
                 if (((Move) obj).getFrom() == selected) {
                     if (g.getBoard().getPiece(((Move) obj).getTo()) != 0) {
                         renderSquareTakeable(g.getBoard().x(((Move) obj).getTo()), g.getBoard().y(((Move) obj).getTo()));
@@ -244,13 +245,16 @@ public class GamePanel extends JPanel {
             } else if (g.getBoard().getPiece(x, y) * g.getBoard().getActivePlayer() > 0) {
                 selected = g.getBoard().index(x, y);
             } else {
-                for (Object o : g.getBoard().getLegalMoves()) {
+                for (Object o : g.getBoard().getPseudoLegalMoves()) {
                     if (o instanceof Move) {
                         Move z = (Move) o;
-
-                        if (selected == z.getFrom() && g.getBoard().index(x, y) == z.getTo()) {
-                            runMoveInThread(z);
+                        if(g.getBoard().isLegal(z)){
+                            if (selected == z.getFrom() && g.getBoard().index(x, y) == z.getTo()) {
+                                runMoveInThread(z);
+                            }
                         }
+
+
                     }
                 }
             }

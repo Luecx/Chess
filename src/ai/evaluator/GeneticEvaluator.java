@@ -1,12 +1,12 @@
 package ai.evaluator;
 
-import board.SlowBoard;
+import ai.search.AdvancedSearch;
+import board.FastBoard;
 import board.setup.Setup;
 import game.Game;
 import ai.ordering.SystematicOrderer;
 import ai.reducing.SimpleReducer;
 import ai.search.AI;
-import ai.search.PVSearch;
 import ai.tools.threads.Pool;
 import ai.tools.threads.PoolFunction;
 import io.IO;
@@ -53,7 +53,7 @@ public abstract class GeneticEvaluator<T extends GeneticEvaluator<T>> implements
     public abstract T copy();
 
     public static void evolve(ArrayList<GeneticEvaluator> geneticEvaluators,
-                              PVSearch ai,
+                              AdvancedSearch ai,
                               int games,
                               int survivors,
                               double mutationStrength,
@@ -66,7 +66,7 @@ public abstract class GeneticEvaluator<T extends GeneticEvaluator<T>> implements
         HashMap<GeneticEvaluator, AI> ais = new HashMap<>();
         for(GeneticEvaluator ev:geneticEvaluators){
             AI a = duplicateAI(ai);
-            ((PVSearch) a).setEvaluator(ev);
+            ((AdvancedSearch) a).setEvaluator(ev);
             ais.put(ev, a);
         }
         //</editor-fold>
@@ -215,7 +215,7 @@ public abstract class GeneticEvaluator<T extends GeneticEvaluator<T>> implements
     public static double playAGame(AI ai1, AI ai2){
 
 
-        Game game = new Game(new SlowBoard(Setup.DEFAULT), ai1, ai2);
+        Game game = new Game(new FastBoard(Setup.DEFAULT), ai1, ai2);
         NoahEvaluator evaluator = new NoahEvaluator();
         final int[] moves = {0};
         game.addBoardChangedListener((m) -> {
@@ -228,7 +228,7 @@ public abstract class GeneticEvaluator<T extends GeneticEvaluator<T>> implements
         });
         game.move(null);
         if(game.getBoard().isDraw()){
-            return game.getBoard().winner();
+            return 0;
         }
 
         double evaluation = evaluator.evaluate(game.getBoard());
@@ -247,11 +247,10 @@ public abstract class GeneticEvaluator<T extends GeneticEvaluator<T>> implements
         return playAGame(ai1,ai2) - playAGame(ai2, ai1);
     }
 
-    public static PVSearch duplicateAI(PVSearch ai){
-        PVSearch search = new PVSearch(ai.getEvaluator(), ai.getOrderer(), ai.getReducer(), ai.getLimit_flag(), ai.getLimit(), ai.getQuiesce_depth());
+    public static AdvancedSearch duplicateAI(AdvancedSearch ai){
+        AdvancedSearch search = new AdvancedSearch(ai.getEvaluator(), ai.getOrderer(), ai.getReducer(), ai.getLimit_flag(), ai.getLimit());
         search.setPrint_overview(ai.isPrint_overview());
         search.setUse_LMR(ai.isUse_LMR());
-        search.setUse_move_lists(ai.isUse_move_lists());
         search.setUse_transposition(ai.isUse_transposition());
         search.setUse_killer_heuristic(ai.isUse_killer_heuristic());
         search.setUse_iteration(ai.isUse_iteration());
@@ -259,7 +258,7 @@ public abstract class GeneticEvaluator<T extends GeneticEvaluator<T>> implements
     }
 
     public static GeneticEvaluator getEvaluatorFromEntry(Object[] o){
-        return (GeneticEvaluator) ((PVSearch)o[0]).getEvaluator();
+        return (GeneticEvaluator) ((AdvancedSearch)o[0]).getEvaluator();
     }
 
     public static void writePopulation(String file, ArrayList<GeneticEvaluator> ais){
@@ -313,15 +312,15 @@ public abstract class GeneticEvaluator<T extends GeneticEvaluator<T>> implements
 //        System.out.println(Arrays.toString(getEvaluatorFromEntry(population.get(0)).getEvolvableValues()));
 
 
-        PVSearch pvSearch = new PVSearch(null, new SystematicOrderer(), new SimpleReducer(), 2,6,4);
-        pvSearch.setUse_null_moves(true);
-        pvSearch.setUse_LMR(true);
-        pvSearch.setUse_killer_heuristic(true);
+        AdvancedSearch AdvancedSearch = new AdvancedSearch(new NoahEvaluator2(), new SystematicOrderer(), new SimpleReducer(), 2,6);
+        AdvancedSearch.setUse_null_moves(true);
+        AdvancedSearch.setUse_LMR(true);
+        AdvancedSearch.setUse_killer_heuristic(true);
 
 
 
         for(int i = 0; i < 1; i++){
-            evolve(population, pvSearch,16, 32, 0,0, 4);
+            evolve(population, AdvancedSearch,16, 32, 0,0, 4);
             //writePopulation("noahEvaluator_2.population", population);
         }
 //        System.out.println("Finished");

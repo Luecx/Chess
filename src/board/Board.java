@@ -1,5 +1,6 @@
 package board;
 
+import board.bitboards.BitBoard;
 import board.moves.Move;
 import board.moves.MoveList;
 import board.setup.Setup;
@@ -58,7 +59,23 @@ public abstract class Board<T extends Board<T>> {
     @Override
     public String toString() {
 
+
+
         StringBuilder builder = new StringBuilder();
+
+
+
+        builder.append(String.format("%-40s : %-5d %n", "zobrist key", this.zobrist()));
+        builder.append(String.format("%-40s : %-5d %n", "repetition", getCurrentRepetitionCount()));
+        builder.append(String.format("%-40s : %-5d %n", "50 move rule",getCurrent50MoveRuleCount()));
+        builder.append(String.format("%-40s : %-5s %n", "white kingside castle", getCastlingChance(1) ? "true":"false"));
+        builder.append(String.format("%-40s : %-5s %n", "white queenside castle", getCastlingChance(0) ? "true":"false"));
+        builder.append(String.format("%-40s : %-5s %n", "black kingside castle", getCastlingChance(3) ? "true":"false"));
+        builder.append(String.format("%-40s : %-5s %n", "black queenside castle", getCastlingChance(2) ? "true":"false"));
+        builder.append(String.format("%-40s : %-5s %n", "en passent square", getEnPassantSquare() >= 0 ?
+                IO.getSquareString(getEnPassantSquare()): "-"));
+
+
         builder.append(" ┌───┬───┬───┬───┬───┬───┬───┬───┐\n");
 
         for (int r = 7; r >= 0; --r)
@@ -321,14 +338,6 @@ public abstract class Board<T extends Board<T>> {
     public abstract boolean givesCheck(Move m);
 
     /**
-     * returns true if the previous move is legal
-     * if returned false, the previous move was illegal
-     * @return
-     */
-    @Deprecated
-    public abstract boolean previousMoveIsLegal();
-
-    /**
      * generates a new move object that can later be used for the move() method.
      * @param from
      * @param to
@@ -336,13 +345,6 @@ public abstract class Board<T extends Board<T>> {
      * @return
      */
     public abstract Move generateMove(int from, int to, int promotionTarget);
-
-    /**
-     * the method is used to determine who won the game
-     * @return +1 if white won/-1 if black won
-     */
-    @Deprecated
-    public abstract int winner();
 
     /**
      * this method should create an exact deep copy of the board.
@@ -399,18 +401,21 @@ public abstract class Board<T extends Board<T>> {
     public abstract int getCurrentRepetitionCount();
 
     /**
-     * returns true if its possible to en passant towards the given file
-     * @param file      the file
+     * returns the counter for the 50 move rule.
+     * @return
      */
-    public abstract boolean getEnPassantChance(int file);
+    public abstract int getCurrent50MoveRuleCount();
 
     /**
-     * enables/disables en passant in the next move to the given file
+     * returns the target square for en passant captures. returns -1 if en passant is not possible
      */
-    public abstract void setEnPassantChance(int file, boolean value);
+    public abstract int getEnPassantSquare();
 
-
-
+    /**
+     * enables en passant to the given square.
+     * if the square is -1, en passant should be disabled
+     */
+    public abstract void setEnPassantSquare(int square);
 
     /**
      * the method returns +1 if white is to move next.

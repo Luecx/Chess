@@ -1,7 +1,6 @@
 package ai.evaluator;
 
 import board.Board;
-import board.SlowBoard;
 import board.setup.Setup;
 import ai.tools.tensor.Tensor2D;
 import ai.tools.tensor.Tensor3D;
@@ -124,13 +123,6 @@ public class FinnEvaluator implements Evaluator {
     @Override
     public double evaluate(Board board) {
 
-        if(board.isDraw()){
-            switch (board.winner()){
-                case 1: return 1000000000;
-                case 0: return 0;
-                case -1: return -100000000;
-            }
-        }
 
         int ev = 0;
         int v;
@@ -144,25 +136,5 @@ public class FinnEvaluator implements Evaluator {
             }
         }
         return ev;
-    }
-
-
-    public static void main(String[] args) {
-        Board b = new SlowBoard(Setup.DEFAULT);
-        b = IO.read_FEN(new SlowBoard(), "8/8/3p4/8/8/3P4/8/8");
-
-        Evaluator evaluator = new NoahEvaluator();
-
-        System.out.println(evaluator.evaluate(b));
-
-        for(int i = 0; i < 4; i++){
-            long t = System.nanoTime();
-            int index = 0;
-            while(index ++ < 1E7){
-                evaluator.evaluate(b);
-            }
-            System.out.println((System.nanoTime() - t) / 1E9 + " s");
-        }
-
     }
 }

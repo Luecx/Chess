@@ -1,7 +1,6 @@
 package board.repetitions;
 
 import board.Board;
-import board.SlowBoard;
 
 import java.util.LinkedList;
 import java.util.Objects;
@@ -12,14 +11,34 @@ public class RepetitionList {
 
     private class Entry{
 
+
+        /**
+         * this entry class represents a board state in the history of the board.
+         * it counts how many different board positions have occured and the amount of the occurencies.
+         * @param zobrist
+         * @param count
+         */
+
         public Entry(long zobrist, int count) {
             this.zobrist = zobrist;
             this.count = count;
         }
 
+        /**
+         * use the zobrist key to identify a board state. its is assumed that no hash collisions occur
+         */
         private long zobrist;
+
+        /**
+         * the amount of times this position occured
+         */
         private int count;
 
+        /**
+         * checks if this entry equals another entry
+         * @param o
+         * @return
+         */
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
@@ -29,32 +48,64 @@ public class RepetitionList {
                     count == entry.count;
         }
 
+        /**
+         * hashcode to map this object to an int (not used afaik)
+         * @return
+         */
         @Override
         public int hashCode() {
             return Objects.hash(zobrist, count);
         }
 
+        /**
+         * getter for the zobrist key
+         * @return
+         */
         public long getZobrist() {
             return zobrist;
         }
 
+        /**
+         * setter for the zobrist key
+         * @param zobrist
+         */
         public void setZobrist(long zobrist) {
             this.zobrist = zobrist;
         }
 
+        /**
+         * getter for the count variable
+         * @return
+         */
         public int getCount() {
             return count;
         }
 
+        /**
+         * setter for the zobrist variable
+         * @param count
+         */
         public void setCount(int count) {
             this.count = count;
         }
     }
 
+    /**
+     * empty constructor
+     */
     public RepetitionList(){
 
     }
 
+    /**
+     * adds the board state represented by the zobrist key.
+     * if the key already occured, the count for that position will increase by 1.
+     * otherwise a new entry will be generated.
+     * if the count of that position is higher than 2 (3-fold repetition), true will be returned.
+     * otherwise false.
+     * @param zobrist
+     * @return              if the game is over by 3-fold repetition
+     */
     public boolean add(long zobrist){
         for(Entry e:entries){
             if(e.zobrist == zobrist){
@@ -66,6 +117,10 @@ public class RepetitionList {
         return false;
     }
 
+    /**
+     * subtracts the board from the list. it reduces the count for the given entry.
+     * @param zobrist
+     */
     public void sub(long zobrist){
         for(Entry e:entries){
             if(e.zobrist == zobrist){
@@ -78,14 +133,29 @@ public class RepetitionList {
         }
     }
 
-    public boolean add(SlowBoard board){
+    /**
+     * for more information look at {@link #add(long) add}
+     * @param board
+     * @return
+     */
+    public boolean add(Board board){
         return this.add(board.zobrist());
     }
 
-    public void sub(SlowBoard board){
+    /**
+     * for more information look at {@link #sub(long) add}
+     * @param board
+     * @return
+     */
+    public void sub(Board board){
         this.sub(board.zobrist());
     }
 
+    /**
+     * returns the amount the given zobrist key has already occured.
+     * @param zobrist
+     * @return
+     */
     public int get(long zobrist){
         for(Entry e:entries){
             if(e.zobrist == zobrist){
@@ -95,6 +165,10 @@ public class RepetitionList {
         return 0;
     }
 
+    /**
+     * copies this list and creates a new one. the entry are also copied
+     * @return
+     */
     public RepetitionList copy(){
         LinkedList<Entry> new_entries = new LinkedList<>();
         for(Entry e:entries){
@@ -105,6 +179,10 @@ public class RepetitionList {
         return res;
     }
 
+    /**
+     * returns the list as a string
+     * @return
+     */
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
@@ -117,6 +195,11 @@ public class RepetitionList {
         return builder.toString();
     }
 
+    /**
+     * checks if this list equals another list
+     * @param o
+     * @return
+     */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -129,6 +212,10 @@ public class RepetitionList {
         return true;
     }
 
+    /**
+     * used to hash this object (not used afaik)
+     * @return
+     */
     @Override
     public int hashCode() {
         return Objects.hash(entries);

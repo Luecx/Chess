@@ -4,7 +4,7 @@ import board.Board;
 
 import java.util.Objects;
 
-public class Move {
+public final class Move {
 
 
 
@@ -22,10 +22,6 @@ public class Move {
     byte    type;
 
     short metaInformation;
-    long secureFields;
-    long enPassentField;
-
-    boolean isNull; // true if it is a null-move ie a "pass"
     int orderPriority;
 
 
@@ -35,7 +31,6 @@ public class Move {
         this.to = to;
         this.pieceFrom = pieceFrom;
         this.pieceTo = pieceTo;
-        this.isNull = false;
     }
 
     public Move(int from, int to, Board board) {
@@ -43,11 +38,6 @@ public class Move {
         this.to = to;
         this.pieceFrom = board.getPiece(from);
         this.pieceTo = board.getPiece(to);
-        this.isNull = false;
-    }
-
-    public Move() { // to create null move
-        this.isNull = true;
     }
 
     public Move(int from, int to, Board board, short metaInformation) {
@@ -66,12 +56,20 @@ public class Move {
         this.metaInformation = metaInformation;
     }
 
-    public short getMetaInformation() {
-        return metaInformation;
+
+
+
+    public Move copy() {
+        Move copy = new Move(from, to, pieceFrom, pieceTo, metaInformation);
+        copy.setType(type);
+        copy.setOrderPriority(orderPriority);
+        return copy;
     }
 
-    public void setMetaInformation(short metaInformation) {
-        this.metaInformation = metaInformation;
+    public int getOrderPriority() { return orderPriority; }
+
+    public void setOrderPriority(int orderPriority) {
+        this.orderPriority = orderPriority;
     }
 
     public int getPieceFrom() {
@@ -90,54 +88,12 @@ public class Move {
         return to;
     }
 
-    public boolean getIsNull() { return isNull; }
-
-    public Move copy() {
-        Move copy = new Move(from, to, pieceFrom, pieceTo, metaInformation);
-        copy.setSecureFields(secureFields);
-        copy.setEnPassentField(enPassentField);
-        copy.setType(type);
-        copy.setOrderPriority(orderPriority);
-        return copy;
-    }
-
-    public int getOrderPriority() { return orderPriority; }
-
-    public long getSecureFields() {
-        return secureFields;
-    }
-
-    public void setSecureFields(long secureFields) {
-        this.secureFields = secureFields;
-    }
-
-    public long getEnPassentField() {
-        return enPassentField;
-    }
-
-    public void setEnPassentField(long enPassentField) {
-        this.enPassentField = enPassentField;
-    }
-
-
     public byte getType() {
         return type;
     }
 
     public void setType(byte type) {
         this.type = type;
-    }
-
-    public boolean isCastle_move() {
-        return type == CASTLING;
-    }
-
-    public boolean isEn_passent_capture() {
-        return type == EN_PASSENT;
-    }
-
-    public boolean isPromotion() {
-        return type == PROMOTION;
     }
 
     public void setFrom(int from) {
@@ -156,9 +112,20 @@ public class Move {
         this.pieceTo = pieceTo;
     }
 
-    public void setNull(boolean aNull) {
-        isNull = aNull;
+
+    public boolean isCastle_move() {
+        return type == CASTLING;
     }
+
+    public boolean isEn_passent_capture() {
+        return type == EN_PASSENT;
+    }
+
+    public boolean isPromotion() {
+        return type == PROMOTION;
+    }
+
+
 
     @Override
     public boolean equals(Object o) {
@@ -185,11 +152,6 @@ public class Move {
                 ", pieceFrom=" + pieceFrom +
                 ", pieceTo=" + pieceTo +
                 '}';
-    }
-
-
-    public void setOrderPriority(int orderPriority) {
-        this.orderPriority = orderPriority;
     }
 
 

@@ -1,6 +1,7 @@
 package ai.search;
 
 import board.Board;
+import board.FastBoard;
 import board.moves.Move;
 import board.moves.MoveListBuffer;
 import ai.evaluator.Evaluator;
@@ -9,7 +10,9 @@ import ai.evaluator.NoahEvaluator;
 import ai.ordering.Orderer;
 import ai.reducing.Reducer;
 import ai.tools.*;
+import game.Player;
 import io.IO;
+import visual.Frame;
 
 import java.util.List;
 
@@ -373,7 +376,7 @@ public class PVSearchFast implements AI {
     public Move bestMove(Board board) {
         _board              = board;
         _bestMove           = null;
-        _buffer             = new MoveListBuffer(80);
+        _buffer             = new MoveListBuffer(MAXIMUM_STORE_DEPTH, 80);
 
         if(!use_iteration && limit_flag == FLAG_TIME_LIMIT){
             throw new RuntimeException("Cannot limit non iterative deepening on time");
@@ -668,7 +671,7 @@ public class PVSearchFast implements AI {
             //<editor-fold desc="LMR">
             int to_reduce = 0;
             if (use_LMR && reducer != null) {
-                to_reduce = reducer.reduce(m, currentDepth, depthLeft, index, pv);
+                to_reduce = reducer.reduce(_board, m, currentDepth, depthLeft, index, pv);
             }
             //</editor-fold>
             //<editor-fold desc="recursion">
@@ -884,10 +887,7 @@ public class PVSearchFast implements AI {
     }
 
     public static void main(String[] args) {
-        TranspositionTable<Integer> transpositionTable = new TranspositionTable<>();
-        for(int i = 0; i< 20; i++){
-            transpositionTable.put((long)(Math.random() * 1000000L), 123123);
-        }
-        System.out.println(transpositionTable);
+        FastBoard fb = IO.read_FEN(new FastBoard(), "rnbq1r1k/pp1npPbp/3p4/4P3/5P2/2p2N2/PPP3P1/R1BQKB1R w Q - 0 1");
+        new Frame(fb, new Player(){}, new Player(){});
     }
 }

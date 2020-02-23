@@ -265,7 +265,7 @@ public class SimpleTexelOptimiser {
         SimpleTexelOptimiser tex = new SimpleTexelOptimiser();
         tex.readFile("resources/quiet-labeled.epd", new FastBoard(), 60000000);
         NoahEvaluator2 evaluator2 = new NoahEvaluator2();
-        evaluator2.setEvolvableValues(new double[]{100.0, 100.0, 100.0, 100.0, 100.0, 66.0, 123.0, 492.0, 354.0, 314.0, 914.0, 20005.0, 6.0, 5.0, -1.0, 2.0, 14.0, 25.0, -25.0, 0.0, 61.0, 5.0, 27.7, 13.0, 25.0, 9.0});
+        //evaluator2.setEvolvableValues(new double[]{100.0, 100.0, 100.0, 100.0, 100.0, 66.0, 123.0, 492.0, 354.0, 314.0, 914.0, 20005.0, 6.0, 5.0, -1.0, 2.0, 14.0, 25.0, -25.0, 0.0, 61.0, 5.0, 27.7, 13.0, 25.0, 9.0});
 
         double K = tex.computeK(evaluator2, 1E-5, 1.160404, 10);
 

@@ -72,7 +72,19 @@ public class NoahEvaluator2 extends GeneticEvaluator<NoahEvaluator2> implements 
             20, 30, 25, -50, 0, -50, 30, 20
     })).scale(0.01);
 
+    public static final Tensor1D KING_VALUES_LATE_WHITE = (Tensor1D) flipTensor(new Tensor1D(new double[]{
+            -30, -30, -30, -30, -30, -30, -30, -30,
+            -30, -10, -10, -10, -10, -10, -10, -30,
+            -30, -10, 30, 30, 30, 30, -10, -30,
+            -30, -10, 30, 30, 30, 30, -10, -30,
+            -30, -10, 30, 30, 30, 30, -10, -30,
+            -30, -10, 30, 30, 30, 30, -10, -30,
+            -30, -10, -10, -10, -10, -10, -10, -30,
+            -30, -30, -30, -30, -30, -30, -30, -30
+    })).scale(0.01);
+    
     public static final Tensor1D KING_VALUES_MID_BLACK = flipTensor(KING_VALUES_MID_WHITE);
+    public static final Tensor1D KING_VALUES_LATE_BLACK = flipTensor(KING_VALUES_LATE_WHITE);
     public static final Tensor1D QUEEN_VALUES_BLACK = flipTensor(QUEEN_VALUES_WHITE);
     public static final Tensor1D ROOK_VALUES_BLACK = flipTensor(ROOK_VALUES_WHITE);
     public static final Tensor1D BISHOP_VALUES_BLACK = flipTensor(BISHOP_VALUES_WHITE);
@@ -153,12 +165,12 @@ public class NoahEvaluator2 extends GeneticEvaluator<NoahEvaluator2> implements 
 
     private double PARAMETER_ROOK_KING_LINE         = 40;
 
-    private double PARAMATER_PASSED_PAWN        = 25;
-    private double PARAMATER_ISOLATED_PAWN      = -25;
-    private double PARAMATER_DOUBLED_PAWN       = -35;
-    private double PARAMATER_DOUBLE_BISHOP      = 57;
-    private double PARAMETER_KING_SAFETY_1      = 10;
-    private double PARAMETER_KING_SAFETY_2      = 18.7;
+    private double PARAMETER_PASSED_PAWN        = 25;
+    private double PARAMETER_ISOLATED_PAWN      = -25;
+    private double PARAMETER_DOUBLED_PAWN       = -35;
+    private double PARAMETER_DOUBLE_BISHOP      = 57;
+    private double PARAMETER_KING_SAFETY_1      = 10;       //10
+    private double PARAMETER_KING_SAFETY_2      = 18;       //18
     private double PARAMETER_ROOK_HALF_OPEN     = 10;
     private double PARAMETER_ROOK_OPEN          = 25;
     private double PARAMETER_CONNECTED_PAWN     = 10;
@@ -168,17 +180,6 @@ public class NoahEvaluator2 extends GeneticEvaluator<NoahEvaluator2> implements 
     public double evaluate(Board board) {
 
         FastBoard fb = (FastBoard) board;
-
-        if (fb.isDraw()) {
-            switch (board.winner()) {
-                case 1:
-                    return LateGameEvaluator.INFTY-1;
-                case 0:
-                    return 0;
-                case -1:
-                    return -(LateGameEvaluator.INFTY-1);
-            }
-        }
 
         int numWhiteBishops = 0;
         int numBlackBishops = 0;
@@ -200,69 +201,118 @@ public class NoahEvaluator2 extends GeneticEvaluator<NoahEvaluator2> implements 
         numWhiteBishops = fb.getWhite_pieces()[3].size();
         numBlackBishops = fb.getBlack_pieces()[3].size();
 
-        for(i = 0; i < fb.getWhite_pieces()[0].size(); i ++) {
+
+        //-----------------------white evaluation-----------------------------------------------------
+
+        for (i = 0; i < fb.getWhite_pieces()[0].size(); i++) {
             index = fb.getWhite_pieces()[0].get(i);
             ev += PAWN_VALUES_WHITE.get(index) * PARAMETER_PAWN_TABLE_FACTOR;
             ev += PARAMETER_PAWN_VALUE;
-        }for(i = 0; i < fb.getWhite_pieces()[1].size(); i ++) {
+            if((BitBoard.whitePassedPawnMask[index] & fb.getBlack_values()[0]) == 0){
+                ev += PARAMETER_PASSED_PAWN;
+            }
+            if((BitBoard.files_neighbour[BitBoard.fileIndex(index)] & fb.getWhite_values()[0]) == 0){
+                ev += PARAMETER_ISOLATED_PAWN;
+            }
+        }
+        for (i = 0; i < fb.getWhite_pieces()[1].size(); i++) {
             index = fb.getWhite_pieces()[1].get(i);
             ev += ROOK_VALUES_WHITE.get(index) * PARAMETER_ROOK_TABLE_FACTOR;
             ev += PARAMETER_ROOK_VALUE;
             long attacks = BitBoard.lookUpRookAttack(index, fb.getOccupied());
-            ev += PARAMETER_ROOK_VISIBILTY * BitBoard.bitCount(attacks);
+            ev += PARAMETER_ROOK_VISIBILTY * BitBoard.bitCount(attacks & ~fb.getTeam_total()[0]);
             ev += PARAMETER_ROOK_VISIBILTY_PAWN_COVER * BitBoard.bitCount(attacks & blackPawnCover);
-            ev += PARAMETER_ROOK_KING_LINE * ((BitBoard.lookUpRookAttack(index,0L) & fb.getBlack_values()[5]) > 0 ? 1:0);
-        }for(i = 0; i < fb.getWhite_pieces()[2].size(); i ++) {
+            ev += PARAMETER_ROOK_KING_LINE * ((BitBoard.lookUpRookAttack(index, 0L) & fb.getBlack_values()[5]) > 0 ? 1 : 0);
+            if((BitBoard.files[BitBoard.fileIndex(index)] & fb.getWhite_values()[0]) == 0){     //atleast half open
+                if((BitBoard.files[BitBoard.fileIndex(index)] & fb.getBlack_values()[0]) == 0){     //open
+                    ev += PARAMETER_ROOK_OPEN;
+                }
+                ev += PARAMETER_ROOK_HALF_OPEN;
+            }
+        }
+        for (i = 0; i < fb.getWhite_pieces()[2].size(); i++) {
             index = fb.getWhite_pieces()[2].get(i);
             ev += KNIGHT_VALUES_WHITE.get(index) * PARAMETER_KNIGHT_TABLE_FACTOR;
             ev += PARAMETER_KNIGHT_VALUE;
-        }for(i = 0; i < fb.getWhite_pieces()[3].size(); i ++) {
+        }
+        for (i = 0; i < fb.getWhite_pieces()[3].size(); i++) {
             index = fb.getWhite_pieces()[3].get(i);
             ev += BISHOP_VALUES_WHITE.get(index) * PARAMETER_BISHOP_TABLE_FACTOR;
             ev += PARAMETER_BISHOP_VALUE;
             long attacks = BitBoard.lookUpBishopAttack(index, fb.getOccupied());
-            ev += PARAMETER_BISHOP_VISIBILTY * BitBoard.bitCount(attacks);
-            ev += PARAMETER_BISHOP_VISIBILTY_PAWN_COVER * BitBoard.bitCount(attacks & blackPawnCover);
-        }for(i = 0; i < fb.getWhite_pieces()[4].size(); i ++) {
+
+            ev += PARAMETER_BISHOP_VISIBILTY                * BitBoard.bitCount(attacks & ~fb.getTeam_total()[0]);
+            ev += PARAMETER_BISHOP_VISIBILTY_PAWN_COVER     * BitBoard.bitCount(attacks & blackPawnCover);
+        }
+        for (i = 0; i < fb.getWhite_pieces()[4].size(); i++) {
             index = fb.getWhite_pieces()[4].get(i);
             ev += QUEEN_VALUES_WHITE.get(index) * PARAMETER_QUEEN_TABLE_FACTOR;
             ev += PARAMETER_QUEEN_VALUE;
-        }for(i = 0; i < fb.getWhite_pieces()[5].size(); i ++) {
+        }
+        for (i = 0; i < fb.getWhite_pieces()[5].size(); i++) {
             index = fb.getWhite_pieces()[5].get(i);
-            ev += KING_VALUES_MID_WHITE.get(index) * PARAMETER_KING_TABLE_FACTOR;
+            ev += board.isEndgame() ? KING_VALUES_LATE_BLACK.get(index) : (KING_VALUES_MID_BLACK.get(index) * PARAMETER_KING_TABLE_FACTOR);
             ev += PARAMETER_KING_VALUE;
             ev += (BitBoard.bitCount(BitBoard.KING_ATTACKS[index] & fb.getTeam_total()[0])) *
-                    PARAMETER_KING_SAFETY_1;
+                  PARAMETER_KING_SAFETY_1;
             ev += (BitBoard.bitCount(BitBoard.KING_ATTACKS[index] & fb.getTeam_total()[1])) *
-                    PARAMETER_KING_SAFETY_2;
+                  PARAMETER_KING_SAFETY_2;
         }
-        for(i = 0; i < fb.getBlack_pieces()[0].size(); i ++) {
-            index = fb.getBlack_pieces()[0].get(i);
-            ev -= PAWN_VALUES_BLACK.get(index)* PARAMETER_PAWN_TABLE_FACTOR;
-            ev -= PARAMETER_PAWN_VALUE;
-        }
-        for(i = 0; i < fb.getBlack_pieces()[1].size(); i ++) {
-            index = fb.getBlack_pieces()[1].get(i);
-            ev -= ROOK_VALUES_BLACK.get(index)* PARAMETER_ROOK_TABLE_FACTOR;
-            ev -= PARAMETER_ROOK_VALUE;
 
-            long attacks = BitBoard.lookUpRookAttack(index, fb.getOccupied());
-            ev -= PARAMETER_ROOK_VISIBILTY * BitBoard.bitCount(attacks);
-            ev -= PARAMETER_ROOK_VISIBILTY_PAWN_COVER * BitBoard.bitCount(attacks & whitePawnCover);
-            ev -= PARAMETER_ROOK_KING_LINE * ((BitBoard.lookUpRookAttack(index,0L) & fb.getWhite_values()[5]) > 0 ? 1:0);
+
+
+
+
+
+
+
+
+
+
+
+
+        //-----------------------black evaluation-----------------------------------------------------
+
+
+
+        for (i = 0; i < fb.getBlack_pieces()[0].size(); i++) {
+            index = fb.getBlack_pieces()[0].get(i);
+            ev -= PAWN_VALUES_BLACK.get(index) * PARAMETER_PAWN_TABLE_FACTOR;
+            ev -= PARAMETER_PAWN_VALUE;
+            if((BitBoard.blackPassedPawnMask[index] & fb.getWhite_values()[0]) == 0){
+                ev -= PARAMETER_PASSED_PAWN;
+            }
+            if((BitBoard.files_neighbour[BitBoard.fileIndex(index)] & fb.getBlack_values()[0]) == 0){
+                ev -= PARAMETER_ISOLATED_PAWN;
+            }
         }
-        for(i = 0; i < fb.getBlack_pieces()[2].size(); i ++) {
+        for (i = 0; i < fb.getBlack_pieces()[1].size(); i++) {
+            index = fb.getBlack_pieces()[1].get(i);
+            ev -= ROOK_VALUES_BLACK.get(index) * PARAMETER_ROOK_TABLE_FACTOR;
+            ev -= PARAMETER_ROOK_VALUE;
+            long attacks = BitBoard.lookUpRookAttack(index, fb.getOccupied());
+            ev -= PARAMETER_ROOK_VISIBILTY * BitBoard.bitCount(attacks & ~fb.getTeam_total()[1]);
+            ev -= PARAMETER_ROOK_VISIBILTY_PAWN_COVER * BitBoard.bitCount(attacks & whitePawnCover);
+            ev -= PARAMETER_ROOK_KING_LINE * ((BitBoard.lookUpRookAttack(index, 0L) & fb.getWhite_values()[5]) > 0 ? 1 : 0);
+            if((BitBoard.files[BitBoard.fileIndex(index)] & fb.getBlack_values()[0]) == 0){         //atleast half open
+                if((BitBoard.files[BitBoard.fileIndex(index)] & fb.getWhite_values()[0]) == 0){     //open
+                    ev -= PARAMETER_ROOK_OPEN;
+                }
+                ev -= PARAMETER_ROOK_HALF_OPEN;
+            }
+        }
+        for (i = 0; i < fb.getBlack_pieces()[2].size(); i++) {
             index = fb.getBlack_pieces()[2].get(i);
             ev -= KNIGHT_VALUES_BLACK.get(index) * PARAMETER_KNIGHT_TABLE_FACTOR;
             ev -= PARAMETER_KNIGHT_VALUE;
         }
-        for(i = 0; i < fb.getBlack_pieces()[3].size(); i ++) {
+        for (i = 0; i < fb.getBlack_pieces()[3].size(); i++) {
             index = fb.getBlack_pieces()[3].get(i);
             ev -= BISHOP_VALUES_BLACK.get(index) * PARAMETER_BISHOP_TABLE_FACTOR;
             ev -= PARAMETER_BISHOP_VALUE;
             long attacks = BitBoard.lookUpBishopAttack(index, fb.getOccupied());
-            ev -= PARAMETER_BISHOP_VISIBILTY * BitBoard.bitCount(attacks);
-            ev -= PARAMETER_BISHOP_VISIBILTY_PAWN_COVER * BitBoard.bitCount(attacks & whitePawnCover);
+            ev -= PARAMETER_BISHOP_VISIBILTY                * BitBoard.bitCount(attacks & ~fb.getTeam_total()[1]);
+            ev -= PARAMETER_BISHOP_VISIBILTY_PAWN_COVER     * BitBoard.bitCount(attacks & whitePawnCover);
         }
         for(i = 0; i < fb.getBlack_pieces()[4].size(); i ++) {
             index = fb.getBlack_pieces()[4].get(i);
@@ -271,6 +321,8 @@ public class NoahEvaluator2 extends GeneticEvaluator<NoahEvaluator2> implements 
         }
         for(i = 0; i < fb.getBlack_pieces()[5].size(); i ++) {
             index = fb.getBlack_pieces()[5].get(i);
+
+            ev -= board.isEndgame() ? KING_VALUES_LATE_WHITE.get(index) : (KING_VALUES_MID_WHITE.get(index) * PARAMETER_KING_TABLE_FACTOR);
             ev -= KING_VALUES_MID_BLACK.get(index) * PARAMETER_KING_TABLE_FACTOR;
             ev -= PARAMETER_KING_VALUE;
             ev -= (BitBoard.bitCount(BitBoard.KING_ATTACKS[index] & fb.getTeam_total()[1])) *
@@ -280,13 +332,13 @@ public class NoahEvaluator2 extends GeneticEvaluator<NoahEvaluator2> implements 
         }
 
         //bishop pair
-        if (numWhiteBishops > 1) ev += PARAMATER_DOUBLE_BISHOP;
-        if (numBlackBishops > 1) ev -= PARAMATER_DOUBLE_BISHOP;
+        if (numWhiteBishops > 1) ev += PARAMETER_DOUBLE_BISHOP;
+        if (numBlackBishops > 1) ev -= PARAMETER_DOUBLE_BISHOP;
 
-        ev -= PARAMATER_DOUBLED_PAWN *
-                BitBoard.bitCount(BitBoard.shiftNorth(fb.getWhite_values()[0]) & fb.getWhite_values()[0]);
-        ev += PARAMATER_DOUBLED_PAWN *
-                BitBoard.bitCount(BitBoard.shiftSouth(fb.getBlack_values()[0]) & fb.getBlack_values()[0]);
+        ev += PARAMETER_DOUBLED_PAWN *
+              BitBoard.bitCount(BitBoard.shiftNorth(fb.getWhite_values()[0]) & fb.getWhite_values()[0]);
+        ev -= PARAMETER_DOUBLED_PAWN *
+              BitBoard.bitCount(BitBoard.shiftSouth(fb.getBlack_values()[0]) & fb.getBlack_values()[0]);
 
         ev += PARAMETER_CONNECTED_PAWN *
                 (BitBoard.bitCount(BitBoard.shiftNorthEast(fb.getWhite_values()[0]) & fb.getWhite_values()[0])+
@@ -294,72 +346,13 @@ public class NoahEvaluator2 extends GeneticEvaluator<NoahEvaluator2> implements 
         ev -= PARAMETER_CONNECTED_PAWN *
                 (BitBoard.bitCount(BitBoard.shiftSouthEast(fb.getBlack_values()[0]) & fb.getBlack_values()[0])+
                 BitBoard.bitCount(BitBoard.shiftSouthWest(fb.getBlack_values()[0]) & fb.getBlack_values()[0]));
-        
-        //pawns
-//        for (int rank = 1; rank < 9; rank++) {
-//            //doubled
-//            if (wPawns[rank] > 1) ev += PARAMATER_DOUBLED_PAWN;
-//            if (bPawns[rank] > 1) ev -= PARAMATER_DOUBLED_PAWN;
-//
-//            if (wPawns[rank] > 0) {
-//                //passed
-//                if (bPawns[rank - 1] == 0 && bPawns[rank] == 0 && bPawns[rank + 1] == 0) {
-//                    ev += PARAMATER_PASSED_PAWN;
-//                }
-//                //isolated
-//                if (wPawns[rank - 1] == 0 && wPawns[rank + 1] == 0) ev += PARAMATER_ISOLATED_PAWN;
-//            }
-//            if (bPawns[rank] > 0) {
-//                //passed
-//                if (wPawns[rank - 1] == 0 && wPawns[rank] == 0 && wPawns[rank + 1] == 0) {
-//                    ev -= PARAMATER_PASSED_PAWN;
-//                }
-//                //isolated
-//                if (bPawns[rank - 1] == 0 && bPawns[rank + 1] == 0) ev -= PARAMATER_ISOLATED_PAWN;
-//            }
-//        }
-        /// rooks
-
-
-//        for (int file : whiteRooks) {
-//            if (file == -1) {
-//                continue;
-//            }
-//            if (wPawns[file]  == 0) {
-//                ev += PARAMETER_ROOK_HALF_OPEN;
-//                if (bPawns[file] == 0) {
-//                    ev += PARAMETER_ROOK_OPEN;
-//                }
-//            }
-//        }
-//        for (int file : blackRooks) {
-//            if (file == -1) {
-//                continue;
-//            }
-//            if (bPawns[file]  == 0) {
-//                ev -= PARAMETER_ROOK_HALF_OPEN;
-//                if (wPawns[file] == 0) {
-//                    ev -= PARAMETER_ROOK_OPEN;
-//                }
-//            }
-//        }
-
 
         return ev;
     }
 
     @Override
     public double[] getEvolvableValues() {
-//        return new double[]{
-//                PARAMATER_PASSED_PAWN,
-//                PARAMATER_ISOLATED_PAWN,
-//                PARAMATER_DOUBLED_PAWN,
-//                PARAMATER_DOUBLE_BISHOP,
-//                PARAMETER_KING_SAFETY_1,
-//                PARAMETER_KING_SAFETY_2,
-//                PARAMETER_ROOK_OPEN,
-//                PARAMETER_ROOK_HALF_OPEN,
-//                PARAMETER_CONNECTED_PAWN};
+
         return new double[]{
                 PARAMETER_PAWN_TABLE_FACTOR,
                 PARAMETER_ROOK_TABLE_FACTOR,
@@ -378,10 +371,10 @@ public class NoahEvaluator2 extends GeneticEvaluator<NoahEvaluator2> implements 
                 PARAMETER_ROOK_VISIBILTY_PAWN_COVER,
                 PARAMETER_BISHOP_VISIBILTY_PAWN_COVER,
                 PARAMETER_ROOK_KING_LINE,
-                PARAMATER_PASSED_PAWN,
-                PARAMATER_ISOLATED_PAWN,
-                PARAMATER_DOUBLED_PAWN,
-                PARAMATER_DOUBLE_BISHOP,
+                PARAMETER_PASSED_PAWN,
+                PARAMETER_ISOLATED_PAWN,
+                PARAMETER_DOUBLED_PAWN,
+                PARAMETER_DOUBLE_BISHOP,
                 PARAMETER_KING_SAFETY_1,
                 PARAMETER_KING_SAFETY_2,
                 PARAMETER_ROOK_HALF_OPEN,
@@ -409,10 +402,10 @@ public class NoahEvaluator2 extends GeneticEvaluator<NoahEvaluator2> implements 
         PARAMETER_ROOK_VISIBILTY_PAWN_COVER = ar[14];
         PARAMETER_BISHOP_VISIBILTY_PAWN_COVER = ar[15];
         PARAMETER_ROOK_KING_LINE = ar[16];
-        PARAMATER_PASSED_PAWN = ar[17];
-        PARAMATER_ISOLATED_PAWN = ar[18];
-        PARAMATER_DOUBLED_PAWN = ar[19];
-        PARAMATER_DOUBLE_BISHOP = ar[20];
+        PARAMETER_PASSED_PAWN = ar[17];
+        PARAMETER_ISOLATED_PAWN = ar[18];
+        PARAMETER_DOUBLED_PAWN = ar[19];
+        PARAMETER_DOUBLE_BISHOP = ar[20];
         PARAMETER_KING_SAFETY_1 = ar[21];
         PARAMETER_KING_SAFETY_2 = ar[22];
         PARAMETER_ROOK_HALF_OPEN = ar[23];

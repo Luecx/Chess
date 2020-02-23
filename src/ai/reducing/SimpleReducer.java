@@ -1,5 +1,6 @@
 package ai.reducing;
 
+import board.Board;
 import board.moves.Move;
 
 public class SimpleReducer implements Reducer{
@@ -21,7 +22,7 @@ public class SimpleReducer implements Reducer{
     }
 
     @Override
-    public int reduce(Move move, int depth, int depthLeft, int moveIndex,boolean pv_node) {
+    public int reduce(Board board, Move move, int depth, int depthLeft, int moveIndex, boolean pv_node) {
         if(
                 move.getPieceTo() != 0 ||
                 pv_node ||

@@ -184,16 +184,6 @@ public class NoahEvaluator extends GeneticEvaluator<NoahEvaluator> implements Ev
     @Override
     public double evaluate(Board board) {
 
-        if (board.isDraw()) {
-            switch (board.winner()) {
-                case 1:
-                    return LateGameEvaluator.INFTY-1;
-                case 0:
-                    return 0;
-                case -1:
-                    return -(LateGameEvaluator.INFTY-1);
-            }
-        }
         Tensor3D pieceValue = midValue;
 
         if (board.isEndgame()) {

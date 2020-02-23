@@ -5,16 +5,27 @@ import java.util.ArrayList;
 public class MoveListBuffer {
 
 
-    private final int MAX_DEPTHS = 100;
 
-    private MoveList[] lists = new MoveList[MAX_DEPTHS];
+    private MoveList[] lists;
 
-    public MoveListBuffer(int sizes) {
-        for(int i = 0; i < MAX_DEPTHS; i++){
+    /**
+     * creates a move list buffer.
+     * this stores an amount of maxDepth lists each with an initial size of sizes.
+     * @param maxDepth
+     * @param sizes
+     */
+    public MoveListBuffer(int maxDepth, int sizes) {
+        this.lists = new MoveList[maxDepth];
+        for(int i = 0; i < maxDepth; i++){
             lists[i] = new MoveList(sizes);
         }
     }
 
+    /**
+     * returns the move list at that given index/depth
+     * @param index
+     * @return
+     */
     public MoveList get(int index){
         return lists[index];
     }

@@ -3,7 +3,7 @@ package io;
 import static java.lang.Math.abs;
 import java.util.Random;
  
-public class Generator {
+public class FEN_Generator {
     static Random rand = new Random();
  
     public static void main(String[] args) {

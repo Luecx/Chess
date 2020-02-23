@@ -14,7 +14,7 @@ public class MoveList implements Iterable<Move>, List<Move> {
     public MoveList(int maxSize) {
         this.moves = new Move[maxSize];
         for(int i = 0; i < this.moves.length; i++){
-            this.moves[i] = new Move();
+            this.moves[i] = new Move(0,0,0,0);
         }
     }
 
@@ -79,7 +79,7 @@ public class MoveList implements Iterable<Move>, List<Move> {
             ar[i] = this.moves[i];
         }
         for(int i = this.moves.length; i < ar.length; i++){
-            ar[i] = new Move();
+            ar[i] = new Move(0,0,0,0);
         }
         this.moves = ar;
     }
@@ -147,34 +147,20 @@ public class MoveList implements Iterable<Move>, List<Move> {
         throw new RuntimeException();
     }
 
-    public Move add(int from, int to, int pieceFrom, int pieceTo) {
-        return this.add(from, to, pieceFrom, pieceTo, (short) 0);
-    }
 
     public Move add(int from, int to, Board board) {
-        return this.add(from,to,board.getPiece(from),board.getPiece(to), (short)0);
+        return this.add(from,to,board.getPiece(from),board.getPiece(to));
     }
 
-    public void add() {
-        this.add(0,0,0,0,(short)0);
-        this.moves[size-1].isNull = true;
-    }
-
-    public Move add(int from, int to, Board board, short metaInformation) {
-        return this.add(from,to,board.getPiece(from),board.getPiece(to), metaInformation);
-    }
-
-    public Move add(int from, int to, int pieceFrom, int pieceTo, short metaInformation) {
+    public Move add(int from, int to, int pieceFrom, int pieceTo) {
         if(this.size == moves.length){
             this.setCapacity(moves.length * 2);
         }
         Move m = this.moves[size];
-        m.isNull = false;
         m.from = from;
         m.to = to;
         m.pieceFrom = pieceFrom;
         m.pieceTo = pieceTo;
-        m.metaInformation = metaInformation;
         m.type = 0;
         this.size ++;
         return m;

@@ -1,21 +1,10 @@
 package io;
 
 import board.Board;
-import board.SlowBoard;
 import board.bitboards.BitBoard;
 import board.moves.Move;
-import board.setup.Setup;
-import game.Game;
-import ai.evaluator.FinnEvaluator;
-import ai.ordering.SystematicOrderer;
-import ai.reducing.SimpleReducer;
-import ai.search.AI;
-import ai.search.PVSearch;
 
 import java.text.NumberFormat;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Locale;
 
 /**
@@ -109,7 +98,7 @@ public class IO {
         if(split.length >= 4){
             if(!split[3].equals("-")){
                 int square = IO.getSquareIndex(split[3]);
-                board.setEnPassantChance(square, true);
+                board.setEnPassantSquare(square);
             }
         }
         //</editor-fold>
@@ -170,19 +159,15 @@ public class IO {
             builder.append("-");
         }
 
-        for(int i = 0; i < 8; i++){
-            if(b.getEnPassantChance(i)){
-                char file = (char) ('a'+i);
-                char rank = (char) ('0'+(b.getActivePlayer() > 0 ? 6:3));
-                builder.append(" ");
-                builder.append(file);
-                builder.append(rank);
-                break;
-            }
-            if(i == 7){
-                builder.append(" -");
-            }
+
+        if(b.getEnPassantSquare() >= 0){
+            builder.append(" ");
+            builder.append(IO.indexToFile(b.getEnPassantSquare()));
+            builder.append(BitBoard.rankIndex(b.getEnPassantSquare()));
+        }else{
+            builder.append(" -");
         }
+
 
         return builder.toString();
     }
@@ -331,149 +316,12 @@ public class IO {
         return result.toString();
     }
 
-    public static HashMap<String, Object> parseCommands(String[] commands){
-        String currentCommand = "";
-        HashMap<String, List<String>> temp = new HashMap<>();
-        for(String s:commands){
-            if(s.length() == 0) continue;
-            if(s.startsWith("-")){
-                s = s.toLowerCase();
-                if(s.length() == 1) temp.get(currentCommand).add("-");
-                else{
-                    currentCommand = s.substring(1);
-                    temp.put(currentCommand, new LinkedList<>());
-                }
-            }else{
-                temp.get(currentCommand).add(s);
-            }
-        }
-
-        HashMap<String, Object> map = new HashMap<>();
-        for(String key:temp.keySet()){
-            List<String> s = temp.get(key);
-            if(s.size() == 0){
-                map.put(key, true);
-            }
-            else if(s.size() == 1){
-                switch (s.get(0)){
-                    case "true": map.put(key, true);break;
-                    case "false": map.put(key, false);break;
-                    default:{
-                        double val = getNumber(s.get(0));
-                        if(val != -1){
-                            map.put(key, val);
-                        }else{
-                            map.put(key, s.get(0));
-                        }
-                    }
-                }
-            }else{
-                StringBuilder full = new StringBuilder();
-                for(int i = 0; i < s.size(); i++){
-                    full.append(s.get(i));
-                    if(i != s.size()-1){
-                        full.append(" ");
-                    }
-                }
-                map.put(key, full.toString());
-            }
-        }
-
-        return map;
-
-    }
-
     /**
-     * creates an AI using the following commands.
-     * it uses the SystematicOrderer, SimpleReducer and FinnEvaluator.
-     * available commands:
-     *
-     *
-     *      limit           [Integer]       the search limit (either in ms, or depth)
-     *      mode            (time, depth)   telling the method to use a time limit or depth limit
-     *      qdepth          [Integer]       the quiscence search depth
-     *
-     *      reducing        [3x Integer]    1. reduction value
-     *                                      2. minimum depth at which reduction can occur
-     *                                      3. minimum amount of moves after which reduction can occur
-     *
-     *      transposition   [Boolean]       enables/disables transposition tables
-     *      nulls           [Boolean]       enables/disables null moves
-     *      lmr             [Boolean]       enables/disables late move reduction
-     *      debug           [Boolean]       enables/disables output printing
-     *      iterationGradient       [Boolean]       enables/disables iterative deepening
-     *      killers         [Boolean]       enables/disables killer heuristic
-     *
-     * @param map
+     * parses a double value to a string
+     * @param s
+     * @param fractionDigits
      * @return
      */
-    public static AI parseAI(HashMap<String, Object> map){
-
-        int limit = 3000;
-        int qDepth = 4;
-        int mode = PVSearch.FLAG_TIME_LIMIT;
-
-        int red_reduction = 1;
-        int red_minDepth = 3;
-        int red_minMoves = 10;
-
-        if(map.containsKey("limit")){
-            limit = (int) ((double) map.get("limit"));
-        }if(map.containsKey("qdepth")){
-            qDepth = (int) ((double) map.get("qdepth"));
-        }if(map.containsKey("mode")){
-            if(map.get("mode").equals("time")){
-                mode = PVSearch.FLAG_TIME_LIMIT;
-            }else{
-                mode = PVSearch.FLAG_DEPTH_LIMIT;
-            }
-        }if(map.containsKey("reducing")){
-            String[] split = ((String)map.get("reducing")).split(" ");
-            red_reduction = Integer.parseInt(split[0]);
-            red_minDepth = Integer.parseInt(split[1]);
-            red_minMoves = Integer.parseInt(split[2]);
-        }
-
-        PVSearch pvSearch = new PVSearch(
-                new FinnEvaluator(),
-                new SystematicOrderer(),
-                new SimpleReducer(red_reduction, red_minDepth, red_minMoves),
-                mode,limit,qDepth);
-
-        if(map.containsKey("transposition")){
-            pvSearch.setUse_transposition((Boolean)map.get("transposition"));
-        }if(map.containsKey("nulls")){
-            pvSearch.setUse_null_moves((Boolean)map.get("nulls"));
-        }if(map.containsKey("iterationGradient")){
-            pvSearch.setUse_iteration((Boolean)map.get("iterationGradient"));
-        }if(map.containsKey("lmr")){
-            pvSearch.setUse_LMR((Boolean)map.get("lmr"));
-        }if(map.containsKey("debug")){
-            pvSearch.setPrint_overview((Boolean)map.get("debug"));
-        }if(map.containsKey("killers")){
-            pvSearch.setUse_killer_heuristic((Boolean)map.get("killers"));
-        }
-
-        return pvSearch;
-    }
-
-    /**
-     * generates a board object using the following commands. it uses
-     * the SlowBoard implementation.
-     *
-     *      fen         [String]            fen-key for the board
-     *
-     * @param map
-     * @return
-     */
-    public static Board parseBoard(HashMap<String, Object> map){
-        if(map.containsKey("fen")){
-            return IO.read_FEN(new SlowBoard(), (String) map.get("fen"));
-        }else{
-            return new SlowBoard(Setup.DEFAULT);
-        }
-    }
-
     public static String doubleToString(double s, int fractionDigits){
         NumberFormat nf = NumberFormat.getNumberInstance(Locale.US);
         nf.setMaximumFractionDigits(fractionDigits);
@@ -482,94 +330,37 @@ public class IO {
     }
 
     /**
-     * reads the input keys and parses them according to
-     * @link parseBoard
-     * @link parseAI
-     *
-     * It returns the best move as an integer according to the following formula:
-     *      = (x_from + 8 * y_from) * 64 + (y_to + 8 * y_to)
-     *
-     * assuming v is the return value, x_from, y_from, x_to and y_to can be extracted
-     * the following way:
-     *
-     *      t = mod(v,64)
-     *      f = floor(v/64)
-     *
-     *      x_from = mod(f,8)
-     *      y_from = floor(f/8)
-     *      x_to = mod(t,8)
-     *      y_to = floor(t/8)
-     *
-     * @param keys
+     * returns the index for a given file [a-h]
+     * @param rank
      * @return
      */
-    public static int parseInputForBestMove(String[] keys){
-        HashMap<String, Object> map = parseCommands(keys);
-
-        AI ai = parseAI(map);
-        Board board = IO.parseBoard(map);
-
-        System.out.println(board);
-
-        Move m = ai.bestMove(board);
-
-        int x_from = board.x(m.getFrom());
-        int y_from = board.y(m.getFrom());
-        int x_to = board.x(m.getTo());
-        int y_to = board.y(m.getTo());
-
-        int indexFrom = x_from + 8 * y_from;
-        int indexTo = x_to + 8 * y_to;
-
-        return indexFrom * 64 + indexTo;
-    }
-
-    /**
-     * generates a game object using the following commands:
-     *
-     *
-     *
-     * @param commands
-     * @return
-     */
-    public static Game parseGame(String[] commands){
-        HashMap<String, Object> map = parseCommands(commands);
-
-        Board b = new SlowBoard(Setup.DEFAULT);
-        if(map.containsKey("fen")){
-            String fen = (String) map.get("fen");
-            b = IO.read_FEN(b, fen);
-        }
-
-        int w_qDepth;
-        int b_qDepth;
-
-        int w_limit;
-        int b_limit;
-
-        int w_mode;
-        int b_mode;
-
-        //AI ai1 = new PVSearch();
-
-        return null;
-    }
-
-    //give the rank as a letter, get it back as an int
     public static int fileToIndex(char rank) {
         return "abcdefgh".indexOf(rank);
     }
 
+    /**
+     * returns the file represented as a char
+     * @param index
+     * @return
+     */
     public static char indexToFile(int index) {
         return "abcdefgh".charAt(index);
     }
 
-
-
+    /**
+     * returns the square represented as a string (e.g. c4)
+      * @param index
+     * @return
+     */
     public static String getSquareString(int index){
         return "" + indexToFile(BitBoard.fileIndex(index)) + (BitBoard.rankIndex(index) + 1);
     }
 
+    /**
+     * returns the square index given by its string representation
+     * @param st
+     * @return
+     */
     public static int getSquareIndex(String st){
         return BitBoard.squareIndex(Integer.parseInt(""+st.charAt(1))-1, fileToIndex(st.charAt(0)));
     }

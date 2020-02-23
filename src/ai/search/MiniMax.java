@@ -42,7 +42,7 @@ public class MiniMax implements AI {
         return _bestMove;
     }
 
-    MoveListBuffer moveListBuffer = new MoveListBuffer(20);
+    MoveListBuffer moveListBuffer = new MoveListBuffer(128,20);
 
     private double minimax(int tiefe){
         List<Move> moves = _board.getPseudoLegalMoves(moveListBuffer.get(tiefe));

@@ -96,14 +96,6 @@ public class LateGameEvaluator implements Evaluator {
     @Override
     public double evaluate(Board board) {
 
-        if(board.isDraw()){
-            switch (board.winner()){
-                case 1: return INFTY;
-                case 0: return 0;
-                case -1: return -INFTY;
-            }
-        }
-
         int ev = 0;
         for (int i = 0; i < 8; i++) {
             for (int n = 0; n < 8; n++) {

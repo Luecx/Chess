@@ -1,7 +1,6 @@
 package ai.search;
 
 import ai.evaluator.Evaluator;
-import ai.evaluator.LateGameEvaluator;
 import ai.evaluator.NoahEvaluator;
 import ai.evaluator.NoahEvaluator2;
 import ai.ordering.Orderer;
@@ -16,18 +15,21 @@ import board.FastBoard;
 import board.moves.Move;
 import board.moves.MoveListBuffer;
 import board.setup.Setup;
+import game.Player;
 import io.IO;
 import io.UCI;
+import visual.Frame;
 
 import java.util.List;
 
 public class AdvancedSearch implements AI {
 
+    public static final int                             MAX_CHECKMATE_VALUE     = (int)1E8;     //this value means checkmate at depth = 0
+    public static final int                             MIN_CHECKMATE_VALUE     = (int)1E7;     //this is the minimum value which is interpreted as checkmate
+    public static final int                             MAXIMUM_STORE_DEPTH     = 128;
 
-    public static final int                             MAXIMUM_STORE_DEPTH = 128;
-
-    public static final int                             FLAG_TIME_LIMIT = 1;
-    public static final int                             FLAG_DEPTH_LIMIT = 2;
+    public static final int                             FLAG_TIME_LIMIT         = 1;
+    public static final int                             FLAG_DEPTH_LIMIT        = 2;
 
     protected Evaluator                                 evaluator;
     protected Orderer                                   orderer;
@@ -63,7 +65,7 @@ public class AdvancedSearch implements AI {
         this.evaluator = evaluator;
         this.orderer = orderer;
         this.reducer = reducer;
-        this._buffer = new MoveListBuffer(MAXIMUM_STORE_DEPTH);
+        this._buffer = new MoveListBuffer(MAXIMUM_STORE_DEPTH, 128);
         this.limit_flag = limit_flag;
         this.limit = limit;
     }
@@ -402,6 +404,7 @@ public class AdvancedSearch implements AI {
 
 
 
+
         if(use_transposition){
             TranspositionEntry tt = retrieveFromTT(zobrist, currentDepth, depthLeft);
             if(tt != null){
@@ -453,7 +456,11 @@ public class AdvancedSearch implements AI {
         }
 
 
+
         List<Move> allMoves = _board.getPseudoLegalMoves(_buffer.get(currentDepth));
+        if(allMoves.size() == 0){
+            return evaluator.evaluate(_board) * _board.getActivePlayer();
+        }
         orderer.sort(allMoves, currentDepth, null, _board, pv, _killerTable, _transpositionTable);
 
         for (Move m:allMoves)  {
@@ -462,15 +469,18 @@ public class AdvancedSearch implements AI {
                 continue;
             }
 
-            int reduction = use_LMR ? reducer.reduce(m, currentDepth, depthLeft, legalMoves, pv) : 0;
+
+            int reduction = use_LMR ? reducer.reduce(_board, m, currentDepth, depthLeft, legalMoves, pv) : 0;
+            int extensions = _board.givesCheck(m) ? 1:0;
+            extensions = 0;
 
             _board.move(m);
             if (legalMoves == 0) {
-                score = -pvSearch(-beta, -alpha, currentDepth+1, depthLeft-1-reduction, pv, false);
+                score = -pvSearch(-beta, -alpha, currentDepth+1, depthLeft-1-reduction+extensions, pv, false);
             } else {
-                score = -pvSearch(-alpha-1, -alpha, currentDepth+1, depthLeft-1-reduction, false, false);
+                score = -pvSearch(-alpha-1, -alpha, currentDepth+1, depthLeft-1-reduction+extensions, false, false);
                 if (score > alpha && score < beta) // in fail-soft ... && score < beta ) is common
-                    score = -pvSearch(-beta, -alpha, currentDepth+1, depthLeft-1-reduction, false,false); // re-search
+                    score = -pvSearch(-beta, -alpha, currentDepth+1, depthLeft-1-reduction+extensions, false,false); // re-search
             }
             _board.undoMove();
             legalMoves++;
@@ -496,7 +506,7 @@ public class AdvancedSearch implements AI {
         if(legalMoves == 0){
             if(_board.isInCheck(_board.getActivePlayer())){
                 //checkmate
-                return -LateGameEvaluator.INFTY;
+                return -MAX_CHECKMATE_VALUE+currentDepth;
             }else{
                 //stalemate
                 return 0;
@@ -689,9 +699,8 @@ public class AdvancedSearch implements AI {
 
     public TranspositionEntry retrieveFromTT(long zobrist, int depth, int depthLeft){
         TranspositionEntry en = _transpositionTable.get(zobrist);
-        if(en != null && en.getDepthLeft() >= depthLeft && en.getZobrist() == zobrist){
-            //System.out.println("adwji");
-
+        if(en != null && en.getDepthLeft() >= depthLeft && en.getZobrist() == zobrist && en.getColor() == _board.getActivePlayer()){
+            System.out.println("retrieved");
             return en;
         }
         return null;
@@ -704,8 +713,16 @@ public class AdvancedSearch implements AI {
         builder.append("info ");
         builder.append("depth "         + depth         + " ");
         builder.append("seldepth "      + _selDepth     + " ");
-        builder.append("score cp "      + (int)_score   + " ");
+
+        builder.append("score ");
+        builder.append("cp "    + (int)_score   + " ");
+        if(Math.abs(_score) > MIN_CHECKMATE_VALUE){
+            builder.append("mate "  + (int)(MAX_CHECKMATE_VALUE-Math.abs(_score))   + " ");
+        }
+
         builder.append("nodes "         + _nodes        + " ");
+
+        //TODO
         builder.append("nps "           + 0             + " ");
         builder.append("tbhits "        + 0             + " ");
         builder.append("time "          + 1             + " ");
@@ -721,6 +738,7 @@ public class AdvancedSearch implements AI {
         int counter = 0;
 
         while(en != null && counter < _selDepth){
+            if(en.getColor() != _board.getActivePlayer()) break;
             counter++;
             builder.append(UCI.moveToUCI(en.getBestMove(), _board) + " ");
             _board.move(en.getBestMove());
@@ -734,21 +752,18 @@ public class AdvancedSearch implements AI {
         return builder.toString();
     }
 
-
     public static void main(String[] args) {
         FastBoard fb = new FastBoard(Setup.DEFAULT);
-        fb = IO.read_FEN(fb, "rnb1k2r/ppq2ppp/2pbpn2/3p4/3PP3/1PNB1N1P/P1PB1PP1/R2QK2R b KQkq - 0 1");
+
+        //fb = IO.read_FEN(fb, "8/k2P4/8/8/7K/8/5p2/8 w - - 0 1");
+        fb = IO.read_FEN(fb, "rnbq1r1k/pp1npPbp/3p4/4P3/5P2/2p2N2/PPP3P1/R1BQKB1R w Q - 0 1");
 
 
-        System.out.println(fb);
 
-        AdvancedSearch advancedSearch = new AdvancedSearch(new NoahEvaluator2(), new SystematicOrderer2(), new SenpaiReducer(1), 2, 12);
-        advancedSearch.setUse_null_moves(true);
-        advancedSearch.setUse_transposition(true);
-        advancedSearch.setUse_razoring(true);
-        advancedSearch.setUse_LMR(true);
-        advancedSearch.limit = 10000;
-        advancedSearch.limit_flag = 1;
-        advancedSearch.bestMove(fb);
+        AdvancedSearch advancedSearch = new AdvancedSearch(new NoahEvaluator2(), new SystematicOrderer2(), new SenpaiReducer(1), 2, 16);
+        System.out.println(UCI.moveToUCI(advancedSearch.bestMove(fb), fb));
+
+
+
     }
 }

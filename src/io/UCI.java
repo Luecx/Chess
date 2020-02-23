@@ -1,7 +1,6 @@
 package io;
 
 import ai.evaluator.Evaluator;
-import ai.evaluator.NoahEvaluator;
 import ai.search.AdvancedSearch;
 import board.Board;
 import board.FastBoard;
@@ -10,10 +9,7 @@ import board.setup.Setup;
 import ai.evaluator.NoahEvaluator2;
 import ai.ordering.SystematicOrderer2;
 import ai.reducing.SenpaiReducer;
-import ai.search.PVSearch;
 import ai.search.PVSearchFast;
-//// coppied from someone else, probabally not using it, and will instead try to do something with Python
-/// because I already have some thing for that.
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -24,15 +20,17 @@ public class UCI {
 
     private static String ENGINENAME = "Waldi"; // we should decide on a name of the engine
     private static Board b = new FastBoard(Setup.DEFAULT);
-    private static Evaluator evaluator = new NoahEvaluator2();
-    private static AdvancedSearch ai = new AdvancedSearch(
+
+
+    private static Evaluator evaluator = new NoahEvaluator2();          //define the evaluator
+    private static AdvancedSearch ai = new AdvancedSearch(              //define the search algorithm
             evaluator,
             new SystematicOrderer2(),
             new SenpaiReducer(1),
-            PVSearch.FLAG_TIME_LIMIT,
+            AdvancedSearch.FLAG_TIME_LIMIT,
             1000);
 
-    public static void uciCommunication() {
+    public static void      uciCommunication() {
 
 //        evaluator.setEvolvableValues(
 //                new double[]{100.0, 100.0, 100.0, 100.0, 100.0, 60.0, 125.0, 495.0, 354.0, 315.0, 922.0,
@@ -71,7 +69,7 @@ public class UCI {
         }
         input.close();
     }
-    public static void inputUCI() {
+    public static void      inputUCI() {
         System.out.println("id name "+ENGINENAME);
         System.out.println("id author Finn/Noah");
 
@@ -84,7 +82,7 @@ public class UCI {
 
         System.out.println("uciok");
     }
-    public static void inputSetOption(String inputString) {
+    public static void      inputSetOption(String inputString) {
 
         String[] args = inputString.split(" ");
 
@@ -104,13 +102,13 @@ public class UCI {
 
         //set options
     }
-    public static void inputIsReady() {
+    public static void      inputIsReady() {
         System.out.println("readyok");
     }
-    public static void inputUCINewGame() {
+    public static void      inputUCINewGame() {
         //add code here
     }
-    public static Board inputPosition(String input) {
+    public static Board     inputPosition(String input) {
         input=input.substring(9).concat(" ");
         if (input.contains("startpos ")) {
             input=input.substring(9);
@@ -132,7 +130,7 @@ public class UCI {
         //System.out.println(b);
         return b;
     }
-    public static void inputGo(String inputString) {
+    public static void      inputGo(String inputString) {
 
         String[] split = inputString.split(" ");
 
@@ -149,28 +147,28 @@ public class UCI {
 
         int movestogo = 0;
 
-        int mode = PVSearch.FLAG_TIME_LIMIT;
+        int mode = AdvancedSearch.FLAG_TIME_LIMIT;
         int limit = 50000;
 
         if(commands.contains("wtime")){
             wtime = Integer.parseInt(commands.get(commands.indexOf("wtime")+1));
-            mode = PVSearch.FLAG_TIME_LIMIT;
+            mode = AdvancedSearch.FLAG_TIME_LIMIT;
         }if(commands.contains("btime")){
             btime = Integer.parseInt(commands.get(commands.indexOf("btime")+1));
-            mode = PVSearch.FLAG_TIME_LIMIT;
+            mode = AdvancedSearch.FLAG_TIME_LIMIT;
         }if(commands.contains("winc")){
             winc = Integer.parseInt(commands.get(commands.indexOf("winc")+1));
-            mode = PVSearch.FLAG_TIME_LIMIT;
+            mode = AdvancedSearch.FLAG_TIME_LIMIT;
         }if(commands.contains("binc")){
             binc = Integer.parseInt(commands.get(commands.indexOf("binc")+1));
-            mode = PVSearch.FLAG_TIME_LIMIT;
+            mode = AdvancedSearch.FLAG_TIME_LIMIT;
         }if(commands.contains("movestogo")){
             movestogo = Integer.parseInt(commands.get(commands.indexOf("movestogo")+1));
         }if(commands.contains("depth")){
-            mode = PVSearch.FLAG_DEPTH_LIMIT;
+            mode = AdvancedSearch.FLAG_DEPTH_LIMIT;
             limit = Integer.parseInt(commands.get(commands.indexOf("depth")+1));
         }if(commands.contains("movetime")){
-            mode = PVSearch.FLAG_TIME_LIMIT;
+            mode = AdvancedSearch.FLAG_TIME_LIMIT;
             limit = Integer.parseInt(commands.get(commands.indexOf("movetime")+1));
         }if(commands.contains("nodes")){
             throw new RuntimeException("Not yet supported");
@@ -191,7 +189,7 @@ public class UCI {
                 ai.setLimit(btime/30 + binc);
             }
             ai.setPrint_overview(false);
-            if(ai.getLimit_flag() == PVSearch.FLAG_TIME_LIMIT && ai.getLimit() > 10000){
+            if(ai.getLimit_flag() == AdvancedSearch.FLAG_TIME_LIMIT && ai.getLimit() > 10000){
                 ai.setLimit(10000);
             }
         }
@@ -206,6 +204,9 @@ public class UCI {
         //log(IO.write_FEN(b) + "\n");
         //System.out.println("info " + ai.getSearchOverview().getInfo());
         System.out.println("bestmove " + moveToUCI(best,b));
+    }
+    public static void      inputPrint() {
+        System.out.println(b);
     }
 
     public static void log(String s){
@@ -243,7 +244,12 @@ public class UCI {
         return board.generateMove(from, to, promotionTarget);
     }
 
-    //Move object -> e2e4
+    /**
+     * brings the given move on the board to the uci notation
+     * @param move
+     * @param board
+     * @return
+     */
     public static String moveToUCI(Move move, Board board) {
         String toReturn = "";
         int tox = board.x(move.getTo());
@@ -263,15 +269,9 @@ public class UCI {
         return toReturn;
     }
 
-    public static void inputPrint() {
-        System.out.println(b);
-        //BoardGeneration.drawArray(UserInterface.WP,UserInterface.WN,UserInterface.WB,UserInterface.WR,UserInterface.WQ,UserInterface.WK,UserInterface.BP,UserInterface.BN,UserInterface.BB,UserInterface.BR,UserInterface.BQ,UserInterface.BK);
-    }
+
 
     public static void main(String[] args) {
-
-       //log("UCI Started\n");
-
         uciCommunication();
     }
 }

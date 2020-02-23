@@ -1,5 +1,6 @@
 package board;
 
+import ai.evaluator.Evaluator;
 import ai.evaluator.NoahEvaluator2;
 import ai.ordering.SystematicOrderer2;
 import ai.reducing.SenpaiReducer;
@@ -19,6 +20,8 @@ import visual.Frame;
 
 import java.util.*;
 import java.util.function.Consumer;
+
+import static io.Testing.perft_validation;
 
 public class FastBoard extends Board<FastBoard> {
 
@@ -148,20 +151,6 @@ public class FastBoard extends Board<FastBoard> {
     }
 
     @Override
-    public boolean getEnPassantChance(int file) {
-        return (BitBoard.files[file] & getBoardStatus().enPassantTarget) != 0;
-    }
-
-    @Override
-    public void setEnPassantChance(int square, boolean value) {
-        if(value){
-            getBoardStatus().enPassantTarget = 1L << square;
-        }else{
-            getBoardStatus().enPassantTarget = 0;
-        }
-    }
-
-    @Override
     public void setCastlingChance(int index, boolean value) {
         if(value){
             getBoardStatus().metaInformation = (short)BitBoard.setBit(getBoardStatus().metaInformation, index);
@@ -173,6 +162,24 @@ public class FastBoard extends Board<FastBoard> {
     @Override
     public int getCurrentRepetitionCount() {
         return 0;
+    }
+
+    @Override
+    public int getCurrent50MoveRuleCount() {
+        return getBoardStatus().getFiftyMoveCounter();
+    }
+
+    @Override
+    public int getEnPassantSquare() {
+        int pos = BitBoard.bitscanForward(getBoardStatus().getEnPassantTarget());
+        if(pos == 64) return -1;
+        return pos;
+    }
+
+    @Override
+    public void setEnPassantSquare(int square) {
+        if(square == 0) getBoardStatus().setEnPassantTarget(0L);
+        else getBoardStatus().setEnPassantTarget(1L << square);
     }
 
     public void setPiece(int piece, int index) {
@@ -248,42 +255,12 @@ public class FastBoard extends Board<FastBoard> {
         return indexBoard[index];
     }
 
-    @Override
-    public String toString() {
-        StringBuilder builder = new StringBuilder();
-
-        builder.append(String.format("%-40s : %-5d %n", "zobrist key", zobrist));
-        builder.append(String.format("%-40s : %-5d %n", "repetition", repetitionList.get(zobrist)));
-        builder.append(String.format("%-40s : %-5d %n", "50 move rule", getBoardStatus().getFiftyMoveCounter()));
-        builder.append(String.format("%-40s : %-5s %n", "white kingside castle", getCastlingChance(1) ? "true":"false"));
-        builder.append(String.format("%-40s : %-5s %n", "white queenside castle", getCastlingChance(0) ? "true":"false"));
-        builder.append(String.format("%-40s : %-5s %n", "black kingside castle", getCastlingChance(3) ? "true":"false"));
-        builder.append(String.format("%-40s : %-5s %n", "black queenside castle", getCastlingChance(2) ? "true":"false"));
-        builder.append(String.format("%-40s : %-5s %n", "en passent square", getBoardStatus().getEnPassantTarget() != 0 ?
-                IO.getSquareString(BitBoard.bitscanForward(getBoardStatus().getEnPassantTarget())): "-"));
-
-        return builder.toString() + super.toString();
-    }
 
     @Override
     public long zobrist() {
         return zobrist;
-//        long zob = 0;
-//        for (int i = 0; i < 6; i++) {
-//            for (int n = 0; n < white_pieces[i].size(); n++){
-//                zob = BitBoard.xor(zob, BitBoard.white_hashes[i][n]);
-//            }
-//            for (int n = 0; n < black_pieces[i].size(); n++){
-//                zob = BitBoard.xor(zob, BitBoard.black_hashes[i][n]);
-//            }
-//        }
-//        return zob;
     }
 
-    @Override
-    public int winner() {
-        return 0;
-    }
 
     @Override
     public void move_null() {
@@ -292,14 +269,14 @@ public class FastBoard extends Board<FastBoard> {
         BoardStatus newBoardStatus = new BoardStatus(0L,
                                                      previousStatus.getMetaInformation(),
                                                      previousStatus.getFiftyMoveCounter()+1);
-        zobrist = ~zobrist;
+        //zobrist = ~zobrist;
         boardStatus.add(newBoardStatus);
         this.changeActivePlayer();
     }
 
     @Override
     public void undoMove_null() {
-        zobrist = ~zobrist;
+        //zobrist = ~zobrist;
         boardStatus.pop();
         this.changeActivePlayer();
     }
@@ -994,13 +971,15 @@ public class FastBoard extends Board<FastBoard> {
                     (BitBoard.lookUpRookAttack(square, occupied) & (white_values[4] | white_values[1])) != 0 ||
                     (BitBoard.lookUpBishopAttack(square, occupied) & (white_values[4] | white_values[3])) != 0 ||
                     (BitBoard.KNIGHT_ATTACKS[square] & white_values[2]) != 0 ||
-                    ((BitBoard.shiftSouthEast(sq) | BitBoard.shiftSouthWest(sq)) & white_values[0]) != 0;
+                    ((BitBoard.shiftSouthEast(sq) | BitBoard.shiftSouthWest(sq)) & white_values[0]) != 0 ||
+                    (BitBoard.KING_ATTACKS[square] & white_values[5]) != 0;
         }else{
             return
                     (BitBoard.lookUpRookAttack(square, occupied) & (black_values[4] | black_values[1])) != 0 ||
                     (BitBoard.lookUpBishopAttack(square, occupied) & (black_values[4] | black_values[3])) != 0 ||
                     (BitBoard.KNIGHT_ATTACKS[square] & black_values[2]) != 0 ||
-                    ((BitBoard.shiftNorthEast(sq) | BitBoard.shiftNorthWest(sq)) & black_values[0]) != 0;
+                    ((BitBoard.shiftNorthEast(sq) | BitBoard.shiftNorthWest(sq)) & black_values[0]) != 0 ||
+                    (BitBoard.KING_ATTACKS[square] & black_values[5]) != 0;
         }
     }
 
@@ -1231,21 +1210,8 @@ public class FastBoard extends Board<FastBoard> {
     }
 
     public static void main(String[] args) {
-        FastBoard board = new FastBoard(Setup.DEFAULT);
-        board = IO.read_FEN(board, "6k1/3p4/8/2P5/8/1Q6/8/8 b - - 0 1");
-        FastBoard finalBoard = board;
-        Game g = new Frame(board, new Player(){}, new Player() {}).getGamePanel().getGame();
-        g.addMoveAboutToHappenListener(move -> {
-            System.out.println("is legal:" + finalBoard.isLegal(move));
-            System.out.println("gives check:" + finalBoard.givesCheck(move));
-        });
-        //g.addBoardChangedListener(move -> System.out.println(finalBoard));
-
-        Move m = board.getPseudoLegalMoves().get(0);
-        board.move(m);
-        System.out.println(board);
-        board.undoMove();
-
-
+        FastBoard fb = new FastBoard(Setup.DEFAULT);
+        System.out.println(fb);
+        //System.out.println(BitBoard.bitscanForward(0L));
     }
 }
