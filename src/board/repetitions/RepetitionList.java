@@ -104,7 +104,7 @@ public class RepetitionList {
      * if the count of that position is higher than 2 (3-fold repetition), true will be returned.
      * otherwise false.
      * @param zobrist
-     * @return              if the game is over by 3-fold repetition
+     * @return              if the visual.game is over by 3-fold repetition
      */
     public boolean add(long zobrist){
         for(Entry e:entries){

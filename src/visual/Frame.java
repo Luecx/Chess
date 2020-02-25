@@ -2,19 +2,14 @@ package visual;
 
 
 import board.Board;
-import board.setup.Setup;
-import game.Game;
-import game.Player;
-import ai.evaluator.NoahEvaluator;
-import ai.ordering.SystematicOrderer;
-import ai.reducing.SenpaiReducer;
+import visual.game.Game;
+import visual.game.Player;
 
 import javax.swing.*;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.util.ArrayList;
 
 /**
  * Created by Luecx on 08.08.2017.

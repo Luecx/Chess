@@ -1,4 +1,4 @@
-package game;
+package visual.game;
 
 import board.Board;
 import board.moves.Move;
@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.function.Consumer;
 
 /**
- * This class can be used to play a game of chess.
+ * This class can be used to play a visual.game of chess.
  * It enables the option to play against an AI or even to let 2 AI's play
  * against each other.
  *

@@ -2,7 +2,7 @@ package ai.search;
 
 import board.Board;
 import board.moves.Move;
-import game.Player;
+import visual.game.Player;
 
 /**
  * The AI interface is a sub-interface of Player and

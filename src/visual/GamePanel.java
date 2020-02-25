@@ -1,7 +1,7 @@
 package visual;
 
 import board.moves.Move;
-import game.Game;
+import visual.game.Game;
 import ai.search.AI;
 
 import javax.swing.*;
@@ -263,7 +263,7 @@ public class GamePanel extends JPanel {
     }
 
     /**
-     * returns the current game object
+     * returns the current visual.game object
      * @return
      */
     public Game getGame() {
@@ -273,7 +273,7 @@ public class GamePanel extends JPanel {
     /**
      * This method will process a move.
      * It will create a new Thread to not interrupt the rendering.
-     * The Thread will call the move() method of the game.
+     * The Thread will call the move() method of the visual.game.
      * Once a move has been processed on the board, this Panel will
      * render.
      * @param z     the move to process

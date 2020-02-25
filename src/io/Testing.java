@@ -1,6 +1,6 @@
 package io;
 
-import ai.evaluator.NoahEvaluator2;
+import ai.evaluator.AdvancedEvaluator;
 import ai.ordering.SystematicOrderer2;
 import board.Board;
 import board.FastBoard;
@@ -234,7 +234,6 @@ public class Testing {
 
                 if(printDiv){
                     System.out.println(IO.getSquareString(((Move) m).getFrom())+ IO.getSquareString(((Move) m).getTo()) + "  " + nd);
-                    //System.out.println(IO.algebraicNotation(board, (Move)m) + " "  + nd);
                 }
             }
 
@@ -265,54 +264,12 @@ public class Testing {
 
     public static void main(String[] args) {
 
-        PVSearchFast ai1 = new PVSearchFast(
-                new NoahEvaluator2(),
-                new SystematicOrderer2(),
-                new SenpaiReducer(1),
-                2,
-                8);
-        ai1.setUse_killer_heuristic(true);
-        ai1.setUse_null_moves(true);
-        ai1.setUse_LMR(true);
-        ai1.setUse_transposition(false);
-        ai1.setUse_move_lists(true);
-        ai1.setUse_iteration(true);
+        System.out.println(perft_pseudo(
+                IO.read_FEN(new FastBoard(), "p3p3/p3p3/p1K1p3/p3p3/P3P3/P1k1P3/P3P3/P3P3 w - - 0 1"),
+                13,new MoveListBuffer(100,10),true));
 
 
-
-        PVSearchFast ai2 = new PVSearchFast(
-                new NoahEvaluator2(),
-                new SystematicOrderer2(),
-                new SenpaiReducer(1),
-                2,
-                8);
-
-        ai2.setUse_killer_heuristic(true);
-        ai2.setUse_null_moves(true);
-        ai2.setUse_LMR(true);
-        ai2.setUse_transposition(true);
-        ai2.setUse_move_lists(true);
-        ai1.setUse_iteration(true);
-
-
-        String[] midgames = new String[]{
-                "r2q1rk1/1pp1bppp/p1npbn2/4p1B1/B3P3/2NP1N2/PPPQ1PPP/2KR3R",
-                "r2q1rk1/ppp2ppp/2n2n2/2b5/2B2Bb1/2NP1N2/PPPQ2PP/R4R1K",
-                "r1bq1rk1/1p2ppbp/p1np1np1/8/3NP3/1BN1B2P/PPP2PP1/R2Q1RK1",
-                "r2qk2r/ppp1nppp/1bn1b3/1B6/1P1pP3/5N2/PB3PPP/RN1Q1RK1",
-                "r2qkb1r/pp1n1pp1/2p1pn1p/8/3P1B1P/3Q1NN1/PPP2PP1/2KR3R"
-        };
-        String[] endgames = new String[]{
-                "8/8/4P1nn/8/2K2P2/4P1k1/2p5/3R4",
-                "8/n7/8/P5k1/5n2/3P2pP/K7/4R3",
-                "8/7R/4KP2/1P4p1/8/1n6/2k2P2/6n1",
-                "7k/3P2K1/6n1/1P1P2R1/1n4p1/8/8/8",
-                "8/5K2/6P1/1p2P1k1/8/P6n/7R/2n5"
-        };
-
-        compare(new FastBoard(), new PVSearchFast[]{ai1,ai2},endgames);
-
-
+        perft_validation(new FastBoard());
 
     }
 

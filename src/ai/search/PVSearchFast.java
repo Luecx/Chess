@@ -10,7 +10,7 @@ import ai.evaluator.NoahEvaluator;
 import ai.ordering.Orderer;
 import ai.reducing.Reducer;
 import ai.tools.*;
-import game.Player;
+import visual.game.Player;
 import io.IO;
 import visual.Frame;
 
@@ -141,7 +141,7 @@ public class PVSearchFast implements AI {
 
     /**
      * iterative deepening is used to speed up the search process.
-     * It searches the game tree multiple time and begins at a
+     * It searches the visual.game tree multiple time and begins at a
      * depth of 1 and ends up at limit.
      * By using the information from the previous iterationGradient, it reduces
      * the nodes that need to be evaluated.
@@ -153,7 +153,7 @@ public class PVSearchFast implements AI {
 
     /**
      * iterative deepening is used to speed up the search process.
-     * It searches the game tree multiple time and begins at a
+     * It searches the visual.game tree multiple time and begins at a
      * depth of 1 and ends up at limit.
      * By using the information from the previous iterationGradient, it reduces
      * the nodes that need to be evaluated.
@@ -166,7 +166,7 @@ public class PVSearchFast implements AI {
     /**
      * transposition tables are used to reduce the search space but
      * can cost stability due to hash collisions.
-     * Especially useful in the late-game.
+     * Especially useful in the late-visual.game.
      *
      * @return  the flag for the usage of transposition tables.
      */
@@ -177,7 +177,7 @@ public class PVSearchFast implements AI {
     /**
      * transposition tables are used to reduce the search space but
      * can cost stability due to hash collisions.
-     * Especially useful in the late-game.
+     * Especially useful in the late-visual.game.
      *
      * @param use_transposition   new flag for the usage of transposition tables.
      */

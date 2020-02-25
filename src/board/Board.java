@@ -167,10 +167,10 @@ public abstract class Board<T extends Board<T>> {
     public abstract boolean isInCheck(int player);
 
     /**
-     * The method returns true if the game is over due to repetitions/50-move rule
+     * The method returns true if the visual.game is over due to repetitions/50-move rule
      *
      *
-     * @return      true if the game is over, otherwise false.
+     * @return      true if the visual.game is over, otherwise false.
      */
     public abstract boolean isDraw();
 
@@ -395,7 +395,7 @@ public abstract class Board<T extends Board<T>> {
     public abstract void setCastlingChance(int index, boolean value);
 
     /**
-     * returns the amount of repetitions of the current game state
+     * returns the amount of repetitions of the current visual.game state
      * @return
      */
     public abstract int getCurrentRepetitionCount();

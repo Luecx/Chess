@@ -1,27 +1,17 @@
 package board;
 
-import ai.evaluator.Evaluator;
-import ai.evaluator.NoahEvaluator2;
-import ai.ordering.SystematicOrderer2;
-import ai.reducing.SenpaiReducer;
-import ai.search.PVSearchFast;
 import board.bitboards.BitBoard;
 import board.moves.Move;
 import board.moves.MoveList;
-import board.moves.MoveListBuffer;
 import board.pieces.PieceList;
 import board.repetitions.RepetitionList;
 import board.setup.Setup;
-import game.Game;
-import game.Player;
 import io.IO;
-import io.Testing;
 import visual.Frame;
+import visual.game.Player;
 
 import java.util.*;
 import java.util.function.Consumer;
-
-import static io.Testing.perft_validation;
 
 public class FastBoard extends Board<FastBoard> {
 
@@ -161,12 +151,12 @@ public class FastBoard extends Board<FastBoard> {
 
     @Override
     public int getCurrentRepetitionCount() {
-        return 0;
+        return repetitionList.get(this.zobrist);
     }
 
     @Override
     public int getCurrent50MoveRuleCount() {
-        return getBoardStatus().getFiftyMoveCounter();
+        return getBoardStatus().getFiftyMoveCounter()/2;
     }
 
     @Override
@@ -227,7 +217,7 @@ public class FastBoard extends Board<FastBoard> {
     @Override
     public boolean isDraw() {
         return (getBoardStatus().metaInformation & FastBoard.BoardStatus.MASK_DRAW_BY_THREE_FOLD) != 0 ||
-               getBoardStatus().getFiftyMoveCounter() >= 50;
+               getCurrent50MoveRuleCount() >= 50;
     }
 
     @Override
@@ -380,8 +370,8 @@ public class FastBoard extends Board<FastBoard> {
         this.moveSimpleMove(m);
         this.changeActivePlayer();
 
-        if (m.getPieceTo() != 0){
-            newBoardStatus.fiftyMoveCounter = 1;
+        if (m.getPieceTo() != 0 || Math.abs(m.getPieceFrom()) == 1 || m.isPromotion()){
+            newBoardStatus.fiftyMoveCounter = 0;
         }
 
         if (this.repetitionList.add(zobrist)) {
@@ -1130,13 +1120,13 @@ public class FastBoard extends Board<FastBoard> {
                 if(((1L << to) & BitBoard.rank_8) != 0){
                     assert promotionTarget > 0;
                     m.setType(Move.PROMOTION);
-                    m.setPieceTo(getActivePlayer() * promotionTarget);
+                    m.setPieceFrom(getActivePlayer() * promotionTarget);
                 }
             }else{
                 if(((1L << to) & BitBoard.rank_1) != 0){
                     assert promotionTarget > 0;
                     m.setType(Move.PROMOTION);
-                    m.setPieceTo(getActivePlayer() * promotionTarget);
+                    m.setPieceFrom(getActivePlayer() * promotionTarget);
                 }
             }
         }
@@ -1211,7 +1201,15 @@ public class FastBoard extends Board<FastBoard> {
 
     public static void main(String[] args) {
         FastBoard fb = new FastBoard(Setup.DEFAULT);
+        fb = IO.read_FEN(fb, "8/6K1/Q7/8/8/8/p7/kB6 w - - 0 1");
         System.out.println(fb);
+        FastBoard finalFb = fb;
+        new Frame(fb, new Player() {}, new Player() {}).getGamePanel().getGame().addMoveAboutToHappenListener(new Consumer<Move>() {
+            @Override
+            public void accept(Move move) {
+                System.out.println(finalFb.isLegal(move));
+            }
+        });
         //System.out.println(BitBoard.bitscanForward(0L));
     }
 }

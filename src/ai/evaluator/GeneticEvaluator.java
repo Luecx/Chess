@@ -3,7 +3,7 @@ package ai.evaluator;
 import ai.search.AdvancedSearch;
 import board.FastBoard;
 import board.setup.Setup;
-import game.Game;
+import visual.game.Game;
 import ai.ordering.SystematicOrderer;
 import ai.reducing.SimpleReducer;
 import ai.search.AI;
@@ -137,7 +137,7 @@ public abstract class GeneticEvaluator<T extends GeneticEvaluator<T>> implements
             pool.execute(function, geneticEvaluators.size() / 2, true);
 
             ar = new Object[geneticEvaluators.size()*2 + 1];
-            ar[0] = "game " + (g+1);
+            ar[0] = "visual/game " + (g + 1);
             for(int i = 0; i < geneticEvaluators.size(); i++){
                 ar[i*2+2] = "["+IO.doubleToString((double)temp.get(i).geneticScore,1)+"]";
 
@@ -221,7 +221,7 @@ public abstract class GeneticEvaluator<T extends GeneticEvaluator<T>> implements
         game.addBoardChangedListener((m) -> {
             moves[0]++;
             if(moves[0] % 2 == 0)
-                //System.out.print("\r move: " + moves[0] +  "   rated: " + evaluator.evaluate(game.getBoard()));
+                //System.out.print("\r move: " + moves[0] +  "   rated: " + evaluator.evaluate(visual.game.getBoard()));
             if(moves[0] >= 120){
                 game.interrupt();
             }
@@ -312,7 +312,7 @@ public abstract class GeneticEvaluator<T extends GeneticEvaluator<T>> implements
 //        System.out.println(Arrays.toString(getEvaluatorFromEntry(population.get(0)).getEvolvableValues()));
 
 
-        AdvancedSearch AdvancedSearch = new AdvancedSearch(new NoahEvaluator2(), new SystematicOrderer(), new SimpleReducer(), 2,6);
+        AdvancedSearch AdvancedSearch = new AdvancedSearch(new AdvancedEvaluator(), new SystematicOrderer(), new SimpleReducer(), 2, 6);
         AdvancedSearch.setUse_null_moves(true);
         AdvancedSearch.setUse_LMR(true);
         AdvancedSearch.setUse_killer_heuristic(true);

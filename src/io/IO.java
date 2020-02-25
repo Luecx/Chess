@@ -162,7 +162,7 @@ public class IO {
 
         if(b.getEnPassantSquare() >= 0){
             builder.append(" ");
-            builder.append(IO.indexToFile(b.getEnPassantSquare()));
+            builder.append(IO.getSquareString(b.getEnPassantSquare()));
             builder.append(BitBoard.rankIndex(b.getEnPassantSquare()));
         }else{
             builder.append(" -");

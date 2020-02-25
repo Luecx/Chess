@@ -2,7 +2,7 @@ package ai.search;
 
 import ai.evaluator.Evaluator;
 import ai.evaluator.NoahEvaluator;
-import ai.evaluator.NoahEvaluator2;
+import ai.evaluator.AdvancedEvaluator;
 import ai.ordering.Orderer;
 import ai.ordering.SystematicOrderer2;
 import ai.reducing.Reducer;
@@ -15,7 +15,7 @@ import board.FastBoard;
 import board.moves.Move;
 import board.moves.MoveListBuffer;
 import board.setup.Setup;
-import game.Player;
+import visual.game.Player;
 import io.IO;
 import io.UCI;
 import visual.Frame;
@@ -138,7 +138,7 @@ public class AdvancedSearch implements AI {
 
     /**
      * iterative deepening is used to speed up the search process.
-     * It searches the game tree multiple time and begins at a
+     * It searches the visual.game tree multiple time and begins at a
      * depth of 1 and ends up at limit.
      * By using the information from the previous iterationGradient, it reduces
      * the nodes that need to be evaluated.
@@ -150,7 +150,7 @@ public class AdvancedSearch implements AI {
 
     /**
      * iterative deepening is used to speed up the search process.
-     * It searches the game tree multiple time and begins at a
+     * It searches the visual.game tree multiple time and begins at a
      * depth of 1 and ends up at limit.
      * By using the information from the previous iterationGradient, it reduces
      * the nodes that need to be evaluated.
@@ -163,7 +163,7 @@ public class AdvancedSearch implements AI {
     /**
      * transposition tables are used to reduce the search space but
      * can cost stability due to hash collisions.
-     * Especially useful in the late-game.
+     * Especially useful in the late-visual.game.
      *
      * @return  the flag for the usage of transposition tables.
      */
@@ -174,7 +174,7 @@ public class AdvancedSearch implements AI {
     /**
      * transposition tables are used to reduce the search space but
      * can cost stability due to hash collisions.
-     * Especially useful in the late-game.
+     * Especially useful in the late-visual.game.
      *
      * @param use_transposition   new flag for the usage of transposition tables.
      */
@@ -472,7 +472,7 @@ public class AdvancedSearch implements AI {
 
             int reduction = use_LMR ? reducer.reduce(_board, m, currentDepth, depthLeft, legalMoves, pv) : 0;
             int extensions = _board.givesCheck(m) ? 1:0;
-            extensions = 0;
+            //extensions = 0;
 
             _board.move(m);
             if (legalMoves == 0) {
@@ -647,8 +647,12 @@ public class AdvancedSearch implements AI {
 
 
         if(!use_iteration && limit_flag == FLAG_DEPTH_LIMIT){
+            long time = System.currentTimeMillis();
             iteration(limit);
-            System.out.println(buildInfoString(limit));
+            String infoString = buildInfoString(limit, System.currentTimeMillis()-time);
+            System.out.println(infoString);
+            UCI.log(infoString+"\n");
+
             return _transpositionTable.get(board.zobrist()).getBestMove();
         }
 
@@ -660,8 +664,12 @@ public class AdvancedSearch implements AI {
             double branchingFactor;
             double expectedTime = 0;
             while (System.currentTimeMillis() - time + expectedTime < limit) {
+                long t0 = System.currentTimeMillis();
                 iteration(depth++);
-                System.out.println(buildInfoString(depth));
+                String infoString = buildInfoString(depth-1, System.currentTimeMillis()-t0);
+                System.out.println(infoString);
+                UCI.log(infoString+"\n");
+
                 long iterationTime = System.currentTimeMillis() - prevTime;
                 prevTime = System.currentTimeMillis();
                 branchingFactor = Math.min(2, (double) (_nodes) / prevNode);
@@ -675,8 +683,12 @@ public class AdvancedSearch implements AI {
                 limit = MAXIMUM_STORE_DEPTH/2;
             }
             for(int i = 1; i <= limit; i++){
+                long t0 = System.currentTimeMillis();
                 iteration(i);
-                System.out.println(buildInfoString(i));
+                String infoString = buildInfoString(i,System.currentTimeMillis()-t0);
+                System.out.println(infoString);
+                UCI.log(infoString+"\n");
+
             }
         }
 
@@ -694,38 +706,45 @@ public class AdvancedSearch implements AI {
 
         if(en != null && en.getNode_type() == TranspositionEntry.PV_NODE && type != TranspositionEntry.PV_NODE) return;
 
-        _transpositionTable.put(zobrist, new TranspositionEntry(alpha, depthLeft, type, _board.getActivePlayer(), bestMove));
+        if(en != null){
+            if(en.getDepthLeft() > depthLeft){
+                return;
+            }
+        }
+
+        _transpositionTable.put(zobrist, new TranspositionEntry(zobrist, alpha, depthLeft, type, _board.getActivePlayer(), bestMove));
     }
 
     public TranspositionEntry retrieveFromTT(long zobrist, int depth, int depthLeft){
         TranspositionEntry en = _transpositionTable.get(zobrist);
+
         if(en != null && en.getDepthLeft() >= depthLeft && en.getZobrist() == zobrist && en.getColor() == _board.getActivePlayer()){
-            System.out.println("retrieved");
+            //System.out.println("retrieved");
             return en;
         }
         return null;
     }
 
-    public String buildInfoString(int depth){
+    public String buildInfoString(int depth, long time){
         StringBuilder builder = new StringBuilder();
 
 
         builder.append("info ");
-        builder.append("depth "         + depth         + " ");
-        builder.append("seldepth "      + _selDepth     + " ");
+        builder.append("depth "         + depth                         + " ");
+        builder.append("seldepth "      + _selDepth                     + " ");
 
         builder.append("score ");
-        builder.append("cp "    + (int)_score   + " ");
+        builder.append("cp "            + (int)_score                   + " ");
         if(Math.abs(_score) > MIN_CHECKMATE_VALUE){
-            builder.append("mate "  + (int)(MAX_CHECKMATE_VALUE-Math.abs(_score))   + " ");
+            builder.append("mate "  + (int)(MAX_CHECKMATE_VALUE-Math.abs(_score))/2   + " ");
         }
 
-        builder.append("nodes "         + _nodes        + " ");
+        builder.append("nodes "         + _nodes                        + " ");
 
         //TODO
-        builder.append("nps "           + 0             + " ");
-        builder.append("tbhits "        + 0             + " ");
-        builder.append("time "          + 1             + " ");
+        builder.append("nps "           + _nodes/Math.max(1,time)*1000  + " ");
+        builder.append("tbhits "        + 0                             + " ");
+        builder.append("time "          + time                          + " ");
         builder.append("pv "            + extractPV());
 
         return builder.toString();
@@ -755,13 +774,10 @@ public class AdvancedSearch implements AI {
     public static void main(String[] args) {
         FastBoard fb = new FastBoard(Setup.DEFAULT);
 
-        //fb = IO.read_FEN(fb, "8/k2P4/8/8/7K/8/5p2/8 w - - 0 1");
-        fb = IO.read_FEN(fb, "rnbq1r1k/pp1npPbp/3p4/4P3/5P2/2p2N2/PPP3P1/R1BQKB1R w Q - 0 1");
+        fb = IO.read_FEN(fb, "r1bqkb1r/1p2nppp/2np4/p1p1p3/4P3/P1NP1N1P/1PP2PP1/R1BQKB1R w KQkq - 0 7");
+        AdvancedSearch advancedSearch = new AdvancedSearch(new AdvancedEvaluator(), new SystematicOrderer2(), new SenpaiReducer(1), 2, 14);
 
-
-
-        AdvancedSearch advancedSearch = new AdvancedSearch(new NoahEvaluator2(), new SystematicOrderer2(), new SenpaiReducer(1), 2, 16);
-        System.out.println(UCI.moveToUCI(advancedSearch.bestMove(fb), fb));
+        new Frame(fb, advancedSearch, new Player(){});
 
 
 

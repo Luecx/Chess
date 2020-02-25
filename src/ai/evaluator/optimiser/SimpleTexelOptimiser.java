@@ -1,23 +1,17 @@
 package ai.evaluator.optimiser;
 
 import ai.evaluator.GeneticEvaluator;
-import ai.evaluator.NoahEvaluator2;
+import ai.evaluator.AdvancedEvaluator;
 import ai.tools.threads.Pool;
-import ai.tools.threads.PoolFunction;
 import board.Board;
 import board.FastBoard;
 import io.IO;
 
 import java.io.*;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 
 public class SimpleTexelOptimiser {
-
-
-    public static double loss_probability = 0.2;
-    public static double win_probability = 0.8;
 
 
     public static int WHITE_WIN = 1;
@@ -170,16 +164,6 @@ public class SimpleTexelOptimiser {
         return params;
     }
 
-    public double score(GeneticEvaluator evaluator){
-        double total = 0;
-        for(int i = 0; i < fen_strings.size(); i++){
-            double p = centipawnAdvantageToProbability((int)evaluator.evaluate(fen_strings.get(i)));
-            double expected = results.get(i) == DRAW ? 0.5:
-                    results.get(i) == WHITE_WIN ? win_probability:loss_probability;
-            total += (p-expected)*(p-expected)/2d;
-        }
-        return total / fen_strings.size();
-    }
 
     /**
      *
@@ -223,7 +207,7 @@ public class SimpleTexelOptimiser {
                 for(int i = (int)lower; i < (int)upper; i++){
                     double qi = (int)evaluator.evaluate(fen_strings.get(i));
                     double expected = results.get(i) == DRAW ? 0.5:
-                            results.get(i) == WHITE_WIN ? win_probability:loss_probability;
+                            results.get(i) == WHITE_WIN ? 1:0;
                     double sig = sigmoid(qi, K);
                     pScore += (expected-sig) * (expected-sig);
                 }
@@ -240,7 +224,7 @@ public class SimpleTexelOptimiser {
             for(int i = 0; i < fen_strings.size(); i++){
                 double qi = (int)evaluator.evaluate(fen_strings.get(i));
                 double expected = results.get(i) == DRAW ? 0.5:
-                        results.get(i) == WHITE_WIN ? win_probability:loss_probability;
+                        results.get(i) == WHITE_WIN ? 1:0;
                 double sig = sigmoid(qi, K);
                 total += (expected - sig) * (expected - sig);
             }
@@ -264,10 +248,10 @@ public class SimpleTexelOptimiser {
     public static void main(String[] args) {
         SimpleTexelOptimiser tex = new SimpleTexelOptimiser();
         tex.readFile("resources/quiet-labeled.epd", new FastBoard(), 60000000);
-        NoahEvaluator2 evaluator2 = new NoahEvaluator2();
-        //evaluator2.setEvolvableValues(new double[]{100.0, 100.0, 100.0, 100.0, 100.0, 66.0, 123.0, 492.0, 354.0, 314.0, 914.0, 20005.0, 6.0, 5.0, -1.0, 2.0, 14.0, 25.0, -25.0, 0.0, 61.0, 5.0, 27.7, 13.0, 25.0, 9.0});
+        AdvancedEvaluator evaluator2 = new AdvancedEvaluator();
+        evaluator2.setEvolvableValues(new double[]{92.0, 103.0, 72.0, 111.0, 86.0, 4.0, 87.0, 519.0, 345.0, 326.0, 1108.0, 20024.0, 4.0, 4.0, -3.0, -1.0, 11.0, 34.0, -9.0, -19.0, 45.0, 6.0, 19.0, 15.0, 6.0, 9.0});
 
-        double K = tex.computeK(evaluator2, 1E-5, 1.160404, 10);
+        double K = tex.computeK(evaluator2, 1E-5, 3.377732, 10);
 
 
         double[] best = tex.iterationLocally(evaluator2, K);

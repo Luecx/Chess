@@ -7,7 +7,6 @@ import java.util.Objects;
 public final class Move {
 
 
-
     public static final byte DEFAULT = 0;
     public static final byte EN_PASSENT = 1;
     public static final byte PROMOTION = 2;
@@ -21,7 +20,7 @@ public final class Move {
 
     byte    type;
 
-    short metaInformation;
+
     int orderPriority;
 
 
@@ -40,27 +39,9 @@ public final class Move {
         this.pieceTo = board.getPiece(to);
     }
 
-    public Move(int from, int to, Board board, short metaInformation) {
-        this.from = from;
-        this.to = to;
-        this.pieceFrom = board.getPiece(from);
-        this.pieceTo = board.getPiece(to);
-        this.metaInformation = metaInformation;
-    }
-
-    public Move(int from, int to, int pieceFrom, int pieceTo, short metaInformation) {
-        this.from = from;
-        this.to = to;
-        this.pieceFrom = pieceFrom;
-        this.pieceTo = pieceTo;
-        this.metaInformation = metaInformation;
-    }
-
-
-
 
     public Move copy() {
-        Move copy = new Move(from, to, pieceFrom, pieceTo, metaInformation);
+        Move copy = new Move(from, to, pieceFrom, pieceTo);
         copy.setType(type);
         copy.setOrderPriority(orderPriority);
         return copy;
@@ -135,13 +116,12 @@ public final class Move {
         return from == move.from &&
                 to == move.to &&
                 pieceFrom == move.pieceFrom &&
-                pieceTo == move.pieceTo &&
-                metaInformation == move.metaInformation;
+                pieceTo == move.pieceTo;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(from, to, pieceFrom, pieceTo, metaInformation);
+        return Objects.hash(from, to, pieceFrom, pieceTo);
     }
 
     @Override

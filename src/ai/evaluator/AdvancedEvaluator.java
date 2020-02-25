@@ -6,7 +6,7 @@ import board.bitboards.BitBoard;
 import ai.tools.tensor.Tensor1D;
 import io.IO;
 
-public class NoahEvaluator2 extends GeneticEvaluator<NoahEvaluator2> implements Evaluator {
+public class AdvancedEvaluator extends GeneticEvaluator<AdvancedEvaluator> implements Evaluator {
 
     public static final Tensor1D PAWN_VALUES_WHITE = (Tensor1D) flipTensor(new Tensor1D(new double[]{
             0, 0, 0, 0, 0, 0, 0, 0,
@@ -251,7 +251,7 @@ public class NoahEvaluator2 extends GeneticEvaluator<NoahEvaluator2> implements 
         }
         for (i = 0; i < fb.getWhite_pieces()[5].size(); i++) {
             index = fb.getWhite_pieces()[5].get(i);
-            ev += board.isEndgame() ? KING_VALUES_LATE_BLACK.get(index) : (KING_VALUES_MID_BLACK.get(index) * PARAMETER_KING_TABLE_FACTOR);
+            ev += (board.isEndgame() ? KING_VALUES_LATE_WHITE.get(index) : KING_VALUES_MID_WHITE.get(index)) * PARAMETER_KING_TABLE_FACTOR;
             ev += PARAMETER_KING_VALUE;
             ev += (BitBoard.bitCount(BitBoard.KING_ATTACKS[index] & fb.getTeam_total()[0])) *
                   PARAMETER_KING_SAFETY_1;
@@ -322,8 +322,8 @@ public class NoahEvaluator2 extends GeneticEvaluator<NoahEvaluator2> implements 
         for(i = 0; i < fb.getBlack_pieces()[5].size(); i ++) {
             index = fb.getBlack_pieces()[5].get(i);
 
-            ev -= board.isEndgame() ? KING_VALUES_LATE_WHITE.get(index) : (KING_VALUES_MID_WHITE.get(index) * PARAMETER_KING_TABLE_FACTOR);
-            ev -= KING_VALUES_MID_BLACK.get(index) * PARAMETER_KING_TABLE_FACTOR;
+            ev -= (board.isEndgame() ? KING_VALUES_LATE_BLACK.get(index) : KING_VALUES_MID_BLACK.get(index)) * PARAMETER_KING_TABLE_FACTOR;
+            //ev -= KING_VALUES_MID_BLACK.get(index) * PARAMETER_KING_TABLE_FACTOR;
             ev -= PARAMETER_KING_VALUE;
             ev -= (BitBoard.bitCount(BitBoard.KING_ATTACKS[index] & fb.getTeam_total()[1])) *
                     PARAMETER_KING_SAFETY_1;
@@ -414,14 +414,14 @@ public class NoahEvaluator2 extends GeneticEvaluator<NoahEvaluator2> implements 
     }
 
     @Override
-    public NoahEvaluator2 copy() {
-        NoahEvaluator2 evaluator = new NoahEvaluator2();
+    public AdvancedEvaluator copy() {
+        AdvancedEvaluator evaluator = new AdvancedEvaluator();
         evaluator.setEvolvableValues(this.getEvolvableValues());
         return evaluator;
     }
 
     public static void main(String[] args) {
-        NoahEvaluator2 eval = new NoahEvaluator2();
+        AdvancedEvaluator eval = new AdvancedEvaluator();
         FastBoard fb = new FastBoard();
         fb = IO.read_FEN(fb,"rnbq1k1r/pppppppp/4bn2/8/8/4BN2/PPPPPPPP/RNBQK2R w KQkq - 0 1");
         System.out.println(eval.evaluate(fb));
