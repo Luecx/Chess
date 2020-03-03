@@ -1,4 +1,4 @@
-package ai.decider;
+package ai.evaluator.decider;
 
 import ai.evaluator.Evaluator;
 import ai.evaluator.LateGameEvaluator;
