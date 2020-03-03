@@ -1,4 +1,4 @@
-package ai.tools;
+package ai.tools.transpositions;
 
 import java.util.Arrays;
 import java.util.HashMap;

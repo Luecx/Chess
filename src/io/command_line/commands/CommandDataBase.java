@@ -82,7 +82,7 @@ public class CommandDataBase {
 //
 //            for (String key : commands.keySet()) {
 //                if (key.equals(command.trim())) {
-//                    commands.get(key).execute(rest.split("-"));
+//                    commands.get(key).executeTotal(rest.split("-"));
 //                    break;
 //                }
 //            }

@@ -1,4 +1,4 @@
-package ai.tools;
+package ai.tools.tables;
 
 import board.moves.Move;
 

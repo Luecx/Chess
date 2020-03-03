@@ -1035,15 +1035,19 @@ public class FastBoard extends Board<FastBoard> {
             }
         }
 
-
-
         //discovered check
+
         this.occupied = BitBoard.unsetBit(this.occupied, m.getFrom());
+        this.occupied = BitBoard.setBit(this.occupied, m.getTo());
         if(isUnderAttack(opponentKingPos, getActivePlayer())){
-            this.occupied = BitBoard.unsetBit(this.occupied, m.getFrom());
+            this.occupied = BitBoard.unsetBit(this.occupied, m.getTo());
+            this.occupied = BitBoard.setBit(this.occupied, m.getFrom());
             return true;
         }
-        this.occupied = BitBoard.unsetBit(this.occupied, m.getFrom());
+        if(m.getPieceTo() == 0){
+            this.occupied = BitBoard.unsetBit(this.occupied, m.getTo());
+        }
+        this.occupied = BitBoard.setBit(this.occupied, m.getFrom());
 
 
         if(m.isCastle_move()){

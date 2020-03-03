@@ -15,6 +15,8 @@ public class PoolThread extends Thread {
     private Pool pool;
     private boolean debug = false;
     private int functionIndex;
+    private boolean sequential = false;             //true if request data after finish
+    private int threadIndex;
 
     public PoolThread(Pool pool, PoolLock initialLock) {
         this.initialLock = initialLock;
@@ -26,9 +28,10 @@ public class PoolThread extends Thread {
         return executing;
     }
 
-    public void execute(PoolThreadRange counter, PoolFunction function, PoolLock lock) {
+    public void execute(PoolThreadRange counter, PoolFunction function, PoolLock lock, int threadIndex) {
         if(this.isExecuting()) throw new RuntimeException("Thread is already executing");
         this.lock = lock;
+        this.threadIndex = threadIndex;
         this.counter = counter;
         this.function = function;
         synchronized (object) {
@@ -48,6 +51,10 @@ public class PoolThread extends Thread {
         this.debug = debug;
     }
 
+    public void setSequential(boolean sequential){
+        this.sequential = sequential;
+    }
+
     @Override
     public void run() {
         synchronized (object) {
@@ -56,22 +63,42 @@ public class PoolThread extends Thread {
                 try {
                     object.wait();
                     this.executing = true;
-                    for(int i = counter.start; i < counter.end; i++){
 
-                        functionIndex = i;
-                        if(debug){
-                            pool.printProgress();
+                    if(this.sequential){
+                        functionIndex = pool.requestTask();
+                        while (functionIndex != -1){
+                            if(debug){
+                                pool.printProgress();
+                            }
+                            this.function.execute(functionIndex, threadIndex);
+                            functionIndex = pool.requestTask();
+
+                            if(debug){
+                                pool.printProgress();
+                            }
                         }
 
-                        this.function.execute(i);
+                        this.executing = false;
+                        this.lock.unlock();
 
-                        if(debug){
-                            pool.printProgress();
-                        }
                     }
-                    this.executing = false;
-                    this.lock.unlock();
+                    else{
+                        for(int i = counter.start; i < counter.end; i++){
 
+                            functionIndex = i;
+                            if(debug){
+                                pool.printProgress();
+                            }
+
+                            this.function.execute(i, threadIndex);
+
+                            if(debug){
+                                pool.printProgress();
+                            }
+                        }
+                        this.executing = false;
+                        this.lock.unlock();
+                    }
                 } catch (InterruptedException e) {
                     this.interrupt();
                 }

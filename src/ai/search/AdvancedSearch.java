@@ -1,15 +1,18 @@
 package ai.search;
 
+import ai.evaluator.decider.BoardStateDecider;
+import ai.evaluator.decider.SimpleDecider;
+import ai.evaluator.AdvancedEndGameEvaluator;
 import ai.evaluator.Evaluator;
-import ai.evaluator.NoahEvaluator;
-import ai.evaluator.AdvancedEvaluator;
+import ai.evaluator.AdvancedMidGameEvaluator;
 import ai.ordering.Orderer;
 import ai.ordering.SystematicOrderer2;
 import ai.reducing.Reducer;
 import ai.reducing.SenpaiReducer;
-import ai.tools.KillerTable;
-import ai.tools.TranspositionEntry;
-import ai.tools.TranspositionTable;
+import ai.tools.tables.HistoryTable;
+import ai.tools.tables.KillerTable;
+import ai.tools.transpositions.TranspositionEntry;
+import ai.tools.transpositions.TranspositionTable;
 import board.Board;
 import board.FastBoard;
 import board.moves.Move;
@@ -20,7 +23,7 @@ import io.IO;
 import io.UCI;
 import visual.Frame;
 
-import java.util.List;
+import java.util.*;
 
 public class AdvancedSearch implements AI {
 
@@ -31,7 +34,7 @@ public class AdvancedSearch implements AI {
     public static final int                             FLAG_TIME_LIMIT         = 1;
     public static final int                             FLAG_DEPTH_LIMIT        = 2;
 
-    protected Evaluator                                 evaluator;
+    protected BoardStateDecider                         boardStateDecider;
     protected Orderer                                   orderer;
     protected Reducer                                   reducer;
 
@@ -41,18 +44,24 @@ public class AdvancedSearch implements AI {
     protected boolean                                   use_qSearch             = true;         //flag for qSearch
     protected boolean                                   use_iteration           = true;         //flag for iterative deepening
     protected boolean                                   use_transposition       = true;         //flag for transposition tables
-    protected boolean                                   print_overview          = true;         //flag for output-printing
     protected boolean                                   use_null_moves          = true;         //flag for null moves
     protected boolean                                   use_LMR                 = true;         //flag for LMR
     protected boolean                                   use_razoring            = true;         //flag for razoring
     protected boolean                                   use_killer_heuristic    = true;         //flag for killer tables
+    protected boolean                                   use_history_heuristic   = true;         //flag for history heuristic
+
+    protected boolean                                   print_overview          = true;         //flag for output-printing
+
 
     protected int                                       killer_count            = 3;            //amount of killer moves
     protected int                                       null_move_reduction     = 2;            //how much to reduce null moves
     protected int                                       razor_offset            = 300;
 
 
+
+    private Evaluator                                   _evaluator;
     private KillerTable                                 _killerTable;
+    private HistoryTable                                _historyTable;
     private TranspositionTable<TranspositionEntry>      _transpositionTable;
     private Board                                       _board;
     private MoveListBuffer                              _buffer;
@@ -61,14 +70,37 @@ public class AdvancedSearch implements AI {
     private int                                         _nodes;
     private int                                         _selDepth;
 
-    public AdvancedSearch(Evaluator evaluator, Orderer orderer, Reducer reducer, int limit_flag, int limit) {
-        this.evaluator = evaluator;
+    public AdvancedSearch(BoardStateDecider boardStateDecider, Orderer orderer, Reducer reducer, int limit_flag, int limit) {
+        this.boardStateDecider = boardStateDecider;
         this.orderer = orderer;
         this.reducer = reducer;
         this._buffer = new MoveListBuffer(MAXIMUM_STORE_DEPTH, 128);
         this.limit_flag = limit_flag;
         this.limit = limit;
     }
+
+    /**
+     * getter for the history heuristic flag.
+     * If the flag is set to "true", beta cutoffs will be be stored in a table by their move from-to value
+     * and this will be used to sort the moves if the orderer makes use of the history heuristic
+     * @return      history heuristic flag
+     */
+    public boolean isUse_history_heuristic() {
+        return use_history_heuristic;
+    }
+
+    /**
+     * setter for the history heuristic flag.
+     * If the flag is set to "true", beta cutoffs will be be stored in a table by their move from-to value
+     * and this will be used to sort the moves if the orderer makes use of the history heuristic
+     * killer moves
+     *
+     * @param use_history_heuristic      new flag for using the history heuristic
+     */
+    public void setUse_history_heuristic(boolean use_history_heuristic) {
+        this.use_history_heuristic = use_history_heuristic;
+    }
+
 
     /**
      * getter for the killer heuristic flag.
@@ -292,21 +324,21 @@ public class AdvancedSearch implements AI {
     }
 
     /**
-     * getter for the evaluator that is used to evaluate the
+     * getter for the boardStateDecider that is used to evaluate the
      * board position at leaf-nodes
      * @return  the evaluator
      */
-    public Evaluator getEvaluator() {
-        return evaluator;
+    public BoardStateDecider getBoardStateDecider() {
+        return boardStateDecider;
     }
 
     /**
-     * setter for the evaluator that is used to evaluate the
+     * setter for the boardStateDecider that is used to evaluate the
      * board position at leaf-nodes
-     * @param evaluator the new evaluator
+     * @param boardStateDecider the new evaluator
      */
-    public void setEvaluator(Evaluator evaluator) {
-        this.evaluator = evaluator;
+    public void setBoardStateDecider(BoardStateDecider boardStateDecider) {
+        this.boardStateDecider = boardStateDecider;
     }
 
     /**
@@ -392,7 +424,6 @@ public class AdvancedSearch implements AI {
         Move        bestMove        = null;
 
 
-
         if(_board.isDraw()){
             _nodes ++;
             return 0;
@@ -400,12 +431,13 @@ public class AdvancedSearch implements AI {
         if(depthLeft <= 0) {
             return qSearch(alpha, beta, currentDepth);
         }
+
         _nodes ++;
 
 
 
 
-        if(use_transposition){
+        if (use_transposition) {
             TranspositionEntry tt = retrieveFromTT(zobrist, currentDepth, depthLeft);
             if(tt != null){
                 if (tt.getNode_type() == TranspositionEntry.PV_NODE){
@@ -427,20 +459,23 @@ public class AdvancedSearch implements AI {
         }
 
 
+        if (use_razoring) {
+            if (!extension &&
+                !pv &&
+                !_board.isInCheck(_board.getActivePlayer()) &&
+                depthLeft <= 2 &&
+                (_evaluator.evaluate(_board) * _board.getActivePlayer()) <= alpha - razor_offset) {
 
-        if(use_razoring){
-            if(!pv && !_board.isInCheck(_board.getActivePlayer()) && depthLeft <= 2 && (evaluator.evaluate(_board)*_board.getActivePlayer()) <= alpha - razor_offset){
-                if (depthLeft == 1){
+                if (depthLeft == 1) {
                     return qSearch(alpha, beta, currentDepth);
                 }
-                double rWindow = alpha - 300;
-                double value = qSearch(rWindow, rWindow+1, currentDepth);
-                if (value <= rWindow){
+                double rWindow = alpha - razor_offset;
+                double value = qSearch(rWindow, rWindow + 1, currentDepth);
+                if (value <= rWindow) {
                     return value;
                 }
             }
         }
-
 
 
         if (use_null_moves) {
@@ -456,12 +491,11 @@ public class AdvancedSearch implements AI {
         }
 
 
-
         List<Move> allMoves = _board.getPseudoLegalMoves(_buffer.get(currentDepth));
         if(allMoves.size() == 0){
-            return evaluator.evaluate(_board) * _board.getActivePlayer();
+            return _evaluator.evaluate(_board) * _board.getActivePlayer();
         }
-        orderer.sort(allMoves, currentDepth, null, _board, pv, _killerTable, _transpositionTable);
+        orderer.sort(allMoves, currentDepth, null, _board, pv, _killerTable,_historyTable, _transpositionTable);
 
         for (Move m:allMoves)  {
 
@@ -469,10 +503,8 @@ public class AdvancedSearch implements AI {
                 continue;
             }
 
-
             int reduction = use_LMR ? reducer.reduce(_board, m, currentDepth, depthLeft, legalMoves, pv) : 0;
-            int extensions = _board.givesCheck(m) ? 1:0;
-            //extensions = 0;
+            int extensions = _board.givesCheck(m) && depthLeft < 3 ? 1:0;
 
             _board.move(m);
             if (legalMoves == 0) {
@@ -483,19 +515,21 @@ public class AdvancedSearch implements AI {
                     score = -pvSearch(-beta, -alpha, currentDepth+1, depthLeft-1-reduction+extensions, false,false); // re-search
             }
             _board.undoMove();
+
+
+
             legalMoves++;
-            if( score >= beta ){
-                if (m.getPieceTo() == 0) {
-                    _killerTable.put(currentDepth, m.copy());
-                }
-                if(use_transposition) placeInTT(zobrist, currentDepth, depthLeft, alpha, TranspositionEntry.CUT_NODE, m.copy());
+            if( score >= beta       ){
+                if(use_killer_heuristic && m.getPieceTo() == 0)     _killerTable.put(currentDepth, m.copy());
+                if(use_history_heuristic)                           _historyTable.add(depthLeft*depthLeft,m.getFrom(), m.getTo());
+                if(use_transposition)                               placeInTT(zobrist, currentDepth, depthLeft, alpha, TranspositionEntry.CUT_NODE, m.copy());
                 return beta;   // fail-hard beta-cutoff
             }
-            if(score > highestScore){
+            if( score > highestScore){
                 highestScore = score;
                 bestMove = m.copy();
             }
-            if( score > alpha ) {
+            if( score > alpha       ){
                 alpha = score; // alpha acts like max in MiniMax
                 bestMove = m.copy();
             }
@@ -523,9 +557,6 @@ public class AdvancedSearch implements AI {
             }
         }
 
-
-
-
         return alpha;
     }
 
@@ -540,7 +571,7 @@ public class AdvancedSearch implements AI {
             return 0;
         }
 
-        double stand_pat = evaluator.evaluate(_board) * _board.getActivePlayer();
+        double stand_pat = _evaluator.evaluate(_board) * _board.getActivePlayer();
         if(!use_qSearch){
             return stand_pat;
         }
@@ -555,7 +586,7 @@ public class AdvancedSearch implements AI {
             alpha = stand_pat;
 
 
-        orderer.sort(allMoves, 0, null, _board, false, null, null);
+        orderer.sort(allMoves, 0, null, _board, false, _killerTable, _historyTable, null);
         int legalMoves = 0;         //count the amount of legal captures.
         // if its 0, we do a full research with all moves (most of them will be illegal as well)
         for (Move m : allMoves) {
@@ -623,27 +654,13 @@ public class AdvancedSearch implements AI {
     @Override
     public Move bestMove(Board board) {
 
-        this._board = board;
-        this._killerTable = use_killer_heuristic ? new KillerTable(MAXIMUM_STORE_DEPTH, killer_count):null;
+        this._board             = board;
+        this._killerTable       = use_killer_heuristic  ? new KillerTable(MAXIMUM_STORE_DEPTH, killer_count)    :null;
+        this._historyTable      = use_history_heuristic ? new HistoryTable()                                    :null;
+        this._evaluator         = boardStateDecider.getEvaluator(board);
         if(this._transpositionTable == null)    this._transpositionTable = new TranspositionTable<>();
         else                                    this._transpositionTable.clear();
 
-        //<editor-fold desc="engame check">
-        int totalMaterial = 0;
-        int v;
-        for (int i = 0; i < 8; i++) {
-            for (int n = 0; n < 8; n++) {
-                v = board.getPiece(i, n);
-                totalMaterial += NoahEvaluator.COMPLETE_EVALUATE_PRICE[v + 6];
-            }
-        }
-
-        if (totalMaterial < 43000) {
-            _board.setEndgame(true);
-        }else{
-            _board.setEndgame(false);
-        }
-        //</editor-fold>
 
 
         if(!use_iteration && limit_flag == FLAG_DEPTH_LIMIT){
@@ -770,15 +787,27 @@ public class AdvancedSearch implements AI {
 
         return builder.toString();
     }
+    
 
     public static void main(String[] args) {
         FastBoard fb = new FastBoard(Setup.DEFAULT);
 
-        fb = IO.read_FEN(fb, "r1bqkb1r/1p2nppp/2np4/p1p1p3/4P3/P1NP1N1P/1PP2PP1/R1BQKB1R w KQkq - 0 7");
-        AdvancedSearch advancedSearch = new AdvancedSearch(new AdvancedEvaluator(), new SystematicOrderer2(), new SenpaiReducer(1), 2, 14);
+        //fb = IO.read_FEN(fb, "8/2R3N1/7k/8/5b1K/6p1/6p1/8 w - - 0 1");
+        AdvancedSearch advancedSearch = new AdvancedSearch(
+                new SimpleDecider(
+                    new AdvancedMidGameEvaluator(),
+                    new AdvancedEndGameEvaluator()),
+                new SystematicOrderer2(),
+                new SenpaiReducer(1), 1, 1000);
 
-        new Frame(fb, advancedSearch, new Player(){});
+        advancedSearch.use_history_heuristic = true;
+        advancedSearch.bestMove(fb);
 
+
+
+//        FastBoard finalFb = fb;
+        new Frame(fb,new Player() {},  advancedSearch).setFlippedBoard(true);
+//
 
 
     }

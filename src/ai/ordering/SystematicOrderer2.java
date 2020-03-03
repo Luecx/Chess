@@ -1,12 +1,13 @@
 package ai.ordering;
 
+import ai.evaluator.AdvancedMidGameEvaluator;
+import ai.tools.tables.HistoryTable;
 import board.Board;
 import board.moves.Move;
-import ai.evaluator.FinnEvaluator;
-import ai.tools.KillerTable;
+import ai.tools.tables.KillerTable;
 import ai.tools.PVLine;
-import ai.tools.TranspositionEntry;
-import ai.tools.TranspositionTable;
+import ai.tools.transpositions.TranspositionEntry;
+import ai.tools.transpositions.TranspositionTable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +30,7 @@ public class SystematicOrderer2 implements Orderer {
             Board board,
             boolean pvNode,
             KillerTable killerTable,
+            HistoryTable historyTable,
             TranspositionTable transpositionTable){
 
         int initSize = collection.size();
@@ -74,18 +76,22 @@ public class SystematicOrderer2 implements Orderer {
 
         //capture moves / non capture / killers
         for(Move m:collection){
-            NoahOrderer.setOrderPriority(m, board);
+
+            if(m.getPieceTo() == 0 && historyTable != null){
+                m.setOrderPriority((int)historyTable.get(m.getFrom(), m.getTo()));
+            }else{
+                NoahOrderer.setOrderPriority(m, board);
+            }
+
             if(killerTable != null && killerTable.isKillerMove(depth, m)){
                 killerMoves.add(m);
             }
-//            else if(board.givesCheck(m)){
-//                goodCaptures.add(m);
-//            }
+
             else if(m.getPieceTo() != 0){
-                if(FinnEvaluator.EVALUATE_PRICE[Math.abs(m.getPieceTo())] >= FinnEvaluator.EVALUATE_PRICE[Math.abs(m.getPieceFrom())]){
+                if(AdvancedMidGameEvaluator.EVALUATE_PRICE[Math.abs(m.getPieceTo())] >= AdvancedMidGameEvaluator.EVALUATE_PRICE[Math.abs(m.getPieceFrom())]){
                     goodCaptures.add(m);
                 }else{
-                    goodCaptures.add(m);
+                    badCaptures.add(m);
                 }
 
             } else{
@@ -97,7 +103,7 @@ public class SystematicOrderer2 implements Orderer {
             int p1 = o1.getOrderPriority();
             int p2 = o2.getOrderPriority();
 
-            return Integer.compare(p1,p2);
+            return -Integer.compare(p1,p2);
         });
         goodCaptures.sort((o1, o2) -> {
             int p1 = o1.getOrderPriority();
@@ -120,11 +126,13 @@ public class SystematicOrderer2 implements Orderer {
 
 
 
+
+
         collection.clear();
         collection.addAll(pvMoves);
         collection.addAll(goodCaptures);
-        collection.addAll(killerMoves);
         collection.addAll(badCaptures);
+        collection.addAll(killerMoves);
         collection.addAll(nonCaptureMoves);
 
 

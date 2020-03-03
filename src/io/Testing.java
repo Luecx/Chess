@@ -1,12 +1,9 @@
 package io;
 
-import ai.evaluator.AdvancedEvaluator;
-import ai.ordering.SystematicOrderer2;
 import board.Board;
 import board.FastBoard;
 import board.moves.Move;
 import board.moves.MoveListBuffer;
-import ai.reducing.SenpaiReducer;
 import ai.search.AI;
 import ai.search.PVSearchFast;
 import ai.tools.SearchOverview;

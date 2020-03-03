@@ -2,6 +2,6 @@ package ai.tools.threads;
 
 public interface PoolFunction {
 
-    void execute(int index);
+    void execute(int index, int core);
 
 }

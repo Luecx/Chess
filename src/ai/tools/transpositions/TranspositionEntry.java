@@ -1,4 +1,4 @@
-package ai.tools;
+package ai.tools.transpositions;
 
 import board.moves.Move;
 

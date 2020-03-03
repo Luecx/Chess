@@ -1,12 +1,15 @@
 package ai.monte_carlo.simulator;
 
-import ai.evaluator.NoahEvaluator;
+import ai.evaluator.AdvancedMidGameEvaluator;
+import ai.evaluator.Evaluator;
 import ai.monte_carlo.Node;
 import ai.monte_carlo.nodedata.ChessNodeData;
 
 public class EvaluatingSimulator implements Simulator<ChessNodeData> {
 
-    static NoahEvaluator evaluator = new NoahEvaluator();
+    static Evaluator evaluator = new AdvancedMidGameEvaluator();
+
+
 
     @Override
     public double simulate(Node<ChessNodeData> root) {

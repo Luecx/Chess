@@ -8,7 +8,7 @@ import board.Board;
  * take up most of the calculation time.
  *
  */
-public interface Evaluator {
+public interface Evaluator<T extends Evaluator<T>> {
 
     /**
      * this method returns a value that evaluates the board.
@@ -20,4 +20,22 @@ public interface Evaluator {
      */
     public double evaluate(Board board);
 
+
+    /**
+     * defines the values that can be evolved/tuned
+     * @return
+     */
+    public abstract double[] getEvolvableValues();
+
+    /**
+     * sets the tuned values
+     * @param ar
+     */
+    public abstract void setEvolvableValues(double[] ar);
+
+    /**
+     * copies this evaluator object
+     * @return
+     */
+    public abstract T copy();
 }

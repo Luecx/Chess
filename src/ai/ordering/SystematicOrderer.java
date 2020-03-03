@@ -1,11 +1,12 @@
 package ai.ordering;
 
+import ai.tools.tables.HistoryTable;
 import board.Board;
 import board.moves.Move;
-import ai.tools.KillerTable;
+import ai.tools.tables.KillerTable;
 import ai.tools.PVLine;
-import ai.tools.TranspositionEntry;
-import ai.tools.TranspositionTable;
+import ai.tools.transpositions.TranspositionEntry;
+import ai.tools.transpositions.TranspositionTable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +21,7 @@ public class SystematicOrderer implements Orderer {
             Board board,
             boolean pvNode,
             KillerTable killerTable,
+            HistoryTable historyTable,
             TranspositionTable transpositionTable){
 
         int initSize = collection.size();

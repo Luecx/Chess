@@ -1,8 +1,12 @@
 package ai.evaluator.optimiser;
 
-import ai.evaluator.GeneticEvaluator;
-import ai.evaluator.AdvancedEvaluator;
+import ai.evaluator.AdvancedEndGameEvaluator;
+import ai.evaluator.AdvancedMidGameEvaluator;
+import ai.evaluator.Evaluator;
+import ai.evaluator.decider.BoardStateDecider;
+import ai.evaluator.decider.SimpleDecider;
 import ai.tools.threads.Pool;
+import ai.tools.threads.PoolFunction;
 import board.Board;
 import board.FastBoard;
 import io.IO;
@@ -24,7 +28,16 @@ public class SimpleTexelOptimiser {
 
     private Pool pool;
 
-    public void readFile(String file, Board template, int count){
+    /**
+     * reads the first count entries in the given file.
+     * If only specific states should be considered, a decider and a given state can be given.
+     * @param file
+     * @param template
+     * @param count
+     * @param decider
+     * @param state
+     */
+    public void readFile(String file, Board template, int count, BoardStateDecider decider, int state){
         try {
             BufferedReader bufferedReader = new BufferedReader(new FileReader(new File(file)));
 
@@ -44,6 +57,13 @@ public class SimpleTexelOptimiser {
                     break;
                 }
 
+
+                Board b = IO.read_FEN(template, fen);
+                if(decider != null && decider.getGameState(b) != state){
+                    continue;
+                }
+
+
                 fen_strings.add(IO.read_FEN(template,fen));
 
                 switch (res){
@@ -62,7 +82,7 @@ public class SimpleTexelOptimiser {
         }
     }
 
-    public void iterationGradient(GeneticEvaluator evaluator, double K, double eta) {
+    public void iterationGradient(Evaluator evaluator, double K, double eta) {
         double[] params = evaluator.getEvolvableValues();
 
         double drX = 0.1;   //value to compute gradients
@@ -125,40 +145,98 @@ public class SimpleTexelOptimiser {
         System.out.println();
     }
 
-    public double[] iterationLocally(GeneticEvaluator evaluator, double K){
+    public double[] iterationLocally(Evaluator evaluator, double K, int cores){
 
-        pool = new Pool(Pool.getAvailableProcessors());
+        this.pool = null;
+        Pool pool = new Pool(cores);
+        final double[] params               = evaluator.getEvolvableValues();
+        final int   nParams                 = params.length;
+        final int[] unchangedIterations     = new int[nParams];
+        final int[] recentChange            = new int[nParams];
+        final boolean[] improved = {true};
 
-        double[] params = evaluator.getEvolvableValues();
-        int nParams = params.length;
-        double bestE = error(evaluator, K);
-        boolean improved = true;
-        while ( improved ) {
-            improved = false;
-            for (int pi = 0; pi < nParams; pi++) {
-                System.out.print("\rparam: " + pi);
-                double[] newParams = Arrays.copyOf(params, params.length);
-                newParams[pi] += 1;
-                evaluator.setEvolvableValues(newParams);
-                double newE = error(evaluator, K);
-                if (newE < bestE) {
-                    bestE = newE;
-                    params = newParams;
-                    improved = true;
-                } else {
-                    newParams[pi] -= 2;
-                    evaluator.setEvolvableValues(newParams);
-                    newE =  error(evaluator, K);
-                    if (newE < bestE) {
-                        bestE = newE;
-                        params = newParams;
-                        improved = true;
-                    }
+        Evaluator[] evaluators = new Evaluator[cores];
+        for(int c = 0; c < cores; c++){
+            evaluators[c] = evaluator.copy();
+        }
+
+        while (improved[0]) {
+            improved[0] = false;
+            PoolFunction poolFunction = (index, core) -> {
+                boolean thisParamChanged = false;
+                Evaluator eval = evaluators[core];
+
+
+                if(unchangedIterations[index] < recentChange[index]){
+                    unchangedIterations[index] ++;
+                    return;
                 }
-            }
+
+
+
+                eval.setEvolvableValues(params);
+                double E0 = error(eval, K);
+
+                params[index] += 1;
+                eval.setEvolvableValues(params);
+                double EU = error(eval, K);
+
+                params[index] -= 2;
+                eval.setEvolvableValues(params);
+                double EL = error(eval, K);
+
+                params[index] ++;
+                double dEdP = (EU-EL)/2;
+                double sign = Math.signum(dEdP);
+
+                double dP = -sign * Math.min(5,Math.floor(Math.abs(dEdP) * 1E5));
+
+                if(dP == 0){
+                    thisParamChanged = false;
+                }else{
+                    params[index] += dP;
+                    thisParamChanged = true;
+                }
+
+                //System.out.println(index + "  " + dEdP + "  " + sign * Math.min(5,Math.floor(Math.abs(dEdP) * 1E5)));
+
+//                params[index] -= Math.min(5,Math.floor(dEdP * 100));
+//                System.out.println(Math.min(5,Math.floor(dEdP * 100)));
+
+//                eval.setEvolvableValues(params);
+//                double newE = error(eval, K);
+//                if (newE < E0) {
+//                    thisParamChanged = true;
+//                } else {
+//                    params[index] -= 2;
+//                    eval.setEvolvableValues(params);
+//                    newE =  error(eval, K);
+//                    if (newE < E0) {
+//                        thisParamChanged = true;
+//                    }else{
+//                        params[index] ++;
+//                    }
+//                }
+
+
+                if(thisParamChanged){
+                    improved[0] = true;
+                    unchangedIterations[index] = 0;
+                    recentChange       [index] = 0;
+                }else{
+                    unchangedIterations[index] = 0;
+                    recentChange       [index] ++;
+                }
+            };
+
+
+            pool.executeSequential(poolFunction, nParams, false);
+
             System.out.println();
-            System.out.println("bestE:"+bestE);
             System.out.println(Arrays.toString(params));
+
+            evaluator.setEvolvableValues(params);
+            System.out.println("bestE:" +error(evaluator,K));
         }
         pool.stop();
         return params;
@@ -175,8 +253,8 @@ public class SimpleTexelOptimiser {
      * @param eta           eta is the rate of change
      * @return
      */
-    public double computeK(GeneticEvaluator evaluator, double min_dEdK, double init_K, double eta) {
-        pool = new Pool(Pool.getAvailableProcessors());
+    public double computeK(Evaluator evaluator, double min_dEdK, double init_K, double eta, int cores) {
+        pool = new Pool(cores);
         double K = init_K;
         double dK = 0.01;
         double dEdK = 1;
@@ -190,7 +268,7 @@ public class SimpleTexelOptimiser {
         return K;
     }
 
-    public double error(GeneticEvaluator evaluator, double K){
+    public double error(Evaluator evaluator, double K){
 
         if(pool != null){
             final Double[] score = {0d};
@@ -198,28 +276,24 @@ public class SimpleTexelOptimiser {
             int tasks = fen_strings.size();
             int threads = pool.getAvailableThreads();
 
-            pool.execute(index -> {
-
+            pool.executeTotal((index, core) -> {
                 double pScore = 0;
                 double lower = (double) (tasks) / threads * index;
-                double upper = (double) (tasks) / threads * (index+1);
-
-                for(int i = (int)lower; i < (int)upper; i++){
-                    double qi = (int)evaluator.evaluate(fen_strings.get(i));
-                    double expected = results.get(i) == DRAW ? 0.5:
-                            results.get(i) == WHITE_WIN ? 1:0;
-                    double sig = sigmoid(qi, K);
-                    pScore += (expected-sig) * (expected-sig);
+                double upper = (double) (tasks) / threads * (index + 1);
+                for (int i = (int) lower; i < (int) upper; i++) {
+                    double qi = (int) evaluator.evaluate(fen_strings.get(i));
+                    double expected = results.get(i) == DRAW ? 0.5 :
+                            results.get(i) == WHITE_WIN ? 1 : 0;
+                    double sig = SimpleTexelOptimiser.this.sigmoid(qi, K);
+                    pScore += (expected - sig) * (expected - sig);
                 }
-
-                synchronized (score){
+                synchronized (score) {
                     score[0] += pScore;
                 }
-
-
             }, threads, false);
             return score[0] / tasks;
-        }else{
+        }else
+        {
             double total = 0;
             for(int i = 0; i < fen_strings.size(); i++){
                 double qi = (int)evaluator.evaluate(fen_strings.get(i));
@@ -247,14 +321,17 @@ public class SimpleTexelOptimiser {
 
     public static void main(String[] args) {
         SimpleTexelOptimiser tex = new SimpleTexelOptimiser();
-        tex.readFile("resources/quiet-labeled.epd", new FastBoard(), 60000000);
-        AdvancedEvaluator evaluator2 = new AdvancedEvaluator();
-        evaluator2.setEvolvableValues(new double[]{92.0, 103.0, 72.0, 111.0, 86.0, 4.0, 87.0, 519.0, 345.0, 326.0, 1108.0, 20024.0, 4.0, 4.0, -3.0, -1.0, 11.0, 34.0, -9.0, -19.0, 45.0, 6.0, 19.0, 15.0, 6.0, 9.0});
+        tex.readFile("resources/quiet-labeled.epd",
+                     new FastBoard(),
+                     1000000,
+                     new SimpleDecider(new AdvancedMidGameEvaluator(), new AdvancedEndGameEvaluator()),
+                     BoardStateDecider.MIDGAME);
 
-        double K = tex.computeK(evaluator2, 1E-5, 3.377732, 10);
+        AdvancedMidGameEvaluator evaluator2 = new AdvancedMidGameEvaluator();
+        evaluator2.setEvolvableValues(new double[]{156.0, 1050.0, 686.0, 729.0, 1527.0, 20095.0, 6.0, 11.0, 15.0, 17.0, -14.0, -11.0, -21.0, -29.0, -26.0, -61.0, -72.0, -48.0, 77.0, 67.0, -25.0, -68.0, 102.0, 28.0, 90.0, 50.0, 12.0, 26.0});
+        double K = tex.computeK(evaluator2, 1E-5, 2.079, 100,1);
 
-
-        double[] best = tex.iterationLocally(evaluator2, K);
+        tex.iterationLocally(evaluator2, K, 8);
 
 
     }

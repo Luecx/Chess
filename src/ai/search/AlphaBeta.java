@@ -5,8 +5,8 @@ import board.moves.Move;
 import ai.evaluator.Evaluator;
 import ai.ordering.Orderer;
 import ai.tools.PVLine;
-import ai.tools.TranspositionEntry;
-import ai.tools.TranspositionTable;
+import ai.tools.transpositions.TranspositionEntry;
+import ai.tools.transpositions.TranspositionTable;
 
 import java.util.*;
 
@@ -320,7 +320,7 @@ public class AlphaBeta implements AI {
             return val;
         }
 
-        orderer.sort(allMoves, currentDepth, lastIteration, _board,false,null, _transpositionTable);
+        orderer.sort(allMoves, currentDepth, lastIteration, _board,false,null,null, _transpositionTable);
         PVLine line = new PVLine(_depth - currentDepth);
 
         for (Move m : allMoves) {
@@ -378,7 +378,7 @@ public class AlphaBeta implements AI {
         if (alpha < stand_pat)
             alpha = stand_pat;
         List<Move> allMoves = _board.getCaptureMoves();
-        orderer.sort(allMoves, 0, null, _board, false,null, null);
+        orderer.sort(allMoves, 0, null, _board, false,null,null, null);
         for (Move m : allMoves) {
             _board.move(m);
             double score = -Quiesce(-beta, -alpha, depth_left - 1);

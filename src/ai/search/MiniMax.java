@@ -6,7 +6,7 @@ import board.moves.Move;
 import board.moves.MoveListBuffer;
 import board.setup.Setup;
 import ai.evaluator.Evaluator;
-import ai.tools.TranspositionTable;
+import ai.tools.transpositions.TranspositionTable;
 
 import java.util.List;
 
@@ -87,6 +87,20 @@ public class MiniMax implements AI {
             @Override
             public double evaluate(Board board) {
                 return 0;
+            }
+
+            @Override
+            public double[] getEvolvableValues() {
+                return new double[0];
+            }
+
+            @Override
+            public void setEvolvableValues(double[] ar) {
+            }
+
+            @Override
+            public Evaluator copy() {
+                return null;
             }
         }, 5);
         FastBoard board = new FastBoard(Setup.DEFAULT);

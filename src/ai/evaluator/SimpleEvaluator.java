@@ -23,4 +23,18 @@ public class SimpleEvaluator implements Evaluator {
         }
         return score;
     }
+
+    @Override
+    public double[] getEvolvableValues() {
+        return new double[0];
+    }
+
+    @Override
+    public void setEvolvableValues(double[] ar) {
+    }
+
+    @Override
+    public Evaluator copy() {
+        return null;
+    }
 }

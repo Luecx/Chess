@@ -1,5 +1,6 @@
 package ai.decider;
 
+import ai.evaluator.Evaluator;
 import board.Board;
 
 public interface BoardStateDecider {
@@ -14,6 +15,11 @@ public interface BoardStateDecider {
      * @param board
      * @return
      */
+
     int getGameState(Board board);
 
+    /**
+     * decides which evaluator should be used for this gamestate
+     */
+    Evaluator getEvaluator(Board board);
 }

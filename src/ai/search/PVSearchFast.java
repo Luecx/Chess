@@ -1,12 +1,13 @@
 package ai.search;
 
+import ai.tools.tables.KillerTable;
+import ai.tools.transpositions.TranspositionEntry;
+import ai.tools.transpositions.TranspositionTable;
 import board.Board;
 import board.FastBoard;
 import board.moves.Move;
 import board.moves.MoveListBuffer;
 import ai.evaluator.Evaluator;
-import ai.evaluator.LateGameEvaluator;
-import ai.evaluator.NoahEvaluator;
 import ai.ordering.Orderer;
 import ai.reducing.Reducer;
 import ai.tools.*;
@@ -382,22 +383,6 @@ public class PVSearchFast implements AI {
             throw new RuntimeException("Cannot limit non iterative deepening on time");
         }
 
-        //<editor-fold desc="engame check">
-        int totalMaterial = 0;
-        int v;
-        for (int i = 0; i < 8; i++) {
-            for (int n = 0; n < 8; n++) {
-                v = board.getPiece(i, n);
-                totalMaterial += NoahEvaluator.COMPLETE_EVALUATE_PRICE[v + 6];
-            }
-        }
-
-        if (totalMaterial < 43000) {
-            _board.setEndgame(true);
-        }else{
-            _board.setEndgame(false);
-        }
-        //</editor-fold>
 
         //<editor-fold desc="search overview">
         searchOverview = new SearchOverview(
@@ -654,7 +639,7 @@ public class PVSearchFast implements AI {
         }
         //</editor-fold>
         //<editor-fold desc="move-ordering">
-        orderer.sort(allMoves, currentDepth, lastIteration, _board, pv, _killerTable, _transpositionTable);
+        orderer.sort(allMoves, currentDepth, lastIteration, _board, pv, _killerTable, null,_transpositionTable);
         //</editor-fold>
         //<editor-fold desc="Searching">
         Move bestMove = allMoves.get(0);
@@ -750,10 +735,10 @@ public class PVSearchFast implements AI {
         if(legalMoveCounter == 0){
             if(_board.isInCheck(_board.getActivePlayer())){
                 if (currentDepth == 0) {
-                    _bestScore = -LateGameEvaluator.INFTY;
+                    _bestScore = -AdvancedSearch.MAX_CHECKMATE_VALUE;
                     _bestMove = null;
                 }
-                return -LateGameEvaluator.INFTY;
+                return -AdvancedSearch.MAX_CHECKMATE_VALUE;
             }else{
                 if (currentDepth == 0) {
                     _bestScore = 0;
@@ -816,7 +801,7 @@ public class PVSearchFast implements AI {
         if (alpha < stand_pat)
             alpha = stand_pat;
 
-        orderer.sort(allMoves, 0, null, _board, false, null, null);
+        orderer.sort(allMoves, 0, null, _board, false, null,null, null);
         int legalMoves = 0;         //count the amount of legal captures.
                                     // if its 0, we do a full research with all moves (most of them will be illegal as well)
         for (Move m : allMoves) {

@@ -1,5 +1,7 @@
 package io;
 
+import ai.evaluator.decider.SimpleDecider;
+import ai.evaluator.AdvancedEndGameEvaluator;
 import ai.evaluator.Evaluator;
 import ai.search.AdvancedSearch;
 import ai.time_manager.SimpleTimeManager;
@@ -9,10 +11,9 @@ import board.FastBoard;
 import board.moves.Move;
 import board.moves.MoveListBuffer;
 import board.setup.Setup;
-import ai.evaluator.AdvancedEvaluator;
+import ai.evaluator.AdvancedMidGameEvaluator;
 import ai.ordering.SystematicOrderer2;
 import ai.reducing.SenpaiReducer;
-import ai.search.PVSearchFast;
 import io.command_line.commands.Command;
 import io.command_line.commands.CommandDataBase;
 import io.command_line.commands.arguments.BooleanArgument;
@@ -32,9 +33,9 @@ public class UCI {
     private static Board b = new FastBoard(Setup.DEFAULT);
 
     private static TimeManager timeManager = new SimpleTimeManager();
-    private static Evaluator evaluator = new AdvancedEvaluator();          //define the evaluator
+    private static Evaluator evaluator = new AdvancedMidGameEvaluator();          //define the evaluator
     private static AdvancedSearch ai = new AdvancedSearch(              //define the search algorithm
-                                                                        evaluator,
+                                                                        new SimpleDecider(new AdvancedMidGameEvaluator(), new AdvancedEndGameEvaluator()),
                                                                         new SystematicOrderer2(),
                                                                         new SenpaiReducer(1),
                                                                         AdvancedSearch.FLAG_TIME_LIMIT,
@@ -218,7 +219,7 @@ public class UCI {
         toReturn = toReturn + Integer.toString(toy+1);
 
         if(move.isPromotion()){
-            toReturn += "00rkbq".toCharArray()[Math.abs(move.getPieceFrom())];
+            toReturn += "00rnbq".toCharArray()[Math.abs(move.getPieceFrom())];
         }
 
         return toReturn;
