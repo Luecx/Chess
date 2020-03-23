@@ -1,6 +1,6 @@
 package ai.search;
 
-import ai.evaluator.decider.BoardStateDecider;
+import ai.evaluator.decider.BoardPhaseDecider;
 import ai.evaluator.decider.SimpleDecider;
 import ai.evaluator.AdvancedEndGameEvaluator;
 import ai.evaluator.Evaluator;
@@ -19,7 +19,6 @@ import board.moves.Move;
 import board.moves.MoveListBuffer;
 import board.setup.Setup;
 import visual.game.Player;
-import io.IO;
 import io.UCI;
 import visual.Frame;
 
@@ -34,7 +33,7 @@ public class AdvancedSearch implements AI {
     public static final int                             FLAG_TIME_LIMIT         = 1;
     public static final int                             FLAG_DEPTH_LIMIT        = 2;
 
-    protected BoardStateDecider                         boardStateDecider;
+    protected BoardPhaseDecider boardPhaseDecider;
     protected Orderer                                   orderer;
     protected Reducer                                   reducer;
 
@@ -70,8 +69,8 @@ public class AdvancedSearch implements AI {
     private int                                         _nodes;
     private int                                         _selDepth;
 
-    public AdvancedSearch(BoardStateDecider boardStateDecider, Orderer orderer, Reducer reducer, int limit_flag, int limit) {
-        this.boardStateDecider = boardStateDecider;
+    public AdvancedSearch(BoardPhaseDecider boardPhaseDecider, Orderer orderer, Reducer reducer, int limit_flag, int limit) {
+        this.boardPhaseDecider = boardPhaseDecider;
         this.orderer = orderer;
         this.reducer = reducer;
         this._buffer = new MoveListBuffer(MAXIMUM_STORE_DEPTH, 128);
@@ -324,21 +323,21 @@ public class AdvancedSearch implements AI {
     }
 
     /**
-     * getter for the boardStateDecider that is used to evaluate the
+     * getter for the boardPhaseDecider that is used to evaluate the
      * board position at leaf-nodes
      * @return  the evaluator
      */
-    public BoardStateDecider getBoardStateDecider() {
-        return boardStateDecider;
+    public BoardPhaseDecider getBoardPhaseDecider() {
+        return boardPhaseDecider;
     }
 
     /**
-     * setter for the boardStateDecider that is used to evaluate the
+     * setter for the boardPhaseDecider that is used to evaluate the
      * board position at leaf-nodes
-     * @param boardStateDecider the new evaluator
+     * @param boardPhaseDecider the new evaluator
      */
-    public void setBoardStateDecider(BoardStateDecider boardStateDecider) {
-        this.boardStateDecider = boardStateDecider;
+    public void setBoardPhaseDecider(BoardPhaseDecider boardPhaseDecider) {
+        this.boardPhaseDecider = boardPhaseDecider;
     }
 
     /**
@@ -657,7 +656,7 @@ public class AdvancedSearch implements AI {
         this._board             = board;
         this._killerTable       = use_killer_heuristic  ? new KillerTable(MAXIMUM_STORE_DEPTH, killer_count)    :null;
         this._historyTable      = use_history_heuristic ? new HistoryTable()                                    :null;
-        this._evaluator         = boardStateDecider.getEvaluator(board);
+        this._evaluator         = boardPhaseDecider.getEvaluator(board);
         if(this._transpositionTable == null)    this._transpositionTable = new TranspositionTable<>();
         else                                    this._transpositionTable.clear();
 

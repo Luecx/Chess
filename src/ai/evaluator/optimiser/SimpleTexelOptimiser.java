@@ -3,7 +3,7 @@ package ai.evaluator.optimiser;
 import ai.evaluator.AdvancedEndGameEvaluator;
 import ai.evaluator.AdvancedMidGameEvaluator;
 import ai.evaluator.Evaluator;
-import ai.evaluator.decider.BoardStateDecider;
+import ai.evaluator.decider.BoardPhaseDecider;
 import ai.evaluator.decider.SimpleDecider;
 import ai.tools.threads.Pool;
 import ai.tools.threads.PoolFunction;
@@ -37,7 +37,7 @@ public class SimpleTexelOptimiser {
      * @param decider
      * @param state
      */
-    public void readFile(String file, Board template, int count, BoardStateDecider decider, int state){
+    public void readFile(String file, Board template, int count, BoardPhaseDecider decider, int state){
         try {
             BufferedReader bufferedReader = new BufferedReader(new FileReader(new File(file)));
 
@@ -325,7 +325,7 @@ public class SimpleTexelOptimiser {
                      new FastBoard(),
                      1000000,
                      new SimpleDecider(new AdvancedMidGameEvaluator(), new AdvancedEndGameEvaluator()),
-                     BoardStateDecider.MIDGAME);
+                     BoardPhaseDecider.MIDGAME);
 
         AdvancedMidGameEvaluator evaluator2 = new AdvancedMidGameEvaluator();
         evaluator2.setEvolvableValues(new double[]{156.0, 1050.0, 686.0, 729.0, 1527.0, 20095.0, 6.0, 11.0, 15.0, 17.0, -14.0, -11.0, -21.0, -29.0, -26.0, -61.0, -72.0, -48.0, 77.0, 67.0, -25.0, -68.0, 102.0, 28.0, 90.0, 50.0, 12.0, 26.0});

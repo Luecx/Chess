@@ -4,38 +4,34 @@ import ai.evaluator.Evaluator;
 import ai.evaluator.LateGameEvaluator;
 import ai.evaluator.MidGameEvaluator;
 import board.Board;
+import board.FastBoard;
 
-public class SimpleDecider implements BoardStateDecider{
+public class SimpleDecider implements BoardPhaseDecider {
 
-    private MidGameEvaluator midGameEvaluator;
-    private LateGameEvaluator lateGameEvaluator;
-
-    public SimpleDecider(MidGameEvaluator midGameEvaluator, LateGameEvaluator lateGameEvaluator) {
-        this.midGameEvaluator = midGameEvaluator;
-        this.lateGameEvaluator = lateGameEvaluator;
-    }
-
-    @Override
-    public int getGameState(Board board) {
-        int wP = 0,bP = 0;
-        int[] p = new int[]{1,5,3,3,9,0};
-        for(int i = 0; i < 64; i++){
-            if(board.getPiece(i) > 0){
-                wP += p[board.getPiece(i)-1];
-            }else if(board.getPiece(i) < 0){
-                bP += p[-board.getPiece(i)-1];
-            }
-        }
-        if(wP <= 13 && bP <= 13){
-            return BoardStateDecider.ENDGAME;
-        }
-
-        return BoardStateDecider.MIDGAME;
-    }
+    static final double PawnPhase = 0;
+    static final double KnightPhase = 1;
+    static final double BishopPhase = 1;
+    static final double RookPhase = 2;
+    static final double QueenPhase = 4;
+    static final double TotalPhase = PawnPhase*16 + KnightPhase*4 + BishopPhase*4 + RookPhase*4 + QueenPhase*2;
 
     @Override
-    public Evaluator getEvaluator(Board board) {
-        if(getGameState(board) == BoardStateDecider.ENDGAME) return lateGameEvaluator;
-        return midGameEvaluator;
+    public double getGamePhase(Board board) {
+
+        if(!(board instanceof FastBoard)) throw new RuntimeException();
+
+        double phase = TotalPhase;
+
+        phase -= (((FastBoard) board).getWhite_pieces()[0].size() + ((FastBoard) board).getBlack_pieces()[0].size()) * PawnPhase;
+        phase -= (((FastBoard) board).getWhite_pieces()[1].size() + ((FastBoard) board).getBlack_pieces()[1].size()) * RookPhase;
+        phase -= (((FastBoard) board).getWhite_pieces()[2].size() + ((FastBoard) board).getBlack_pieces()[2].size()) * KnightPhase;
+        phase -= (((FastBoard) board).getWhite_pieces()[3].size() + ((FastBoard) board).getBlack_pieces()[3].size()) * BishopPhase;
+        phase -= (((FastBoard) board).getWhite_pieces()[4].size() + ((FastBoard) board).getBlack_pieces()[4].size()) * QueenPhase;
+
+
+        phase = (phase * 256 + (TotalPhase / 2)) / TotalPhase;
+        return phase;
     }
+
+
 }
