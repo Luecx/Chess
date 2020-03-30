@@ -1,5 +1,8 @@
 package io;
 
+import ai.evaluator.AdvancedEvaluator;
+import ai.evaluator.Evaluator;
+import ai.evaluator.decider.SimpleDecider;
 import board.Board;
 import board.FastBoard;
 import board.moves.Move;
@@ -7,9 +10,13 @@ import board.moves.MoveListBuffer;
 import ai.search.AI;
 import ai.search.PVSearchFast;
 import ai.tools.SearchOverview;
+import board.setup.Setup;
+import visual.Frame;
+import visual.game.Player;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class Testing {
 
@@ -261,12 +268,12 @@ public class Testing {
 
     public static void main(String[] args) {
 
-        System.out.println(perft_pseudo(
-                IO.read_FEN(new FastBoard(), "p3p3/p3p3/p1K1p3/p3p3/P3P3/P1k1P3/P3P3/P3P3 w - - 0 1"),
-                13,new MoveListBuffer(100,10),true));
+        FastBoard fb = new FastBoard(Setup.DEFAULT);
+        Evaluator ev = new AdvancedEvaluator(new SimpleDecider());
 
+        Frame f = new Frame(new FastBoard(Setup.DEFAULT), new Player() {}, new Player() {});
 
-        perft_validation(new FastBoard());
+        f.getGamePanel().getGame().addBoardChangedListener(move -> ((AdvancedEvaluator) ev).printEvaluation(f.getGamePanel().getGame().getBoard()));
 
     }
 

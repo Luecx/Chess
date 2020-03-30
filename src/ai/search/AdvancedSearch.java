@@ -1,5 +1,6 @@
 package ai.search;
 
+import ai.evaluator.AdvancedEvaluator;
 import ai.evaluator.decider.BoardPhaseDecider;
 import ai.evaluator.decider.SimpleDecider;
 import ai.evaluator.AdvancedEndGameEvaluator;
@@ -33,7 +34,7 @@ public class AdvancedSearch implements AI {
     public static final int                             FLAG_TIME_LIMIT         = 1;
     public static final int                             FLAG_DEPTH_LIMIT        = 2;
 
-    protected BoardPhaseDecider boardPhaseDecider;
+    protected Evaluator                                 evaluator;
     protected Orderer                                   orderer;
     protected Reducer                                   reducer;
 
@@ -58,7 +59,6 @@ public class AdvancedSearch implements AI {
 
 
 
-    private Evaluator                                   _evaluator;
     private KillerTable                                 _killerTable;
     private HistoryTable                                _historyTable;
     private TranspositionTable<TranspositionEntry>      _transpositionTable;
@@ -69,8 +69,8 @@ public class AdvancedSearch implements AI {
     private int                                         _nodes;
     private int                                         _selDepth;
 
-    public AdvancedSearch(BoardPhaseDecider boardPhaseDecider, Orderer orderer, Reducer reducer, int limit_flag, int limit) {
-        this.boardPhaseDecider = boardPhaseDecider;
+    public AdvancedSearch(Evaluator evaluator, Orderer orderer, Reducer reducer, int limit_flag, int limit) {
+        this.evaluator = evaluator;
         this.orderer = orderer;
         this.reducer = reducer;
         this._buffer = new MoveListBuffer(MAXIMUM_STORE_DEPTH, 128);
@@ -323,21 +323,19 @@ public class AdvancedSearch implements AI {
     }
 
     /**
-     * getter for the boardPhaseDecider that is used to evaluate the
-     * board position at leaf-nodes
-     * @return  the evaluator
+     * returns the evaluator object for this search
+     * @return
      */
-    public BoardPhaseDecider getBoardPhaseDecider() {
-        return boardPhaseDecider;
+    public Evaluator getEvaluator() {
+        return evaluator;
     }
 
     /**
-     * setter for the boardPhaseDecider that is used to evaluate the
-     * board position at leaf-nodes
-     * @param boardPhaseDecider the new evaluator
+     * sets the evaluator for this search
+     * @param evaluator
      */
-    public void setBoardPhaseDecider(BoardPhaseDecider boardPhaseDecider) {
-        this.boardPhaseDecider = boardPhaseDecider;
+    public void setEvaluator(Evaluator evaluator) {
+        this.evaluator = evaluator;
     }
 
     /**
@@ -463,7 +461,7 @@ public class AdvancedSearch implements AI {
                 !pv &&
                 !_board.isInCheck(_board.getActivePlayer()) &&
                 depthLeft <= 2 &&
-                (_evaluator.evaluate(_board) * _board.getActivePlayer()) <= alpha - razor_offset) {
+                (evaluator.evaluate(_board) * _board.getActivePlayer()) <= alpha - razor_offset) {
 
                 if (depthLeft == 1) {
                     return qSearch(alpha, beta, currentDepth);
@@ -492,7 +490,7 @@ public class AdvancedSearch implements AI {
 
         List<Move> allMoves = _board.getPseudoLegalMoves(_buffer.get(currentDepth));
         if(allMoves.size() == 0){
-            return _evaluator.evaluate(_board) * _board.getActivePlayer();
+            return evaluator.evaluate(_board) * _board.getActivePlayer();
         }
         orderer.sort(allMoves, currentDepth, null, _board, pv, _killerTable,_historyTable, _transpositionTable);
 
@@ -570,7 +568,7 @@ public class AdvancedSearch implements AI {
             return 0;
         }
 
-        double stand_pat = _evaluator.evaluate(_board) * _board.getActivePlayer();
+        double stand_pat = evaluator.evaluate(_board) * _board.getActivePlayer();
         if(!use_qSearch){
             return stand_pat;
         }
@@ -656,7 +654,7 @@ public class AdvancedSearch implements AI {
         this._board             = board;
         this._killerTable       = use_killer_heuristic  ? new KillerTable(MAXIMUM_STORE_DEPTH, killer_count)    :null;
         this._historyTable      = use_history_heuristic ? new HistoryTable()                                    :null;
-        this._evaluator         = boardPhaseDecider.getEvaluator(board);
+
         if(this._transpositionTable == null)    this._transpositionTable = new TranspositionTable<>();
         else                                    this._transpositionTable.clear();
 
@@ -793,9 +791,7 @@ public class AdvancedSearch implements AI {
 
         //fb = IO.read_FEN(fb, "8/2R3N1/7k/8/5b1K/6p1/6p1/8 w - - 0 1");
         AdvancedSearch advancedSearch = new AdvancedSearch(
-                new SimpleDecider(
-                    new AdvancedMidGameEvaluator(),
-                    new AdvancedEndGameEvaluator()),
+                new AdvancedEvaluator(new SimpleDecider()),
                 new SystematicOrderer2(),
                 new SenpaiReducer(1), 1, 1000);
 

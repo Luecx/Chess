@@ -29,7 +29,7 @@ public class SimpleDecider implements BoardPhaseDecider {
         phase -= (((FastBoard) board).getWhite_pieces()[4].size() + ((FastBoard) board).getBlack_pieces()[4].size()) * QueenPhase;
 
 
-        phase = (phase * 256 + (TotalPhase / 2)) / TotalPhase;
+        phase = (phase * 256 + (TotalPhase / 2)) / (TotalPhase * 256d);
         return phase;
     }
 

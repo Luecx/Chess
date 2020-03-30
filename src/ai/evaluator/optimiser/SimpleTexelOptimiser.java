@@ -1,6 +1,7 @@
 package ai.evaluator.optimiser;
 
 import ai.evaluator.AdvancedEndGameEvaluator;
+import ai.evaluator.AdvancedEvaluator;
 import ai.evaluator.AdvancedMidGameEvaluator;
 import ai.evaluator.Evaluator;
 import ai.evaluator.decider.BoardPhaseDecider;
@@ -30,14 +31,11 @@ public class SimpleTexelOptimiser {
 
     /**
      * reads the first count entries in the given file.
-     * If only specific states should be considered, a decider and a given state can be given.
      * @param file
      * @param template
      * @param count
-     * @param decider
-     * @param state
      */
-    public void readFile(String file, Board template, int count, BoardPhaseDecider decider, int state){
+    public void readFile(String file, Board template, int count){
         try {
             BufferedReader bufferedReader = new BufferedReader(new FileReader(new File(file)));
 
@@ -51,18 +49,12 @@ public class SimpleTexelOptimiser {
 
                 //System.out.println(fen +  "     "  +res);
 
-                index++;
 
                 if(index == count){
                     break;
                 }
 
-
-                Board b = IO.read_FEN(template, fen);
-                if(decider != null && decider.getGameState(b) != state){
-                    continue;
-                }
-
+                index++;
 
                 fen_strings.add(IO.read_FEN(template,fen));
 
@@ -172,8 +164,6 @@ public class SimpleTexelOptimiser {
                     return;
                 }
 
-
-
                 eval.setEvolvableValues(params);
                 double E0 = error(eval, K);
 
@@ -230,7 +220,7 @@ public class SimpleTexelOptimiser {
             };
 
 
-            pool.executeSequential(poolFunction, nParams, false);
+            pool.executeSequential(poolFunction, nParams, true);
 
             System.out.println();
             System.out.println(Arrays.toString(params));
@@ -323,15 +313,19 @@ public class SimpleTexelOptimiser {
         SimpleTexelOptimiser tex = new SimpleTexelOptimiser();
         tex.readFile("resources/quiet-labeled.epd",
                      new FastBoard(),
-                     1000000,
-                     new SimpleDecider(new AdvancedMidGameEvaluator(), new AdvancedEndGameEvaluator()),
-                     BoardPhaseDecider.MIDGAME);
+                     1000000);
 
-        AdvancedMidGameEvaluator evaluator2 = new AdvancedMidGameEvaluator();
-        evaluator2.setEvolvableValues(new double[]{156.0, 1050.0, 686.0, 729.0, 1527.0, 20095.0, 6.0, 11.0, 15.0, 17.0, -14.0, -11.0, -21.0, -29.0, -26.0, -61.0, -72.0, -48.0, 77.0, 67.0, -25.0, -68.0, 102.0, 28.0, 90.0, 50.0, 12.0, 26.0});
-        double K = tex.computeK(evaluator2, 1E-5, 2.079, 100,1);
+        AdvancedEvaluator evaluator2 = new AdvancedEvaluator(new SimpleDecider());
+//        evaluator2.setEvolvableValues(new double[]{
+//                70.0, 99.0, 78.0, 97.0, 66.0, 81.0, 196.0, 901.0, 620.0, 623.0, 1323.0, 19956.0, 56.0, -2.0,
+//                5.0, 47.0, -38.0, -14.0, -17.0, -82.0, -43.0, -41.0, -33.0, -34.0, 35.0, 103.0, -12.0, -63.0,
+//                125.0, 23.0, 73.0, 46.0, -5.0, -8.0, 112.0, 91.0, 78.0, 73.0, 66.0, 60.0, 233.0, 1041.0,
+//                703.0, 735.0, 1445.0, 20084.0, 64.0, -1.0, 4.0, 62.0, -38.0, -11.0, 0.0, -69.0, -54.0, -67.0,
+//                -79.0, -86.0, 60.0, 121.0, -13.0, -91.0, 140.0, 30.0, 70.0, 61.0, -14.0, -8.0
+//        });
+        double K = tex.computeK(evaluator2, 1E-5, 1.339017, 10,1);
 
-        tex.iterationLocally(evaluator2, K, 8);
+        tex.iterationLocally(evaluator2, K, 6);
 
 
     }

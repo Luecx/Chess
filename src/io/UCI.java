@@ -1,5 +1,6 @@
 package io;
 
+import ai.evaluator.AdvancedEvaluator;
 import ai.evaluator.decider.SimpleDecider;
 import ai.evaluator.AdvancedEndGameEvaluator;
 import ai.evaluator.Evaluator;
@@ -33,13 +34,12 @@ public class UCI {
     private static Board b = new FastBoard(Setup.DEFAULT);
 
     private static TimeManager timeManager = new SimpleTimeManager();
-    private static Evaluator evaluator = new AdvancedMidGameEvaluator();          //define the evaluator
-    private static AdvancedSearch ai = new AdvancedSearch(              //define the search algorithm
-                                                                        new SimpleDecider(new AdvancedMidGameEvaluator(), new AdvancedEndGameEvaluator()),
-                                                                        new SystematicOrderer2(),
-                                                                        new SenpaiReducer(1),
-                                                                        AdvancedSearch.FLAG_TIME_LIMIT,
-                                                                        1000);
+    private static AdvancedSearch ai = new AdvancedSearch(
+            new AdvancedEvaluator(new SimpleDecider()),
+            new SystematicOrderer2(),
+            new SenpaiReducer(1),
+            AdvancedSearch.FLAG_TIME_LIMIT,
+            1000);
 
 
     private static CommandDataBase cdb = new CommandDataBase();
@@ -47,6 +47,16 @@ public class UCI {
     public static void      uciCommunication() {
 
         System.out.println("starting engine...");
+
+        ai.getEvaluator().setEvolvableValues(new double[]{
+                100.0, 100.0, 100.0, 100.0, 98.0, 100.0, 219.0, 970.0, 673.0, 690.0,
+                1371.0, 20039.0, 17.0, 18.0, 20.0, 15.0, -31.0, -16.0, -8.0, -46.0,
+                -43.0, -46.0, -42.0, -44.0, 57.0, 86.0, -28.0, -69.0, 111.0, 22.0,
+                58.0, 49.0, 4.0, 11.0, 101.0, 100.0, 101.0, 101.0, 99.0, 100.0, 219.0,
+                970.0, 668.0, 685.0, 1370.0, 20038.0, 15.0, 3.0, 5.0, 60.0, 0.0, 10.0,
+                -5.0, -32.0, -30.0, -41.0, -42.0, -45.0, 56.0, 86.0, -15.0, -66.0,
+                118.0, 21.0, 60.0, 48.0, 2.0, 9.0
+        });
 
         cdb.registerCommand(
                 new Command("setoption", "sets some options of the engine")
