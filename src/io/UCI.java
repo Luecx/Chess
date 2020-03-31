@@ -1,9 +1,7 @@
 package io;
 
-import ai.evaluator.AdvancedEvaluator;
+import ai.evaluator.*;
 import ai.evaluator.decider.SimpleDecider;
-import ai.evaluator.AdvancedEndGameEvaluator;
-import ai.evaluator.Evaluator;
 import ai.search.AdvancedSearch;
 import ai.time_manager.SimpleTimeManager;
 import ai.time_manager.TimeManager;
@@ -12,7 +10,6 @@ import board.FastBoard;
 import board.moves.Move;
 import board.moves.MoveListBuffer;
 import board.setup.Setup;
-import ai.evaluator.AdvancedMidGameEvaluator;
 import ai.ordering.SystematicOrderer2;
 import ai.reducing.SenpaiReducer;
 import io.command_line.commands.Command;
@@ -35,7 +32,8 @@ public class UCI {
 
     private static TimeManager timeManager = new SimpleTimeManager();
     private static AdvancedSearch ai = new AdvancedSearch(
-            new AdvancedEvaluator(new SimpleDecider()),
+            //new AdvancedEvaluator(new SimpleDecider()),
+            new SimpleEvaluator(),
             new SystematicOrderer2(),
             new SenpaiReducer(1),
             AdvancedSearch.FLAG_TIME_LIMIT,
