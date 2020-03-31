@@ -7,6 +7,7 @@ import ai.tools.tensor.Tensor1D;
 import board.pieces.PieceList;
 import io.IO;
 
+@Deprecated
 public class AdvancedMidGameEvaluator implements MidGameEvaluator, LateGameEvaluator {
 
     public static final Tensor1D PAWN_VALUES_WHITE = (Tensor1D) flipTensor(new Tensor1D(new double[]{

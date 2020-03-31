@@ -10,6 +10,7 @@ import ai.tools.transpositions.TranspositionTable;
 
 import java.util.*;
 
+@Deprecated
 public class AlphaBeta implements AI {
 
     private Evaluator evaluator;

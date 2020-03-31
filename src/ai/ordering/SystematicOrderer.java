@@ -11,6 +11,7 @@ import ai.tools.transpositions.TranspositionTable;
 import java.util.ArrayList;
 import java.util.List;
 
+@Deprecated
 public class SystematicOrderer implements Orderer {
 
     @Override

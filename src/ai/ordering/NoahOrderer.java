@@ -11,6 +11,7 @@ import ai.tools.transpositions.TranspositionTable;
 
 import java.util.List;
 
+@Deprecated
 public class NoahOrderer implements Orderer {
 
 

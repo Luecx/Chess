@@ -3,6 +3,7 @@ package ai.reducing;
 import board.Board;
 import board.moves.Move;
 
+@Deprecated
 public class SimpleReducer implements Reducer{
 
     private int late_move_reduction;

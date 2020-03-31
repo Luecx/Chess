@@ -10,6 +10,7 @@ import ai.tools.transpositions.TranspositionTable;
 
 import java.util.List;
 
+@Deprecated
 public class MiniMax implements AI {
 
     private Evaluator evaluator;

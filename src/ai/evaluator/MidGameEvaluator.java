@@ -8,6 +8,7 @@ import board.Board;
  * take up most of the calculation time.
  *
  */
+@Deprecated
 public interface MidGameEvaluator<T extends MidGameEvaluator<T>> extends Evaluator<T>{
 
 }

@@ -7,6 +7,7 @@ import board.bitboards.BitBoard;
 import board.pieces.PieceList;
 import io.IO;
 
+@Deprecated
 public class AdvancedEndGameEvaluator implements LateGameEvaluator {
 
     public static final Tensor1D PAWN_VALUES_WHITE = (Tensor1D) flipTensor(new Tensor1D(new double[]{

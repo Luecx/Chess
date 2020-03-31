@@ -4,6 +4,7 @@ import ai.tools.tensor.Tensor2D;
 import ai.tools.tensor.Tensor3D;
 import board.Board;
 
+@Deprecated
 public class SimpleEvaluator implements Evaluator {
 
     public static final Tensor2D B_PAWN_VALUES = new Tensor2D(new double[][]{
@@ -141,7 +142,7 @@ public class SimpleEvaluator implements Evaluator {
                 //}
             }
         }
-        return score;
+        return score * 100;
     }
 
     @Override

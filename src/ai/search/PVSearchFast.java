@@ -17,6 +17,7 @@ import visual.Frame;
 
 import java.util.List;
 
+@Deprecated
 public class PVSearchFast implements AI {
 
 
