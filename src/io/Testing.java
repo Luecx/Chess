@@ -273,7 +273,7 @@ public class Testing {
 
         Frame f = new Frame(new FastBoard(Setup.DEFAULT), new Player() {}, new Player() {});
 
-        f.getGamePanel().getGame().addBoardChangedListener(move -> ((AdvancedEvaluator) ev).printEvaluation(f.getGamePanel().getGame().getBoard()));
+        //f.getGamePanel().getGame().addBoardChangedListener(move -> ((AdvancedEvaluator) ev).printEvaluation(f.getGamePanel().getGame().getBoard()));
 
     }
 

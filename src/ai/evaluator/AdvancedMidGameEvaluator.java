@@ -441,12 +441,12 @@ public class AdvancedMidGameEvaluator implements MidGameEvaluator, LateGameEvalu
         
     }
 
-    @Override
-    public AdvancedMidGameEvaluator copy() {
-        AdvancedMidGameEvaluator evaluator = new AdvancedMidGameEvaluator();
-        evaluator.setEvolvableValues(this.getEvolvableValues());
-        return evaluator;
-    }
+        @Override
+        public AdvancedMidGameEvaluator copy() {
+            AdvancedMidGameEvaluator evaluator = new AdvancedMidGameEvaluator();
+            evaluator.setEvolvableValues(this.getEvolvableValues());
+            return evaluator;
+        }
 
     public static void main(String[] args) {
         AdvancedMidGameEvaluator eval = new AdvancedMidGameEvaluator();
