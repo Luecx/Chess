@@ -1,0 +1,91 @@
+    //<editor-fold desc="EARLY PARAMS">
+    private double PARAMETER_PAWN_TABLE_FACTOR_EARLY = 115.0;
+    private double PARAMETER_ROOK_TABLE_FACTOR_EARLY = 414.0;
+    private double PARAMETER_KNIGHT_TABLE_FACTOR_EARLY = -46.0;
+    private double PARAMETER_BISHOP_TABLE_FACTOR_EARLY = 207.0;
+    private double PARAMETER_QUEEN_TABLE_FACTOR_EARLY = -186.0;
+    private double PARAMETER_KING_TABLE_FACTOR_EARLY = 319.0;
+
+    private double PARAMETER_PAWN_VALUE_EARLY = 100;
+    private double PARAMETER_ROOK_VALUE_EARLY = 500;
+    private double PARAMETER_KNIGHT_VALUE_EARLY = 315;
+    private double PARAMETER_BISHOP_VALUE_EARLY = 341;
+    private double PARAMETER_QUEEN_VALUE_EARLY = 920;
+    private double PARAMETER_KING_VALUE_EARLY = 20000;
+
+    //add for every attacked field
+    private double PARAMETER_ROOK_VISIBILITY_EARLY = 1.0;
+    private double PARAMETER_BISHOP_VISIBILITY_EARLY = 20.0;
+    private double PARAMETER_KNIGHT_VISIBILITY_EARLY = 50.0;
+    private double PARAMETER_QUEEN_VISIBILITY_EARLY = 8.0;
+
+    //add for every attacked field which is covered by opponent pawns
+    private double PARAMETER_ROOK_VISIBILITY_PAWN_COVER_EARLY = -35.0;
+    private double PARAMETER_BISHOP_VISIBILITY_PAWN_COVER_EARLY = -25.0;
+    private double PARAMETER_KNIGHT_VISIBILITY_PAWN_COVER_EARLY = -29.0;
+    private double PARAMETER_QUEEN_VISIBILITY_PAWN_COVER_EARLY = -30.0;
+
+    //add if the amount of attacks to uncovered squares is 0
+    private double PARAMETER_ROOK_TRAPPED_EARLY = -38;
+    private double PARAMETER_BISHOP_TRAPPED_EARLY = -42;
+    private double PARAMETER_KNIGHT_TRAPPED_EARLY = -41;
+    private double PARAMETER_QUEEN_TRAPPED_EARLY = -39.0;
+
+    private double PARAMETER_ROOK_KING_LINE_EARLY = -6.0;
+
+    private double PARAMETER_PASSED_PAWN_EARLY = -2.0;
+    private double PARAMETER_ISOLATED_PAWN_EARLY = -40.0;
+    private double PARAMETER_DOUBLED_PAWN_EARLY = 11.0;
+    private double PARAMETER_DOUBLE_BISHOP_EARLY = 240.0;
+    private double PARAMETER_KING_SAFETY_1_EARLY = 50.0;         //for friendly pieces
+    private double PARAMETER_KING_SAFETY_2_EARLY = -195.0;        //for hostile pieces next to the king
+    private double PARAMETER_ROOK_HALF_OPEN_EARLY = 57.0;
+    private double PARAMETER_ROOK_OPEN_EARLY = 135.0;
+    private double PARAMETER_CONNECTED_PAWN_EARLY = 18;
+    //</editor-fold>
+
+    //<editor-fold desc="LATE_PARAMS">
+    private double PARAMETER_PAWN_TABLE_FACTOR_LATE = 468.0;
+    private double PARAMETER_ROOK_TABLE_FACTOR_LATE = 54.0;
+    private double PARAMETER_KNIGHT_TABLE_FACTOR_LATE = -225.0;
+    private double PARAMETER_BISHOP_TABLE_FACTOR_LATE = -280.0;
+    private double PARAMETER_QUEEN_TABLE_FACTOR_LATE = -272.0;
+    private double PARAMETER_KING_TABLE_FACTOR_LATE = -89.0;
+
+    private double PARAMETER_PAWN_VALUE_LATE = 100;
+    private double PARAMETER_ROOK_VALUE_LATE = 500;
+    private double PARAMETER_KNIGHT_VALUE_LATE = 315;
+    private double PARAMETER_BISHOP_VALUE_LATE = 341;
+    private double PARAMETER_QUEEN_VALUE_LATE = 1000;
+    private double PARAMETER_KING_VALUE_LATE = 20000;
+
+    //add for every attacked field
+    private double PARAMETER_ROOK_VISIBILITY_LATE = 64.0;
+    private double PARAMETER_BISHOP_VISIBILITY_LATE = 43.0;
+    private double PARAMETER_KNIGHT_VISIBILITY_LATE = 51.0;
+    private double PARAMETER_QUEEN_VISIBILITY_LATE = 75.0;
+
+    //add for every attacked field which is covered by opponent pawns
+    private double PARAMETER_ROOK_VISIBILITY_PAWN_COVER_LATE = -2.0;
+    private double PARAMETER_BISHOP_VISIBILITY_PAWN_COVER_LATE = 4.0;
+    private double PARAMETER_KNIGHT_VISIBILITY_PAWN_COVER_LATE = -10;
+    private double PARAMETER_QUEEN_VISIBILITY_PAWN_COVER_LATE = 16;
+
+    //add if the amount of attacks to uncovered squares is 0
+    private double PARAMETER_ROOK_TRAPPED_LATE = -80;
+    private double PARAMETER_BISHOP_TRAPPED_LATE = -88;
+    private double PARAMETER_KNIGHT_TRAPPED_LATE = -88;
+    private double PARAMETER_QUEEN_TRAPPED_LATE = -88;
+
+    private double PARAMETER_ROOK_KING_LINE_LATE = 150;
+
+    private double PARAMETER_PASSED_PAWN_LATE = 220.0;
+    private double PARAMETER_ISOLATED_PAWN_LATE = 2;
+    private double PARAMETER_DOUBLED_PAWN_LATE =  -7;
+    private double PARAMETER_DOUBLE_BISHOP_LATE = 104;
+    private double PARAMETER_KING_SAFETY_1_LATE = 8;
+    private double PARAMETER_KING_SAFETY_2_LATE = 121;
+    private double PARAMETER_ROOK_HALF_OPEN_LATE = 26;
+    private double PARAMETER_ROOK_OPEN_LATE = -117;
+    private double PARAMETER_CONNECTED_PAWN_LATE = 61;
+    //</editor-fold>

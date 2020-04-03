@@ -247,6 +247,23 @@ public class Testing {
         return nodes;
     }
 
+    public static String loadingBar(int count, int max, String msg){
+        StringBuilder builder = new StringBuilder();
+        double p = count / (double)max;
+
+        builder.append((int)(100*p)+"% [");
+        for(int i = 0; i < 50 * p; i++){
+            builder.append("=");
+        }
+        builder.append(">");
+        for(int i = 0; i < 50*(1-p); i++){
+            builder.append(" ");
+        }
+        builder.append("] ");
+        builder.append(count + "/" + max + " " + msg);
+        return builder.toString();
+    }
+
     /**
      * call this to validate that the isLegal() function of the given board works
      * @param board

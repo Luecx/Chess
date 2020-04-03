@@ -34,28 +34,40 @@ public class UCI {
     private static Board b = new FastBoard(Setup.DEFAULT);
 
     private static TimeManager timeManager = new SimpleTimeManager();
+    private static SenpaiReducer senpaiReducer = new SenpaiReducer(1);
     private static AdvancedSearch ai = new AdvancedSearch(
-            //new AdvancedEvaluator(new SimpleDecider()),
-            new SimpleEvaluator(),
+            new AdvancedEvaluator(new SimpleDecider()),
+            //new SimpleEvaluator(),
             new SystematicOrderer2(),
-            new SenpaiReducer(1),
+            senpaiReducer,
             AdvancedSearch.FLAG_TIME_LIMIT,
             1000);
+
 
 
     private static CommandDataBase cdb = new CommandDataBase();
 
     public static void uciCommunication() {
         System.out.println("starting engine...");
-        ai.getEvaluator().setEvolvableValues(new double[]{
-                100.0, 100.0, 100.0, 100.0, 98.0, 100.0, 219.0, 970.0, 673.0, 690.0,
-                1371.0, 20039.0, 17.0, 18.0, 20.0, 15.0, -31.0, -16.0, -8.0, -46.0,
-                -43.0, -46.0, -42.0, -44.0, 57.0, 86.0, -28.0, -69.0, 111.0, 22.0,
-                58.0, 49.0, 4.0, 11.0, 101.0, 100.0, 101.0, 101.0, 99.0, 100.0, 219.0,
-                970.0, 668.0, 685.0, 1370.0, 20038.0, 15.0, 3.0, 5.0, 60.0, 0.0, 10.0,
-                -5.0, -32.0, -30.0, -41.0, -42.0, -45.0, 56.0, 86.0, -15.0, -66.0,
-                118.0, 21.0, 60.0, 48.0, 2.0, 9.0
-        });
+//        evaluator2.setEvolvableValues(new double[]{
+//                46.0, 51.0, 44.0, 40.0, 56.0, 38.0,
+//                7.0, 17.0, 25.0, 7.0, -14.0, -9.0, -10.0,
+//                -30.0, -38.0, -42.0, -41.0, -40.0, 36.0, 21.0,
+//                -26.0, -58.0, 27.0, 1.0, -80.0, 4.0, 22.0, -11.0,
+//                40.0, 43.0, 30.0, 28.0, 44.0, 39.0, 42.0, 30.0,
+//                40.0, 63.0, 29.0, 37.0, 18.0, 9.0, -81.0, -88.0,
+//                -89.0, -88.0, 77.0, 161.0, 10.0, -42.0, 117.0, 67.0, 19.0, 60.0, 49.0, 73.0
+//        });
+
+//        ai.getEvaluator().setEvolvableValues(new double[]{
+//                161.0, 120.0, 28.0, 120.0, -29.0, 177.0, 591.0, 455.0, 463.0, 774.0, 2.0, 18.0,
+//                37.0, 9.0, -26.0, -17.0, -27.0, -33.0, -19.0, -20.0, -19.0, -22.0, 21.0, 81.0,
+//                -52.0, 24.0, 157.0, 51.0, -51.0, 84.0, 88.0, 18.0, 194.0, 120.0, -2.0, -10.0,
+//                -29.0, -43.0, 591.0, 417.0, 461.0, 774.0, 55.0, 25.0, 34.0, 94.0, -9.0, 1.0,
+//                -13.0, 9.0, -13.0, -20.0, -19.0, -21.0, 118.0, 187.0, 11.0, -14.0, 100.0, 11.0,
+//                75.0, -15.0, -64.0, 63.0
+//        });
+
         cdb.registerCommand(
                 new Command("setoption", "sets some options of the engine")
                         .registerArgument(new TextArgument("name", true, "none"))
@@ -84,6 +96,12 @@ public class UCI {
                                     case "razoring":
                                         ai.setUse_razoring(Boolean.parseBoolean(value));
                                         break;
+                                    case "reduction_divisionFactor":
+                                        senpaiReducer.setDivision_factor(Integer.parseInt(value));
+                                        break;
+                                    case "reduction_greaterReductionDepth":
+                                        senpaiReducer.setHigher_reduction_depth(Integer.parseInt(value));
+                                        break;
                                 }
                             }
                         }));
@@ -99,6 +117,8 @@ public class UCI {
                             System.out.println("option name iterative type check default true");
                             System.out.println("option name razoring type check default false");
                             System.out.println("option name log type check default false");
+                            System.out.println("option name reduction_divisionFactor type spin default 4 min 1 max 100");
+                            System.out.println("option name reduction_greaterReductionDepth type spin default 4 min 0 max 100");
                             System.out.println("uciok");
                         }));
         cdb.registerCommand(

@@ -1,11 +1,8 @@
 package ai.search;
 
 import ai.evaluator.AdvancedEvaluator;
-import ai.evaluator.decider.BoardPhaseDecider;
 import ai.evaluator.decider.SimpleDecider;
-import ai.evaluator.AdvancedEndGameEvaluator;
 import ai.evaluator.Evaluator;
-import ai.evaluator.AdvancedMidGameEvaluator;
 import ai.ordering.Orderer;
 import ai.ordering.SystematicOrderer2;
 import ai.reducing.Reducer;
@@ -19,6 +16,7 @@ import board.FastBoard;
 import board.moves.Move;
 import board.moves.MoveListBuffer;
 import board.setup.Setup;
+import io.IO;
 import visual.game.Player;
 import io.UCI;
 import visual.Frame;
@@ -49,6 +47,7 @@ public class AdvancedSearch implements AI {
     protected boolean                                   use_razoring            = true;         //flag for razoring
     protected boolean                                   use_killer_heuristic    = true;         //flag for killer tables
     protected boolean                                   use_history_heuristic   = true;         //flag for history heuristic
+    protected boolean                                   use_aspiration          = false;        //flag for aspiriation windows
 
     protected boolean                                   print_overview          = true;         //flag for output-printing
 
@@ -406,7 +405,21 @@ public class AdvancedSearch implements AI {
     }
 
 
+    /**
+     * gets the usage of aspiriation windows for depth > 2 searches
+     * @return
+     */
+    public boolean isUse_aspiration() {
+        return use_aspiration;
+    }
 
+    /**
+     * sets the usage of aspiriation windows for depth > 2 searches
+     * @param use_aspiration
+     */
+    public void setUse_aspiration(boolean use_aspiration) {
+        this.use_aspiration = use_aspiration;
+    }
 
     private double pvSearch(double alpha, double beta, int currentDepth, int depthLeft, boolean pv, boolean extension) {
         _selDepth = Math.max(_selDepth, currentDepth);
@@ -501,7 +514,7 @@ public class AdvancedSearch implements AI {
             }
 
             int reduction = use_LMR ? reducer.reduce(_board, m, currentDepth, depthLeft, legalMoves, pv) : 0;
-            int extensions = _board.givesCheck(m) && depthLeft < 3 ? 1:0;
+            int extensions = _board.givesCheck(m) ? 1:0;
 
             _board.move(m);
             if (legalMoves == 0) {
@@ -557,7 +570,7 @@ public class AdvancedSearch implements AI {
         return alpha;
     }
 
-    private double qSearch(double alpha, double beta, int currentDepth) {
+    public double qSearch(double alpha, double beta, int currentDepth) {
 
 
 
@@ -572,6 +585,13 @@ public class AdvancedSearch implements AI {
         if(!use_qSearch){
             return stand_pat;
         }
+
+//        if(stand_pat % 1 != 0){
+//            System.out.println(stand_pat);
+//            System.out.println(_board);
+//            System.exit(-1);
+//        }
+
         List<Move> allMoves = _board.getCaptureMoves(_buffer.get(currentDepth));
         if (allMoves.size() == 0){
             return stand_pat;
@@ -647,6 +667,15 @@ public class AdvancedSearch implements AI {
         return alpha;
     }
 
+    public double qSearch(Board board){
+        this._board             = board;
+//        this._killerTable       = use_killer_heuristic  ? new KillerTable(MAXIMUM_STORE_DEPTH, killer_count)    :null;
+//        this._historyTable      = use_history_heuristic ? new HistoryTable()                                    :null;
+//        if(this._transpositionTable == null)    this._transpositionTable = new TranspositionTable<>();
+//        else                                    this._transpositionTable.clear();
+
+        return qSearch(-1000000,1000000, 0) * board.getActivePlayer();
+    }
 
     @Override
     public Move bestMove(Board board) {
@@ -712,7 +741,38 @@ public class AdvancedSearch implements AI {
     public void iteration(int depth) {
         _nodes = 0;
         _selDepth = 0;
-        _score = pvSearch(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, 0, depth, true, false);
+
+        double alphaInc;
+        double betaInc;
+
+        if(use_aspiration && depth > 2){
+            alphaInc = -25;
+            betaInc = 25;
+        }else{
+            alphaInc =Double.NEGATIVE_INFINITY;
+            betaInc = Double.POSITIVE_INFINITY;
+        }
+
+        double pvResult = pvSearch(alphaInc+_score, betaInc+_score, 0, depth, true, false);
+
+        //System.out.println("attempted with: <" + (alphaInc+_score) + "|" + (_score + betaInc)+">" + " -> " + pvResult);
+
+        while (pvResult <= (alphaInc+_score) || pvResult >= (_score+betaInc)){
+            if(pvResult <= (alphaInc+_score)){
+                alphaInc*=4;
+            }
+            if(pvResult >= (betaInc+_score)){
+                betaInc*=4;
+            }
+
+            pvResult = pvSearch(alphaInc+_score, betaInc+_score, 0, depth, true, false);
+            //System.out.println("attempted with: <" + (alphaInc+_score) + "|" + (_score + betaInc)+">" + " -> " + pvResult);
+        }
+
+        _score = pvResult;
+
+
+        //_score = pvSearch(Double.NEGATIVE_INFINITY,  Double.POSITIVE_INFINITY, 0, depth, true, false);
     }
 
     public void placeInTT(long zobrist, int depth, int depthLeft, double alpha, int type, Move bestMove){
@@ -789,19 +849,36 @@ public class AdvancedSearch implements AI {
     public static void main(String[] args) {
         FastBoard fb = new FastBoard(Setup.DEFAULT);
 
-        //fb = IO.read_FEN(fb, "8/2R3N1/7k/8/5b1K/6p1/6p1/8 w - - 0 1");
+
+        fb = IO.read_FEN(fb, "7k/8/8/8/8/8/8/K7");
+
+
+        //        AdvancedSearch advancedSearch = new AdvancedSearch(
+//                new AdvancedEvaluator(new SimpleDecider()),
+//                new SystematicOrderer2(),
+//                new SenpaiReducer(1), 1, 0);
+
+        //advancedSearch.bestMove()
+
+//        advancedSearch.use_history_heuristic = true;
+//        advancedSearch.use_transposition = false;
+        //advancedSearch.bestMove(fb);
+
+
         AdvancedSearch advancedSearch = new AdvancedSearch(
                 new AdvancedEvaluator(new SimpleDecider()),
                 new SystematicOrderer2(),
-                new SenpaiReducer(1), 1, 1000);
+                new SenpaiReducer(1), 2, 10);
 
-        advancedSearch.use_history_heuristic = true;
+        advancedSearch.setUse_transposition(false);
+        advancedSearch.setUse_aspiration(false);
+
         advancedSearch.bestMove(fb);
 
 
 
 //        FastBoard finalFb = fb;
-        new Frame(fb,new Player() {},  advancedSearch).setFlippedBoard(true);
+//        new Frame(fb,new Player() {},  advancedSearch).setFlippedBoard(true);
 //
 
 

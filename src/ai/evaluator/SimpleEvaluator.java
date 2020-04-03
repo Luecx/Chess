@@ -142,7 +142,7 @@ public class SimpleEvaluator implements Evaluator {
                 //}
             }
         }
-        return score * 100;
+        return score;
     }
 
     @Override

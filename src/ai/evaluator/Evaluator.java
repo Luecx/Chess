@@ -41,6 +41,20 @@ public interface Evaluator<T extends Evaluator<T>> {
      */
     public abstract T copy();
 
+    public static void createParameters(Class<?> cl, double[] params){
+
+        Field[] ar = cl.getDeclaredFields();
+
+        int c = 0;
+        for(Field f:ar){
+            String name = f.getName();
+            if(name.startsWith("PARAMETER")){ ;
+                System.out.format("%-80s %-50s %n","private double " + name + " = ", (int)params[c]+";");
+                c++;
+            }
+        }
+    }
+
     public static void createFunction_getEvolvableValues(Class<?> cl){
         Field[] ar = cl.getDeclaredFields();
 

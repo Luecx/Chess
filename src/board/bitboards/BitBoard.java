@@ -1,11 +1,11 @@
 package board.bitboards;
 
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.ByteBuffer;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
@@ -114,13 +114,13 @@ public class BitBoard {
 
     public static final boolean VALIDATE_MAGICS                     = false;
     public static final boolean GENERATE_SLIDING_ATTACKS            = false;
-    public static final String  SLIDING_ATTACKS_SOURCE              = "resources/slidingAttacks.txt";
+    public static final String  SLIDING_ATTACKS_SOURCE              = "board/bitboards/slidingAttacks.txt";
     public static final long    NEW_LINE                            = 0xFFFFFFFFFFFFFFFFL;
 
 
-    public static final long[][] all_hashes                         = new long[12][64];        //12 * 64
-    public static final long[][] white_hashes                       = new long[6][64];      //6 * 64
-    public static final long[][] black_hashes                       = new long[6][64];      //6 * 64
+    public static final long[][] all_hashes                         = new long[12][64];
+    public static final long[][] white_hashes                       = new long[6][64];
+    public static final long[][] black_hashes                       = new long[6][64];
 
 
     public static final long[] whitePassedPawnMask = new long[] {
@@ -331,7 +331,7 @@ public class BitBoard {
         if(GENERATE_SLIDING_ATTACKS){
             generateAttackTables();
         }else{
-            loadAttackTables(SLIDING_ATTACKS_SOURCE);
+            loadAttackTables();
         }
     }
 
@@ -390,9 +390,20 @@ public class BitBoard {
         }
     }
 
-    public static void loadAttackTables(String file) {
+    public static void loadAttackTables() {
         try{
-            FileInputStream fis = new FileInputStream(file);
+
+            ClassLoader classLoader = ClassLoader.getSystemClassLoader();
+            Path temp = Files.createTempFile("resource-", ".ext");
+
+            //System.out.println(classLoader+ "  " + temp + "  "  + classLoader.getResourceAsStream(SLIDING_ATTACKS_SOURCE));
+
+            Files.copy(classLoader.getResourceAsStream(SLIDING_ATTACKS_SOURCE), temp, StandardCopyOption.REPLACE_EXISTING);
+            FileInputStream fis = new FileInputStream(temp.toFile());
+
+            //System.out.println(fis);
+
+            //FileInputStream ins = BitBoard.class.getResourceAsStream("images/search_folder.png");
             byte[] in = new byte[8];
 
             ArrayList<Long> ar = new ArrayList<>();
@@ -985,7 +996,7 @@ public class BitBoard {
 
 
 
-        generatePassedPawnMask();
+        //generatePassedPawnMask();
 
         //System.out.println("written");
 
