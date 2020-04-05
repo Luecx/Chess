@@ -34,7 +34,7 @@ public class UCI {
     private static Board b = new FastBoard(Setup.DEFAULT);
 
     private static TimeManager timeManager = new SimpleTimeManager();
-    private static SenpaiReducer senpaiReducer = new SenpaiReducer(1);
+    private static SenpaiReducer senpaiReducer = new SenpaiReducer(5);
     private static AdvancedSearch ai = new AdvancedSearch(
             new AdvancedEvaluator(new SimpleDecider()),
             //new SimpleEvaluator(),
@@ -102,6 +102,9 @@ public class UCI {
                                     case "reduction_greaterReductionDepth":
                                         senpaiReducer.setHigher_reduction_depth(Integer.parseInt(value));
                                         break;
+                                    case "reduction_numMovesNotReduced":
+                                        senpaiReducer.setNum_moves_not_reduced(Integer.parseInt(value));
+                                        break;
                                 }
                             }
                         }));
@@ -119,6 +122,7 @@ public class UCI {
                             System.out.println("option name log type check default false");
                             System.out.println("option name reduction_divisionFactor type spin default 4 min 1 max 100");
                             System.out.println("option name reduction_greaterReductionDepth type spin default 4 min 0 max 100");
+                            System.out.println("option name reduction_numMovesNotReduced type spin default 5 min 0 max 1000");
                             System.out.println("uciok");
                         }));
         cdb.registerCommand(
