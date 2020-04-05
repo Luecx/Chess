@@ -9,6 +9,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
+import java.util.Vector;
 
 public class BitBoard {
 
@@ -315,11 +316,14 @@ public class BitBoard {
     };
     public static final long debruijn64                             = 0x03f79d71b4cb0a89L;
     public static final long seed                                   = 11291283;
+    
 
     static {
+        System.out.print("generating attack tables...");
         long t = System.currentTimeMillis();
         generateData();
-        System.out.println("Init took: " + (System.currentTimeMillis()-t) + " ms");
+        System.out.println("       done! ["+String.format("%7s",(System.currentTimeMillis()-t)+ " ms") + "]");
+        //System.out.println("Init took: " + (System.currentTimeMillis()-t) + " ms");
     }
 
     public static void generateData() {

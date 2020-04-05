@@ -48,6 +48,8 @@ public class UCI {
     private static CommandDataBase cdb = new CommandDataBase();
 
     static {
+        long t = System.currentTimeMillis();
+        System.out.print("registering commands...");
         cdb.registerCommand(
                 new Command("setoption", "sets some options of the engine")
                         .registerArgument(new TextArgument("name", true, "none"))
@@ -170,10 +172,15 @@ public class UCI {
                                                                                                (int) (double) c.getNumericArgument("depth").getValue(),
                                                                                                new MoveListBuffer(20, 300),
                                                                                                c.getBooleanArgument("dif").getValue()))));
+
+
+
+        System.out.println("           done! [" +String.format("%7s",(System.currentTimeMillis()-t)+ " ms") + "]");
+
     }
 
     public static void uciCommunication() {
-        System.out.println("starting engine...");
+        System.out.println("engine ready!");
 //        evaluator2.setEvolvableValues(new double[]{
 //                46.0, 51.0, 44.0, 40.0, 56.0, 38.0,
 //                7.0, 17.0, 25.0, 7.0, -14.0, -9.0, -10.0,
@@ -193,13 +200,19 @@ public class UCI {
 //                75.0, -15.0, -64.0, 63.0
 //        });
 
-
-        Scanner input = new Scanner(System.in);
-        while (true) {
-            String line = input.nextLine().trim();
-            log("[IN] " + line + "\n");
-            cdb.executeCommand(line);
+        Scanner input = null;
+        try{
+            input = new Scanner(System.in);
+            while (true) {
+                String line = input.nextLine().trim();
+                log("[IN] " + line + "\n");
+                cdb.executeCommand(line);
+            }
+        }catch (Exception e){
+            log("[EXCEPTION] " + e.getMessage()+ "\n");
+            input.close();
         }
+        
     }
 
     public static void useLog(boolean val) {
