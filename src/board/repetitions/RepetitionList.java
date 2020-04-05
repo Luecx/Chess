@@ -17,11 +17,13 @@ public class RepetitionList {
          * it counts how many different board positions have occured and the amount of the occurencies.
          * @param zobrist
          * @param count
+         * @param color
          */
 
-        public Entry(long zobrist, int count) {
+        public Entry(long zobrist, int count, int color) {
             this.zobrist = zobrist;
             this.count = count;
+            this.color = color;
         }
 
         /**
@@ -33,6 +35,11 @@ public class RepetitionList {
          * the amount of times this position occured
          */
         private int count;
+
+        /**
+         * color to move
+         */
+        private int color;
 
         /**
          * checks if this entry equals another entry
@@ -88,6 +95,22 @@ public class RepetitionList {
         public void setCount(int count) {
             this.count = count;
         }
+
+        /**
+         * returns the player who is to move
+         * @return
+         */
+        public int getColor() {
+            return color;
+        }
+
+        /**
+         * sets the player who has to move
+         * @param color
+         */
+        public void setColor(int color) {
+            this.color = color;
+        }
     }
 
     /**
@@ -106,14 +129,14 @@ public class RepetitionList {
      * @param zobrist
      * @return              if the visual.game is over by 3-fold repetition
      */
-    public boolean add(long zobrist){
+    public boolean add(long zobrist, int color){
         for(Entry e:entries){
-            if(e.zobrist == zobrist){
+            if(e.zobrist == zobrist && e.color == color){
                 e.count ++;
                 return e.count >= 3;
             }
         }
-        entries.addFirst(new Entry(zobrist, 1));
+        entries.addFirst(new Entry(zobrist, 1, color));
         return false;
     }
 
@@ -121,9 +144,9 @@ public class RepetitionList {
      * subtracts the board from the list. it reduces the count for the given entry.
      * @param zobrist
      */
-    public void sub(long zobrist){
+    public void sub(long zobrist, int color){
         for(Entry e:entries){
-            if(e.zobrist == zobrist){
+            if(e.zobrist == zobrist && color == e.color){
                 e.count --;
                 if(e.count == 0){
                     entries.remove(e);
@@ -134,21 +157,21 @@ public class RepetitionList {
     }
 
     /**
-     * for more information look at {@link #add(long) add}
+     * for more information look at {@link #add(long, int) add}
      * @param board
      * @return
      */
     public boolean add(Board board){
-        return this.add(board.zobrist());
+        return this.add(board.zobrist(), board.getActivePlayer());
     }
 
     /**
-     * for more information look at {@link #sub(long) add}
+     * for more information look at {@link #sub(long, int) add}
      * @param board
      * @return
      */
     public void sub(Board board){
-        this.sub(board.zobrist());
+        this.sub(board.zobrist(), board.getActivePlayer());
     }
 
     /**
@@ -156,7 +179,7 @@ public class RepetitionList {
      * @param zobrist
      * @return
      */
-    public int get(long zobrist){
+    public int get(long zobrist, int color){
         for(Entry e:entries){
             if(e.zobrist == zobrist){
                 return e.count;
@@ -172,7 +195,7 @@ public class RepetitionList {
     public RepetitionList copy(){
         LinkedList<Entry> new_entries = new LinkedList<>();
         for(Entry e:entries){
-            new_entries.add(new Entry(e.zobrist, e.count));
+            new_entries.add(new Entry(e.zobrist, e.count, e.color));
         }
         RepetitionList res = new RepetitionList();
         res.entries = new_entries;
@@ -189,7 +212,7 @@ public class RepetitionList {
         builder.append("RepetitionList\n");
 
         for(Entry e:entries){
-            builder.append(String.format("zobrist: %-30d   count: %-4d \n", e.zobrist, e.count));
+            builder.append(String.format("zobrist: %-30d   count: %-4d \n", e.zobrist, e.count+"("+e.getColor()+")"));
         }
 
         return builder.toString();

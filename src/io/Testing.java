@@ -285,12 +285,27 @@ public class Testing {
 
     public static void main(String[] args) {
 
-        FastBoard fb = new FastBoard(Setup.DEFAULT);
-        Evaluator ev = new AdvancedEvaluator(new SimpleDecider());
-
-        Frame f = new Frame(new FastBoard(Setup.DEFAULT), new Player() {}, new Player() {});
+//        FastBoard fb = new FastBoard(Setup.DEFAULT);
+//        Evaluator ev = new AdvancedEvaluator(new SimpleDecider());
+//
+//        Frame f = new Frame(new FastBoard(Setup.DEFAULT), new Player() {}, new Player() {});
 
         //f.getGamePanel().getGame().addBoardChangedListener(move -> ((AdvancedEvaluator) ev).printEvaluation(f.getGamePanel().getGame().getBoard()));
+
+
+        UCI.getCdb().executeCommand("position startpos moves e2e4 c7c5 g1f3 e7e6 d2d4 c5d4 f3d4 b8c6 b1c3 g8f6 c1e3 "
+                                    + "d8c7 a2a3 c6d4 e3d4 e6e5 c3b5 c7b8 d4e3 a7a6 b5c3 b8c7 c3d5 c7c6 d1d3 b7b5 c2c4 "
+                                    + "b5c4 d3c4 f6d5 e4d5 c6c4 f1c4 f8e7 e1g1 c8b7 a1c1 a8c8 f1d1 e7d6 c4d3 e8g8 c1c8 "
+                                    + "f8c8 d3f5 d6f8 f5d7 c8d8 d7f5 d8d5 d1c1 d5d8 e3g5 d8d6 h2h3 a6a5 g5e3 g7g6 f5c2 "
+                                    + "d6c6 c2a4 c6c1 e3c1 f8c5 c1d2 c5b6 a4b5 b7d5 d2c3 f7f6 b2b4 a5b4 c3b4 g8g7 a3a4 "
+                                    + "b6d4 a4a5 d4a7 a5a6 a7d4 b4d6 g7f7 d6b4 f7g8 b4d6 g8g7 b5e2 d5e6 e2b5 e6d5");
+        FastBoard fb = (FastBoard) UCI.getBoard();
+
+
+
+       //System.out.println(fb);
+
+
 
     }
 

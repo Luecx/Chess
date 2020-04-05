@@ -47,27 +47,7 @@ public class UCI {
 
     private static CommandDataBase cdb = new CommandDataBase();
 
-    public static void uciCommunication() {
-        System.out.println("starting engine...");
-//        evaluator2.setEvolvableValues(new double[]{
-//                46.0, 51.0, 44.0, 40.0, 56.0, 38.0,
-//                7.0, 17.0, 25.0, 7.0, -14.0, -9.0, -10.0,
-//                -30.0, -38.0, -42.0, -41.0, -40.0, 36.0, 21.0,
-//                -26.0, -58.0, 27.0, 1.0, -80.0, 4.0, 22.0, -11.0,
-//                40.0, 43.0, 30.0, 28.0, 44.0, 39.0, 42.0, 30.0,
-//                40.0, 63.0, 29.0, 37.0, 18.0, 9.0, -81.0, -88.0,
-//                -89.0, -88.0, 77.0, 161.0, 10.0, -42.0, 117.0, 67.0, 19.0, 60.0, 49.0, 73.0
-//        });
-
-//        ai.getEvaluator().setEvolvableValues(new double[]{
-//                161.0, 120.0, 28.0, 120.0, -29.0, 177.0, 591.0, 455.0, 463.0, 774.0, 2.0, 18.0,
-//                37.0, 9.0, -26.0, -17.0, -27.0, -33.0, -19.0, -20.0, -19.0, -22.0, 21.0, 81.0,
-//                -52.0, 24.0, 157.0, 51.0, -51.0, 84.0, 88.0, 18.0, 194.0, 120.0, -2.0, -10.0,
-//                -29.0, -43.0, 591.0, 417.0, 461.0, 774.0, 55.0, 25.0, 34.0, 94.0, -9.0, 1.0,
-//                -13.0, 9.0, -13.0, -20.0, -19.0, -21.0, 118.0, 187.0, 11.0, -14.0, 100.0, 11.0,
-//                75.0, -15.0, -64.0, 63.0
-//        });
-
+    static {
         cdb.registerCommand(
                 new Command("setoption", "sets some options of the engine")
                         .registerArgument(new TextArgument("name", true, "none"))
@@ -190,6 +170,30 @@ public class UCI {
                                                                                                (int) (double) c.getNumericArgument("depth").getValue(),
                                                                                                new MoveListBuffer(20, 300),
                                                                                                c.getBooleanArgument("dif").getValue()))));
+    }
+
+    public static void uciCommunication() {
+        System.out.println("starting engine...");
+//        evaluator2.setEvolvableValues(new double[]{
+//                46.0, 51.0, 44.0, 40.0, 56.0, 38.0,
+//                7.0, 17.0, 25.0, 7.0, -14.0, -9.0, -10.0,
+//                -30.0, -38.0, -42.0, -41.0, -40.0, 36.0, 21.0,
+//                -26.0, -58.0, 27.0, 1.0, -80.0, 4.0, 22.0, -11.0,
+//                40.0, 43.0, 30.0, 28.0, 44.0, 39.0, 42.0, 30.0,
+//                40.0, 63.0, 29.0, 37.0, 18.0, 9.0, -81.0, -88.0,
+//                -89.0, -88.0, 77.0, 161.0, 10.0, -42.0, 117.0, 67.0, 19.0, 60.0, 49.0, 73.0
+//        });
+
+//        ai.getEvaluator().setEvolvableValues(new double[]{
+//                161.0, 120.0, 28.0, 120.0, -29.0, 177.0, 591.0, 455.0, 463.0, 774.0, 2.0, 18.0,
+//                37.0, 9.0, -26.0, -17.0, -27.0, -33.0, -19.0, -20.0, -19.0, -22.0, 21.0, 81.0,
+//                -52.0, 24.0, 157.0, 51.0, -51.0, 84.0, 88.0, 18.0, 194.0, 120.0, -2.0, -10.0,
+//                -29.0, -43.0, 591.0, 417.0, 461.0, 774.0, 55.0, 25.0, 34.0, 94.0, -9.0, 1.0,
+//                -13.0, 9.0, -13.0, -20.0, -19.0, -21.0, 118.0, 187.0, 11.0, -14.0, 100.0, 11.0,
+//                75.0, -15.0, -64.0, 63.0
+//        });
+
+
         Scanner input = new Scanner(System.in);
         while (true) {
             String line = input.nextLine().trim();
@@ -265,6 +269,21 @@ public class UCI {
         return toReturn;
     }
 
+    /**
+     * returns the commands database used to execute and parse uci commands
+     * @return
+     */
+    public static CommandDataBase getCdb() {
+        return cdb;
+    }
+
+    /**
+     * returns the internal board object
+     * @return
+     */
+    public static Board getBoard() {
+        return b;
+    }
 
     public static void main(String[] args) {
         uciCommunication();

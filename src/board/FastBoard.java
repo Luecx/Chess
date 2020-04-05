@@ -151,7 +151,7 @@ public class FastBoard extends Board<FastBoard> {
 
     @Override
     public int getCurrentRepetitionCount() {
-        return repetitionList.get(this.zobrist);
+        return repetitionList.get(this.zobrist, getActivePlayer());
     }
 
     @Override
@@ -374,7 +374,7 @@ public class FastBoard extends Board<FastBoard> {
             newBoardStatus.fiftyMoveCounter = 0;
         }
 
-        if (this.repetitionList.add(zobrist)) {
+        if (this.repetitionList.add(zobrist, getActivePlayer())) {
             newBoardStatus.metaInformation |= FastBoard.BoardStatus.MASK_DRAW_BY_THREE_FOLD;
         }
     }
@@ -384,7 +384,7 @@ public class FastBoard extends Board<FastBoard> {
         if (this.moveHistory.size() == 0) return;
 
         this.boardStatus.pop();
-        this.repetitionList.sub(zobrist);
+        this.repetitionList.sub(zobrist, getActivePlayer());
 
         Move last = this.moveHistory.peek();
 
