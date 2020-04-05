@@ -158,4 +158,9 @@ public class SimpleEvaluator implements Evaluator {
     public Evaluator copy() {
         return null;
     }
+
+    @Override
+    public double staticExchangeEvaluation(Board board, int sq, int color) {
+        return 0;
+    }
 }

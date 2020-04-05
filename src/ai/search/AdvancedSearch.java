@@ -444,9 +444,6 @@ public class AdvancedSearch implements AI {
 
         _nodes ++;
 
-
-
-
         if (use_transposition) {
             TranspositionEntry tt = retrieveFromTT(zobrist, currentDepth, depthLeft);
             if(tt != null){
@@ -460,7 +457,9 @@ public class AdvancedSearch implements AI {
                         alpha = tt.getVal();
                     }
                 } else if (tt.getNode_type() == TranspositionEntry.ALL_NODE) {
-                    if (tt.getVal() <= alpha) return alpha;
+                    if (tt.getVal() <= alpha) {
+                        return alpha;
+                    }
                     if(beta > tt.getVal() && !pv){
                         beta = tt.getVal();
                     }

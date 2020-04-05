@@ -450,6 +450,11 @@ public class AdvancedEndGameEvaluator implements LateGameEvaluator {
     }
 
     @Override
+    public double staticExchangeEvaluation(Board board, int sq, int color) {
+        return 0;
+    }
+
+    @Override
     public AdvancedEndGameEvaluator copy() {
         AdvancedEndGameEvaluator evaluator = new AdvancedEndGameEvaluator();
         evaluator.setEvolvableValues(this.getEvolvableValues());

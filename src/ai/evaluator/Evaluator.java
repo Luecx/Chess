@@ -41,6 +41,16 @@ public interface Evaluator<T extends Evaluator<T>> {
      */
     public abstract T copy();
 
+    /**
+     * returns the static exchange evaluation on the board for the given square/color
+     * @param board
+     * @param sq
+     * @param color
+     * @return
+     */
+    public abstract double staticExchangeEvaluation(Board board, int sq, int color);
+
+
     public static void createParameters(Class<?> cl, double[] params){
 
         Field[] ar = cl.getDeclaredFields();

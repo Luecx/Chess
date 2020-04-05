@@ -449,6 +449,11 @@ public class AdvancedMidGameEvaluator implements MidGameEvaluator, LateGameEvalu
             return evaluator;
         }
 
+    @Override
+    public double staticExchangeEvaluation(Board board, int sq, int color) {
+        return 0;
+    }
+
     public static void main(String[] args) {
         AdvancedMidGameEvaluator eval = new AdvancedMidGameEvaluator();
         FastBoard fb = new FastBoard();

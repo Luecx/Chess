@@ -103,6 +103,11 @@ public class MiniMax implements AI {
             public Evaluator copy() {
                 return null;
             }
+
+            @Override
+            public double staticExchangeEvaluation(Board board, int sq, int color) {
+                return 0;
+            }
         }, 5);
         FastBoard board = new FastBoard(Setup.DEFAULT);
         long t = System.currentTimeMillis();

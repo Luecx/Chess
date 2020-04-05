@@ -1,11 +1,14 @@
 package ai.evaluator;
 
 import ai.evaluator.decider.BoardPhaseDecider;
+import ai.evaluator.decider.SimpleDecider;
 import ai.tools.tensor.Tensor1D;
 import board.Board;
 import board.FastBoard;
 import board.bitboards.BitBoard;
+import board.moves.Move;
 import board.pieces.PieceList;
+import io.IO;
 
 import java.util.Arrays;
 
@@ -764,18 +767,113 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
         return evaluator;
     }
 
+    private int smallestAttackerSquare(Board b, int square, int side){
 
-    public static int getBinomial(int n, double p) {
-        double log_q = Math.log(1.0 - p);
-        int x = 0;
-        double sum = 0;
-        for(;;) {
-            sum += Math.log(Math.random()) / (n - x);
-            if(sum < log_q) {
-                return x;
+        FastBoard fb = (FastBoard) b;
+
+        PieceList[] pieces = side > 0 ? ((FastBoard)b).getWhite_pieces() : ((FastBoard)b).getBlack_pieces();
+        int index;
+        long squareBB = 1L << square;
+
+
+        //pawns
+        if(side > 0){
+            if((BitBoard.shiftNorthWest(fb.getWhite_values()[0]) & squareBB) != 0){
+                return square-7;
             }
-            x++;
+            if((BitBoard.shiftNorthEast(fb.getWhite_values()[0]) & squareBB) != 0){
+                return square-9;
+            }
+        }else{
+            if((BitBoard.shiftSouthWest(fb.getBlack_values()[0]) & squareBB) != 0){
+                return square+9;
+            }
+            if((BitBoard.shiftSouthEast(fb.getBlack_values()[0]) & squareBB) != 0){
+                return square+7;
+            }
         }
+
+
+        //knights
+        for (int i = 0; i < pieces[2].size(); i++) {
+            index = pieces[2].get(i);
+            if((BitBoard.KNIGHT_ATTACKS[index] & squareBB) != 0){
+                return index;
+            }
+        }
+
+        //bishops
+        for (int i = 0; i < pieces[3].size(); i++){
+            index = pieces[3].get(i);
+            if((BitBoard.lookUpBishopAttack(index, fb.getOccupied()) & squareBB) != 0){
+                return index;
+            }
+        }
+
+        //rooks
+        for (int i = 0; i < pieces[1].size(); i++){
+            index = pieces[1].get(i);
+            if((BitBoard.lookUpRookAttack(index, fb.getOccupied()) & squareBB) != 0){
+                return index;
+            }
+        }
+
+        //queen
+        for (int i = 0; i < pieces[1].size(); i++) {
+            index = pieces[4].get(i);
+            if ((
+                        (BitBoard.lookUpRookAttack(index, fb.getOccupied()) |
+                         BitBoard.lookUpBishopAttack(index, fb.getOccupied()))
+                        & squareBB) != 0) {
+                return index;
+            }
+        }
+
+        //kings
+        for (int i = 0; i < pieces[2].size(); i++) {
+            index = pieces[2].get(i);
+            if((BitBoard.KING_ATTACKS[index] & squareBB) != 0){
+                return index;
+            }
+        }
+
+        return -1;
+    }
+
+
+    double[] pieceVals = new double[]{0, CONST_PARAMETER_PAWN_VALUE_EARLY,
+                                      PARAMETER_ROOK_VALUE_EARLY,
+                                      PARAMETER_KNIGHT_VALUE_EARLY,
+                                      PARAMETER_BISHOP_VALUE_EARLY,
+                                      PARAMETER_QUEEN_VALUE_EARLY,
+                                      CONST_PARAMETER_KING_VALUE_EARLY};
+
+    public double staticExchangeEvaluation(Board board, int sq, int color){
+        double val = 0;
+
+        int minAttackerSquare = smallestAttackerSquare(board, sq, color);
+
+        if(minAttackerSquare == -1) return val;
+
+        int attackedPiece = board.getPiece(sq);
+        int attackerPiece = board.getPiece(minAttackerSquare);
+
+        /* skip if the square isn't attacked anymore by this side */
+        if ( minAttackerSquare != -1 )
+        {
+            board.setPiece(0, minAttackerSquare);
+            board.setPiece(attackerPiece, sq);
+
+            //System.out.println(minAttackerSquare);
+
+            /* Do not consider captures if they lose material, therefor max zero */
+            val = Math.max(0, pieceVals[Math.abs(attackedPiece)] -staticExchangeEvaluation(board, sq, -color));
+
+            board.setPiece(attackerPiece, minAttackerSquare);
+            board.setPiece(attackedPiece, sq);
+        }
+
+        return val;
     }
 
     public static void main(String[] args) {
@@ -800,10 +898,29 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
 //        Evaluator.createParameters(AdvancedEvaluator.class, ar);
 
 
+//        long t = System.currentTimeMillis();
+//        for(int i = 0; i < 1E7; i++){
+//            getBinomial(10,0.1);
+//        }
+//        System.out.println(System.currentTimeMillis()-t);
+
+
+
+        FastBoard fb = IO.read_FEN(new FastBoard(), "8/6b1/8/3Kp2R/5P2/2B5/6N1/4Q3 w - - 0 1");
+        System.out.println(fb);
+
+        //System.out.println(BitBoard.squareIndex(4,4));
+
+        AdvancedEvaluator av =  new AdvancedEvaluator(new SimpleDecider());
+
+
         long t = System.currentTimeMillis();
+
         for(int i = 0; i < 1E7; i++){
-            getBinomial(10,0.1);
+
+           av.staticExchangeEvaluation(fb, 36, 1);
         }
+
         System.out.println(System.currentTimeMillis()-t);
 
     }
