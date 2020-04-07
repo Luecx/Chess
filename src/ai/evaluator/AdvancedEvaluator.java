@@ -819,7 +819,7 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
         }
 
         //queen
-        for (int i = 0; i < pieces[1].size(); i++) {
+        for (int i = 0; i < pieces[4].size(); i++) {
             index = pieces[4].get(i);
             if ((
                         (BitBoard.lookUpRookAttack(index, fb.getOccupied()) |
@@ -830,8 +830,8 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
         }
 
         //kings
-        for (int i = 0; i < pieces[2].size(); i++) {
-            index = pieces[2].get(i);
+        for (int i = 0; i < pieces[5].size(); i++) {
+            index = pieces[5].get(i);
             if((BitBoard.KING_ATTACKS[index] & squareBB) != 0){
                 return index;
             }
@@ -848,6 +848,7 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
                                       PARAMETER_QUEEN_VALUE_EARLY,
                                       CONST_PARAMETER_KING_VALUE_EARLY};
 
+
     public double staticExchangeEvaluation(Board board, int sq, int color){
         double val = 0;
 
@@ -858,16 +859,18 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
         int attackedPiece = board.getPiece(sq);
         int attackerPiece = board.getPiece(minAttackerSquare);
 
+
         /* skip if the square isn't attacked anymore by this side */
-        if ( minAttackerSquare != -1 )
+        if ( minAttackerSquare != -1)// && board.getPiece(minAttackerSquare) * color > 0)
         {
             board.setPiece(0, minAttackerSquare);
             board.setPiece(attackerPiece, sq);
 
-            //System.out.println(minAttackerSquare);
-
             /* Do not consider captures if they lose material, therefor max zero */
-            val = Math.max(0, pieceVals[Math.abs(attackedPiece)] -staticExchangeEvaluation(board, sq, -color));
+            //val = Math.max(0, pieceVals[Math.abs(attackedPiece)] - staticExchangeEvaluation(board, sq, -color));
+
+            val = pieceVals[Math.abs(attackedPiece)] - staticExchangeEvaluation(board, sq, -color);
+
 
             board.setPiece(attackerPiece, minAttackerSquare);
             board.setPiece(attackedPiece, sq);
@@ -906,22 +909,17 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
 
 
 
-        FastBoard fb = IO.read_FEN(new FastBoard(), "8/6b1/8/3Kp2R/5P2/2B5/6N1/4Q3 w - - 0 1");
-        System.out.println(fb);
+        FastBoard fb = IO.read_FEN(new FastBoard(), "rnbqk1nr/pppp1ppp/8/4P3/1b6/8/PPP1PPPP/RNBQKBNR w QKqk -");
 
         //System.out.println(BitBoard.squareIndex(4,4));
 
         AdvancedEvaluator av =  new AdvancedEvaluator(new SimpleDecider());
 
 
-        long t = System.currentTimeMillis();
 
-        for(int i = 0; i < 1E7; i++){
 
-           av.staticExchangeEvaluation(fb, 36, 1);
-        }
+        av.staticExchangeEvaluation(fb, 51, 1);
 
-        System.out.println(System.currentTimeMillis()-t);
 
     }
 }

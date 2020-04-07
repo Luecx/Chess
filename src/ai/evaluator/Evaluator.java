@@ -43,6 +43,8 @@ public interface Evaluator<T extends Evaluator<T>> {
 
     /**
      * returns the static exchange evaluation on the board for the given square/color
+     * the result equals 0 if the exchange is equal OR losing!
+     *
      * @param board
      * @param sq
      * @param color

@@ -323,7 +323,6 @@ public class BitBoard {
         long t = System.currentTimeMillis();
         generateData();
         System.out.println("       done! ["+String.format("%7s",(System.currentTimeMillis()-t)+ " ms") + "]");
-        //System.out.println("Init took: " + (System.currentTimeMillis()-t) + " ms");
     }
 
     public static void generateData() {

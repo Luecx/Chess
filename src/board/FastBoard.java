@@ -435,7 +435,8 @@ public class FastBoard extends Board<FastBoard> {
         copy.indexBoard = Arrays.copyOf(indexBoard, 64);
         copy.team_total[0] = team_total[0];
         copy.team_total[1] = team_total[1];
-        copy.boardStatus.add(getBoardStatus());
+        copy.boardStatus.clear();
+        copy.boardStatus.add(getBoardStatus().copy());
         for (int i = 0; i < 6; i++) {
             copy.white_values[i] = this.white_values[i];
             copy.black_values[i] = this.black_values[i];
@@ -1201,6 +1202,40 @@ public class FastBoard extends Board<FastBoard> {
                 Arrays.equals(white_pieces, board.white_pieces) &&
                 Arrays.equals(black_pieces, board.black_pieces) &&
                 Objects.equals(repetitionList, board.repetitionList);
+    }
+
+    public void compare(FastBoard o){
+        System.out.println("----------------------------------------------------------------------------");
+        System.out.println("occupied: " + occupied);
+        System.out.println("occupied: " + o.occupied);
+        System.out.println("----------------------------------------------------------------------------");
+        System.out.println("occupied: " + zobrist);
+        System.out.println("occupied: " + o.zobrist);
+        System.out.println("----------------------------------------------------------------------------");
+        System.out.println("occupied: " + boardStatus);
+        System.out.println("occupied: " + o.boardStatus);
+        System.out.println("----------------------------------------------------------------------------");
+        System.out.println("occupied: " + Arrays.toString(white_values));
+        System.out.println("occupied: " + Arrays.toString(o.white_values));
+        System.out.println("----------------------------------------------------------------------------");
+        System.out.println("occupied: " + Arrays.toString(black_values));
+        System.out.println("occupied: " + Arrays.toString(o.black_values));
+        System.out.println("----------------------------------------------------------------------------");
+        System.out.println("occupied: " + Arrays.toString(team_total));
+        System.out.println("occupied: " + Arrays.toString(o.team_total));
+        System.out.println("----------------------------------------------------------------------------");
+        System.out.println("occupied: " + Arrays.toString(indexBoard));
+        System.out.println("occupied: " + Arrays.toString(o.indexBoard));
+        System.out.println("----------------------------------------------------------------------------");
+        System.out.println("occupied: " + Arrays.toString(white_pieces));
+        System.out.println("occupied: " + Arrays.toString(o.white_pieces));
+        System.out.println("----------------------------------------------------------------------------");
+        System.out.println("occupied: " + Arrays.toString(black_pieces));
+        System.out.println("occupied: " + Arrays.toString(o.black_pieces));
+        System.out.println("----------------------------------------------------------------------------");
+        System.out.println("occupied: " + repetitionList);
+        System.out.println("occupied: " + o.repetitionList);
+        System.out.println("----------------------------------------------------------------------------");
     }
 
     public static void main(String[] args) {

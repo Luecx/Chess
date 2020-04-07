@@ -430,6 +430,7 @@ public class AdvancedSearch implements AI {
         double      origonalAlpha   = alpha;
         double      score           = Double.NEGATIVE_INFINITY;
         double      highestScore    = score;
+        double      eval            = evaluator.evaluate(_board) * _board.getActivePlayer();
         int         legalMoves      = 0;
         Move        bestMove        = null;
 
@@ -444,10 +445,13 @@ public class AdvancedSearch implements AI {
 
         _nodes ++;
 
+
+
+
         if (use_transposition) {
             TranspositionEntry tt = retrieveFromTT(zobrist, currentDepth, depthLeft);
             if(tt != null){
-                if (tt.getNode_type() == TranspositionEntry.PV_NODE){
+                if (tt.getNode_type() == TranspositionEntry.PV_NODE && tt.getVal() >= alpha){
                     return tt.getVal();
                 }else if (tt.getNode_type() == TranspositionEntry.CUT_NODE) {
                     if(tt.getVal() >= beta){
@@ -457,9 +461,7 @@ public class AdvancedSearch implements AI {
                         alpha = tt.getVal();
                     }
                 } else if (tt.getNode_type() == TranspositionEntry.ALL_NODE) {
-                    if (tt.getVal() <= alpha) {
-                        return alpha;
-                    }
+                    if (tt.getVal() <= alpha) return alpha;
                     if(beta > tt.getVal() && !pv){
                         beta = tt.getVal();
                     }
@@ -502,7 +504,7 @@ public class AdvancedSearch implements AI {
 
         List<Move> allMoves = _board.getPseudoLegalMoves(_buffer.get(currentDepth));
         if(allMoves.size() == 0){
-            return evaluator.evaluate(_board) * _board.getActivePlayer();
+            return eval;
         }
         orderer.sort(allMoves, currentDepth, null, _board, pv, _killerTable,_historyTable, _transpositionTable);
 

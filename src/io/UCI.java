@@ -175,7 +175,7 @@ public class UCI {
 
 
 
-        System.out.println("           done! [" +String.format("%7s",(System.currentTimeMillis()-t)+ " ms") + "]");
+        System.out.println("           done! [" +String.format("%5s",(System.currentTimeMillis()-t)+ " ms") + "]");
 
     }
 
