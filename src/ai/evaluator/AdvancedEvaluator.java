@@ -183,12 +183,12 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
             -10, -10, -10, -10, -10, -10, -10, -10,
     })).scale(0.01);
 
-    public static final Tensor1D KING_VALUES_BLACK_LATE = flipTensor(KING_VALUES_MID_WHITE);
-    public static final Tensor1D QUEEN_VALUES_BLACK_LATE = flipTensor(QUEEN_VALUES_WHITE);
-    public static final Tensor1D ROOK_VALUES_BLACK_LATE = flipTensor(ROOK_VALUES_WHITE);
-    public static final Tensor1D BISHOP_VALUES_BLACK_LATE = flipTensor(BISHOP_VALUES_WHITE);
-    public static final Tensor1D KNIGHT_VALUES_BLACK_LATE = flipTensor(KNIGHT_VALUES_WHITE);
-    public static final Tensor1D PAWN_VALUES_BLACK_LATE = flipTensor(PAWN_VALUES_WHITE);
+    public static final Tensor1D KING_VALUES_BLACK_LATE = flipTensor(KING_VALUES_WHITE_LATE);
+    public static final Tensor1D QUEEN_VALUES_BLACK_LATE = flipTensor(QUEEN_VALUES_WHITE_LATE);
+    public static final Tensor1D ROOK_VALUES_BLACK_LATE = flipTensor(ROOK_VALUES_WHITE_LATE);
+    public static final Tensor1D BISHOP_VALUES_BLACK_LATE = flipTensor(BISHOP_VALUES_WHITE_LATE);
+    public static final Tensor1D KNIGHT_VALUES_BLACK_LATE = flipTensor(KNIGHT_VALUES_WHITE_LATE);
+    public static final Tensor1D PAWN_VALUES_BLACK_LATE = flipTensor(PAWN_VALUES_WHITE_LATE);
 
     public static final Tensor1D[] WHITE_PST_LATE = new Tensor1D[]{
             PAWN_VALUES_WHITE_LATE,
@@ -209,9 +209,10 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
     //</editor-fold>
 
 
-    private double CONST_PARAMETER_KING_VALUE_EARLY =                                8751;
+
+    private double CONST_PARAMETER_KING_VALUE_EARLY =                                10000;
     private double CONST_PARAMETER_PAWN_VALUE_LATE =                                 100;
-    private double CONST_PARAMETER_KING_VALUE_LATE =                                 8751;
+    private double CONST_PARAMETER_KING_VALUE_LATE =                                 10000;
     private double CONST_PARAMETER_PAWN_VALUE_EARLY =                                100;
 
     private double PARAMETER_PAWN_TABLE_FACTOR_EARLY =                               44;
@@ -256,7 +257,7 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
     private double PARAMETER_ROOK_VALUE_LATE =                                       424;
     private double PARAMETER_KNIGHT_VALUE_LATE =                                     293;
     private double PARAMETER_BISHOP_VALUE_LATE =                                     301;
-    private double PARAMETER_QUEEN_VALUE_LATE =                                      598;
+    private double PARAMETER_QUEEN_VALUE_LATE =                                      800;
     private double PARAMETER_ROOK_VISIBILITY_LATE =                                  9;
     private double PARAMETER_BISHOP_VISIBILITY_LATE =                                6;
     private double PARAMETER_KNIGHT_VISIBILITY_LATE =                                8;
@@ -280,6 +281,21 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
     private double PARAMETER_ROOK_OPEN_LATE =                                        2;
     private double PARAMETER_CONNECTED_PAWN_LATE =                                   5;
 
+
+    double[] pieceVals = new double[]{0, CONST_PARAMETER_PAWN_VALUE_EARLY,
+                                      PARAMETER_ROOK_VALUE_EARLY,
+                                      PARAMETER_KNIGHT_VALUE_EARLY,
+                                      PARAMETER_BISHOP_VALUE_EARLY,
+                                      PARAMETER_QUEEN_VALUE_EARLY,
+                                      CONST_PARAMETER_KING_VALUE_EARLY};
+
+
+
+
+    private String[] evalNames  = new String[]{"Pawns", "Rooks", "Knights", "Bishops",
+                                               "Queen Position", "Queen Existence", "Queen visibility", "Queen covered visibility", "Queen trapped",
+                                               "King position", "King friendly pieces", "King hostile pieces"};
+    private double[] evalResults = new double[evalNames.length];
 
 
     public AdvancedEvaluator(BoardPhaseDecider phaseDecider) {
@@ -313,30 +329,35 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
         double phase = phaseDecider.getGamePhase(board);
         FastBoard fb = (FastBoard) board;
 
+        return evaluateWhite(fb, phase) - evaluateBlack(fb, phase);
+    }
 
+    public double evaluateWhite(FastBoard fb, double phase){
         return evalateSide(1,
-                           fb.getWhite_pieces(),
-                           WHITE_PST_EARLY,
-                           WHITE_PST_LATE,
-                           fb.getWhite_values(),
-                           fb.getTeam_total()[0],
-                           BitBoard.whitePassedPawnMask,
-                           fb.getBlack_values(),
-                           fb.getTeam_total()[1],
-                           fb.getOccupied(),
-                           phase)
+                    fb.getWhite_pieces(),
+                    WHITE_PST_EARLY,
+                    WHITE_PST_LATE,
+                    fb.getWhite_values(),
+                    fb.getTeam_total()[0],
+                    BitBoard.whitePassedPawnMask,
+                    fb.getBlack_values(),
+                    fb.getTeam_total()[1],
+                    fb.getOccupied(),
+                    phase);
+    }
 
-               - evalateSide(-1,
-                             fb.getBlack_pieces(),
-                             BLACK_PST_EARLY,
-                             BLACK_PST_LATE,
-                             fb.getBlack_values(),
-                             fb.getTeam_total()[1],
-                             BitBoard.blackPassedPawnMask,
-                             fb.getWhite_values(),
-                             fb.getTeam_total()[0],
-                             fb.getOccupied(),
-                             phase);
+    public double evaluateBlack(FastBoard fb, double phase){
+        return evalateSide(-1,
+                    fb.getBlack_pieces(),
+                    BLACK_PST_EARLY,
+                    BLACK_PST_LATE,
+                    fb.getBlack_values(),
+                    fb.getTeam_total()[1],
+                    BitBoard.blackPassedPawnMask,
+                    fb.getWhite_values(),
+                    fb.getTeam_total()[0],
+                    fb.getOccupied(),
+                    phase);
     }
 
 
@@ -369,6 +390,10 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
             long totalOccupied,
             double taper) {
 
+        // simple check for draw (no pawns, only one bishop or knight and no queen)
+        if(ourPieces[0].size() == 0 && ourPieces[1].size() == 0 && (ourPieces[2].size() + ourPieces[3].size() <= 1) && ourPieces[4].size() == 0) return 0;
+
+
         /**
          * detect which squares are covered by the opponent
          */
@@ -377,6 +402,9 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
                          BitBoard.shiftSouthWest(opponentPieceOccupancy[0]) | BitBoard.shiftSouthEast(opponentPieceOccupancy[0]) :
                          BitBoard.shiftNorthWest(opponentPieceOccupancy[0]) | BitBoard.shiftNorthEast(opponentPieceOccupancy[0]));
         double eval = 0;
+
+
+
 
         eval += feature_knights(ourPieces, ourTotalOccupancy, opponentPawnCover, earlyPST, latePST, taper);
         eval += feature_pawns(ourPieces, color, ourPassedPawnMask, ourPieceOccupancy, opponentPieceOccupancy, earlyPST, latePST, taper);
@@ -409,6 +437,7 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
             ev += taper(PARAMETER_KNIGHT_TRAPPED_EARLY, PARAMETER_KNIGHT_TRAPPED_LATE, taper)
                   * (attacks & opponentPawnCover) == attacks ? 1 : 0;
         }
+        evalResults[2] = ev;
         return ev;
     }
 
@@ -444,6 +473,7 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
                         BitBoard.bitCount(BitBoard.shiftNorthWest(ourPieceOccupancy[0]) & ourPieceOccupancy[0])) :
                        (BitBoard.bitCount(BitBoard.shiftSouthEast(ourPieceOccupancy[0]) & ourPieceOccupancy[0]) +
                         BitBoard.bitCount(BitBoard.shiftSouthWest(ourPieceOccupancy[0]) & ourPieceOccupancy[0])));
+        evalResults[0] = ev;
         return ev;
     }
 
@@ -478,6 +508,7 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
                 ev += taper(PARAMETER_ROOK_HALF_OPEN_EARLY, PARAMETER_ROOK_HALF_OPEN_LATE, taper);
             }
         }
+        evalResults[1] = ev;
         return ev;
     }
 
@@ -505,6 +536,7 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
         if (ourPieces[3].size() > 1) {
             ev += taper(PARAMETER_DOUBLE_BISHOP_EARLY, PARAMETER_DOUBLE_BISHOP_LATE, taper);
         }
+        evalResults[3] = ev;
         return ev;
     }
 
@@ -518,19 +550,28 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
         double ev = 0;
         for (int i = 0; i < ourPieces[4].size(); i++) {
             int index = ourPieces[4].get(i);
-            ev += taper(PARAMETER_QUEEN_TABLE_FACTOR_EARLY, PARAMETER_QUEEN_TABLE_FACTOR_LATE, taper) *
-                  taper(pstEarly[4].get(index), pstLate[4].get(index), taper);
-            ev += taper(PARAMETER_QUEEN_VALUE_EARLY, PARAMETER_QUEEN_VALUE_LATE, taper);
+
             long attacks = (BitBoard.lookUpBishopAttack(index, totalOccupied) |
                             BitBoard.lookUpRookAttack(index, totalOccupied))
                            & ~ourTotalOccupancy;
-            ev += taper(PARAMETER_QUEEN_VISIBILITY_EARLY, PARAMETER_QUEEN_VISIBILITY_LATE, taper)
-                  * BitBoard.bitCount(attacks);
-            ev += taper(PARAMETER_QUEEN_VISIBILITY_PAWN_COVER_EARLY, PARAMETER_QUEEN_VISIBILITY_PAWN_COVER_LATE, taper)
-                  * BitBoard.bitCount(attacks & opponentPawnCover);
-            ev += taper(PARAMETER_QUEEN_TRAPPED_EARLY, PARAMETER_QUEEN_TRAPPED_LATE, taper)
-                  * (attacks & opponentPawnCover) == attacks ? 1 : 0;
+
+            evalResults[4] = taper(PARAMETER_QUEEN_TABLE_FACTOR_EARLY, PARAMETER_QUEEN_TABLE_FACTOR_LATE, taper) *
+                             taper(pstEarly[4].get(index), pstLate[4].get(index), taper);
+            evalResults[5] = taper(PARAMETER_QUEEN_VALUE_EARLY, PARAMETER_QUEEN_VALUE_LATE, taper);
+            evalResults[6] = taper(PARAMETER_QUEEN_VISIBILITY_EARLY, PARAMETER_QUEEN_VISIBILITY_LATE, taper)
+                             * BitBoard.bitCount(attacks);
+            evalResults[7] = taper(PARAMETER_QUEEN_VISIBILITY_PAWN_COVER_EARLY, PARAMETER_QUEEN_VISIBILITY_PAWN_COVER_LATE, taper)
+                             * BitBoard.bitCount(attacks & opponentPawnCover);
+            evalResults[8] = taper(PARAMETER_QUEEN_TRAPPED_EARLY, PARAMETER_QUEEN_TRAPPED_LATE, taper)
+                             * (attacks & opponentPawnCover) == attacks ? 1 : 0;
+
+            ev += evalResults[4];
+            ev += evalResults[5];
+            ev += evalResults[6];
+            ev += evalResults[7];
+            ev += evalResults[8];
         }
+        //evalResults[4] = ev;
         return ev;
     }
 
@@ -544,69 +585,64 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
         double ev = 0;
         for (int i = 0; i < ourPieces[5].size(); i++) {
             int index = ourPieces[5].get(i);
-            //TODO
-            ev += taper(PARAMETER_KING_TABLE_FACTOR_EARLY, PARAMETER_KING_TABLE_FACTOR_LATE, taper) *
-                  taper(pstEarly[5].get(index), pstLate[5].get(index), taper);;
+
+
+            evalResults[9] = taper(PARAMETER_KING_TABLE_FACTOR_EARLY, PARAMETER_KING_TABLE_FACTOR_LATE, taper) *
+                             taper(pstEarly[5].get(index), pstLate[5].get(index), taper);
+            evalResults[10] = taper(PARAMETER_KING_SAFETY_1_EARLY, PARAMETER_KING_SAFETY_1_LATE, taper) *
+                            (BitBoard.bitCount(BitBoard.KING_ATTACKS[index] & ourTotalOccupancy));
+            evalResults[11] = taper(PARAMETER_KING_SAFETY_2_EARLY, PARAMETER_KING_SAFETY_2_LATE, taper) *
+                            (BitBoard.bitCount(BitBoard.KING_ATTACKS[index] & opponentTotalOccupancy));
+
+            ev += evalResults[9];
+            ev += evalResults[10];
+            ev += evalResults[11];
             ev += taper(CONST_PARAMETER_KING_VALUE_EARLY, CONST_PARAMETER_KING_VALUE_LATE, taper);
-            ev += taper(PARAMETER_KING_SAFETY_1_EARLY, PARAMETER_KING_SAFETY_1_LATE, taper) *
-                  (BitBoard.bitCount(BitBoard.KING_ATTACKS[index] & ourTotalOccupancy));
-            ev += taper(PARAMETER_KING_SAFETY_2_EARLY, PARAMETER_KING_SAFETY_2_LATE, taper) *
-                  (BitBoard.bitCount(BitBoard.KING_ATTACKS[index] & opponentTotalOccupancy));
+
         }
         return ev;
     }
 
-//    public void printEvaluation(Board board){
-//        double phase = phaseDecider.getGamePhase(board);
-//        FastBoard fb = (FastBoard) board;
-//        double[] white = evaluateSideTrack(1,
-//                           fb.getWhite_pieces(),
-//                           new Tensor1D[]{PAWN_VALUES_WHITE, ROOK_VALUES_WHITE, KNIGHT_VALUES_WHITE, BISHOP_VALUES_WHITE, QUEEN_VALUES_WHITE, KING_VALUES_MID_WHITE},
-//                           fb.getWhite_values(),
-//                           fb.getTeam_total()[0],
-//                           BitBoard.whitePassedPawnMask,
-//                           fb.getBlack_values(),
-//                           fb.getTeam_total()[1],
-//                           fb.getOccupied(),
-//                           phase);
-//        double[] black = evaluateSideTrack(-1,
-//                             fb.getBlack_pieces(),
-//                             new Tensor1D[]{PAWN_VALUES_BLACK, ROOK_VALUES_BLACK, KNIGHT_VALUES_BLACK, BISHOP_VALUES_BLACK, QUEEN_VALUES_BLACK, KING_VALUES_MID_BLACK},
-//                             fb.getBlack_values(),
-//                             fb.getTeam_total()[1],
-//                             BitBoard.blackPassedPawnMask,
-//                             fb.getWhite_values(),
-//                             fb.getTeam_total()[0],
-//                             fb.getOccupied(),
-//                             phase);
-//
-//
-//    }
+    public void printEvaluation(Board board){
+        double phase = phaseDecider.getGamePhase(board);
+        FastBoard fb = (FastBoard) board;
+        evaluateWhite(fb, phase);
+        double[] whiteRes = Arrays.copyOf(evalResults, evalResults.length);
+        evaluateBlack(fb, phase);
+        double[] blackRes = Arrays.copyOf(evalResults, evalResults.length);
 
-//    public double[] evaluateSideTrack(
-//            int color,
-//            PieceList[] ourPieces,
-//            Tensor1D[] pst,
-//            long[] ourPieceOccupancy,
-//            long ourTotalOccupancy,
-//            long[] ourPassedPawnMask,
-//            long[] opponentPieceOccupancy,
-//            long opponentTotalOccupancy,
-//            long totalOccupied,
-//            double taper) {
-//        long opponentPawnCover =
-//                (color == 1 ?
-//                         BitBoard.shiftSouthWest(opponentPieceOccupancy[0]) | BitBoard.shiftSouthEast(opponentPieceOccupancy[0]) :
-//                         BitBoard.shiftNorthWest(opponentPieceOccupancy[0]) | BitBoard.shiftNorthEast(opponentPieceOccupancy[0]));
-//        double eval[] = new double[6];
-//        eval[0] += feature_pawns(ourPieces, color, ourPassedPawnMask, ourPieceOccupancy, opponentPieceOccupancy, pst, taper);
-//        eval[1] += feature_knights(ourPieces, ourTotalOccupancy, opponentPawnCover, pst, taper);
-//        eval[2] += feature_rooks(ourPieces, ourTotalOccupancy, ourPieceOccupancy, opponentPieceOccupancy, totalOccupied, opponentPawnCover, pst, taper);
-//        eval[3] += feature_bishops(ourPieces, ourTotalOccupancy, totalOccupied, opponentPawnCover, pst, taper);
-//        eval[4] += feature_queens(ourPieces, ourTotalOccupancy, totalOccupied, opponentPawnCover, pst, taper);
-//        eval[5] += feature_kings(ourPieces, ourTotalOccupancy, opponentTotalOccupancy, pst, taper);
-//        return eval;
-//    }
+
+        StringBuilder builder = new StringBuilder();
+
+
+        String format = "%-30s | %-20s | %-20s %n";
+
+        builder.append(String.format(format, "feature", "white", "black"));
+        builder.append("───────────────────────────────┼──────────────────────┼────────────────────────\n");
+
+        for(int i = 0; i < evalNames.length; i++){
+
+            builder.append(String.format(format, evalNames[i], whiteRes[i], blackRes[i]));
+        }
+
+        //builder.append(" ┌───┬───┬───┬───┬───┬───┬───┬───┐\n");
+
+//        for (int r = 7; r >= 0; --r)
+//        {
+//            for (int f = 0; f <= 7; ++f)
+//                builder.append(" | " + IO.getPieceChar(getPiece(f,r)));
+//
+//            if(r != 0){
+//                builder.append(" |\n ├───┼───┼───┼───┼───┼───┼───┼───┤\n");
+//            }else{
+//                builder.append(" |\n └───┴───┴───┴───┴───┴───┴───┴───┘\n");
+//            }
+//        }
+//        builder.append("fen: " + IO.write_FEN(this));
+
+        System.out.println(builder.toString());
+    }
+
 
 
     public double[] getEvolvableValues() {
@@ -841,12 +877,7 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
     }
 
 
-    double[] pieceVals = new double[]{0, CONST_PARAMETER_PAWN_VALUE_EARLY,
-                                      PARAMETER_ROOK_VALUE_EARLY,
-                                      PARAMETER_KNIGHT_VALUE_EARLY,
-                                      PARAMETER_BISHOP_VALUE_EARLY,
-                                      PARAMETER_QUEEN_VALUE_EARLY,
-                                      CONST_PARAMETER_KING_VALUE_EARLY};
+
 
 
     public double staticExchangeEvaluation(Board board, int sq, int color){
@@ -911,14 +942,15 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
 
         FastBoard fb = IO.read_FEN(new FastBoard(), "rnbqk1nr/pppp1ppp/8/4P3/1b6/8/PPP1PPPP/RNBQKBNR w QKqk -");
 
+        System.out.println(fb);
+
         //System.out.println(BitBoard.squareIndex(4,4));
 
         AdvancedEvaluator av =  new AdvancedEvaluator(new SimpleDecider());
 
 
 
-
-        av.staticExchangeEvaluation(fb, 51, 1);
+        av.printEvaluation(fb);
 
 
     }

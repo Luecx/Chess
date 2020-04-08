@@ -14,6 +14,7 @@ import ai.ordering.SystematicOrderer2;
 import ai.reducing.SenpaiReducer;
 import io.command_line.commands.Command;
 import io.command_line.commands.CommandDataBase;
+import io.command_line.commands.Executable;
 import io.command_line.commands.arguments.BooleanArgument;
 import io.command_line.commands.arguments.NumericArgument;
 import io.command_line.commands.arguments.TextArgument;
@@ -173,6 +174,10 @@ public class UCI {
                                                                                                new MoveListBuffer(20, 300),
                                                                                                c.getBooleanArgument("dif").getValue()))));
 
+        cdb.registerCommand(
+                new Command("eval", "print a detailed evaluation of the board")
+                        .setExecutable(c -> ((AdvancedEvaluator)ai.getEvaluator()).printEvaluation(getBoard()))
+        );
 
 
         System.out.println("           done! [" +String.format("%5s",(System.currentTimeMillis()-t)+ " ms") + "]");
