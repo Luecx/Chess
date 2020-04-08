@@ -440,13 +440,11 @@ public class AdvancedEndGameEvaluator implements LateGameEvaluator {
         PARAMETER_ISOLATED_PAWN=ar[26];
         PARAMETER_DOUBLED_PAWN=ar[27];
         PARAMETER_DOUBLE_BISHOP=ar[28];
-        PARAMETER_KING_SAFETY_1=ar[29];       //10
-        PARAMETER_KING_SAFETY_2=ar[30];       //18
+        PARAMETER_KING_SAFETY_1=ar[29];
+        PARAMETER_KING_SAFETY_2=ar[30];
         PARAMETER_ROOK_HALF_OPEN=ar[31];
         PARAMETER_ROOK_OPEN=ar[32];
         PARAMETER_CONNECTED_PAWN=ar[33];
-
-        
     }
 
     @Override

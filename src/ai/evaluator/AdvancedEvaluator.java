@@ -625,21 +625,6 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
             builder.append(String.format(format, evalNames[i], whiteRes[i], blackRes[i]));
         }
 
-        //builder.append(" ┌───┬───┬───┬───┬───┬───┬───┬───┐\n");
-
-//        for (int r = 7; r >= 0; --r)
-//        {
-//            for (int f = 0; f <= 7; ++f)
-//                builder.append(" | " + IO.getPieceChar(getPiece(f,r)));
-//
-//            if(r != 0){
-//                builder.append(" |\n ├───┼───┼───┼───┼───┼───┼───┼───┤\n");
-//            }else{
-//                builder.append(" |\n └───┴───┴───┴───┴───┴───┴───┴───┘\n");
-//            }
-//        }
-//        builder.append("fen: " + IO.write_FEN(this));
-
         System.out.println(builder.toString());
     }
 
