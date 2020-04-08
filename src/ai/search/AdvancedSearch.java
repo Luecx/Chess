@@ -440,7 +440,7 @@ public class AdvancedSearch implements AI {
             return 0;
         }
         if(depthLeft <= 0) {
-            return qSearch(alpha, beta, currentDepth);
+            return qSearch(alpha, beta, currentDepth,0);
         }
 
         _nodes ++;
@@ -478,10 +478,10 @@ public class AdvancedSearch implements AI {
                 (evaluator.evaluate(_board) * _board.getActivePlayer()) <= alpha - razor_offset) {
 
                 if (depthLeft == 1) {
-                    return qSearch(alpha, beta, currentDepth);
+                    return qSearch(alpha, beta, currentDepth,0);
                 }
                 double rWindow = alpha - razor_offset;
-                double value = qSearch(rWindow, rWindow + 1, currentDepth);
+                double value = qSearch(rWindow, rWindow + 1, currentDepth,0);
                 if (value <= rWindow) {
                     return value;
                 }
@@ -533,7 +533,7 @@ public class AdvancedSearch implements AI {
             if( score >= beta       ){
                 if(use_killer_heuristic && m.getPieceTo() == 0)     _killerTable.put(currentDepth, m.copy());
                 if(use_history_heuristic)                           _historyTable.add(depthLeft*depthLeft,m.getFrom(), m.getTo());
-                if(use_transposition)                               placeInTT(zobrist, currentDepth, depthLeft, alpha, TranspositionEntry.CUT_NODE, m.copy());
+                if(use_transposition)                               placeInTT(zobrist, currentDepth, depthLeft, beta, TranspositionEntry.CUT_NODE, m.copy());
                 return beta;   // fail-hard beta-cutoff
             }
             if( score > highestScore){
@@ -559,7 +559,7 @@ public class AdvancedSearch implements AI {
         }
 
         if(bestMove != null){
-            if (score > origonalAlpha) {
+            if (alpha > origonalAlpha) {
                 placeInTT(zobrist, currentDepth, depthLeft, alpha, TranspositionEntry.PV_NODE, bestMove);
             } else {
                 if (use_transposition) {
@@ -571,27 +571,24 @@ public class AdvancedSearch implements AI {
         return alpha;
     }
 
-    public double qSearch(double alpha, double beta, int currentDepth) {
+    public double qSearch(double alpha, double beta, int currentDepth, int depthLeft) {
 
 
-
-        //System.out.println(currentDepth);
 
         _nodes ++;
         if(_board.isDraw()){
             return 0;
         }
 
-        double stand_pat = evaluator.evaluate(_board) * _board.getActivePlayer();
+        double      stand_pat       = evaluator.evaluate(_board) * _board.getActivePlayer();
+        Move        bestMove        = null;
+        double      origonalAlpha   = alpha;
+        long        zobrist         = _board.zobrist();
+
         if(!use_qSearch){
             return stand_pat;
         }
 
-//        if(stand_pat % 1 != 0){
-//            System.out.println(stand_pat);
-//            System.out.println(_board);
-//            System.exit(-1);
-//        }
 
         List<Move> allMoves = _board.getCaptureMoves(_buffer.get(currentDepth));
         if (allMoves.size() == 0){
@@ -612,17 +609,22 @@ public class AdvancedSearch implements AI {
             if(!_board.isLegal(m)) continue;
 
             _board.move(m);
-            double score = -qSearch(-beta, -alpha, currentDepth+1);
+            double score = -qSearch(-beta, -alpha, currentDepth+1, depthLeft);
             _board.undoMove();
 
             legalMoves ++;
 
 
             if (score >= beta) {
+//                if (use_transposition) {
+//                    placeInTT(zobrist, currentDepth, depthLeft, beta, TranspositionEntry.CUT_NODE, bestMove);
+//                }
                 return beta;
             }
-            if (score > alpha)
+            if (score > alpha){
+//                bestMove = m.copy();
                 alpha = score;
+            }
 
         }
 
@@ -630,6 +632,20 @@ public class AdvancedSearch implements AI {
         if(legalMoves == 0){
             return stand_pat;
         }
+
+
+
+        if(bestMove != null){
+            if (alpha > origonalAlpha) {
+                placeInTT(zobrist, currentDepth, depthLeft, alpha, TranspositionEntry.PV_NODE, bestMove);
+            } else {
+//                if (use_transposition) {
+//                    placeInTT(zobrist, currentDepth, depthLeft, alpha, TranspositionEntry.ALL_NODE, bestMove);
+//                }
+            }
+        }
+
+
 
 //        //full research
 //        if(legalMoves == 0){
@@ -675,7 +691,7 @@ public class AdvancedSearch implements AI {
 //        if(this._transpositionTable == null)    this._transpositionTable = new TranspositionTable<>();
 //        else                                    this._transpositionTable.clear();
 
-        return qSearch(-1000000,1000000, 0) * board.getActivePlayer();
+        return qSearch(-1000000,1000000, 0,0) * board.getActivePlayer();
     }
 
     @Override
