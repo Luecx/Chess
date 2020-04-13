@@ -294,6 +294,7 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
     private String[] evalNames  = new String[]{"Pawns", "Rooks", "Knights", "Bishops",
                                                "Queen Position", "Queen Existence", "Queen visibility", "Queen covered visibility", "Queen trapped",
                                                "King position", "King friendly pieces", "King hostile pieces"};
+
     private double[] evalResults = new double[evalNames.length];
 
 
@@ -314,6 +315,23 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
     }
 
     /**
+     * returns true if the board is likely to be a draw
+     */
+    public boolean probablyInsuficientMaterial(PieceList[] white, PieceList[] black){
+        if(white[0].size() != 0 || black[0].size() != 0) return false; //if pawns exist
+
+
+        int wAdv = white[1].size() * 5 + white[2].size() * 3 + white[3].size() * 3 + white[4].size() * 9;
+        int bAdv = black[1].size() * 5 + black[2].size() * 3 + black[3].size() * 3 + black[4].size() * 9;
+
+        int advantage = wAdv - bAdv;
+
+
+        if(wAdv < 10 && bAdv < 10 && Math.abs(advantage) < 4) return true;
+        return false;
+    }
+
+    /**
      * used to evaluate the board.
      * First the game phase aka. taper is evaluated.
      * Then blacks evaluation is subtracted from white evaluation.
@@ -327,6 +345,8 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
     public double evaluate(Board board) {
         double phase = phaseDecider.getGamePhase(board);
         FastBoard fb = (FastBoard) board;
+
+        if(probablyInsuficientMaterial(fb.getWhite_pieces(),fb.getBlack_pieces())) return 0;
 
         return evaluateWhite(fb, phase) - evaluateBlack(fb, phase);
     }
@@ -388,9 +408,6 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
             long opponentTotalOccupancy,
             long totalOccupied,
             double taper) {
-
-        // simple check for draw (no pawns, only one bishop or knight and no queen)
-        if(ourPieces[0].size() == 0 && ourPieces[1].size() == 0 && (ourPieces[2].size() + ourPieces[3].size() <= 1) && ourPieces[4].size() == 0) return 0;
 
 
         /**

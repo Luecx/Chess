@@ -16,8 +16,10 @@ import board.FastBoard;
 import board.moves.Move;
 import board.moves.MoveListBuffer;
 import board.setup.Setup;
+import io.IO;
 import io.UCI;
 
+import java.util.Arrays;
 import java.util.List;
 
 public class AdvancedSearch implements AI {
@@ -453,6 +455,22 @@ public class AdvancedSearch implements AI {
 
 
         /**
+         * mate distance pruning
+         */
+        double mating_value = MAX_CHECKMATE_VALUE - currentDepth;
+        if (mating_value < beta) {
+            beta = mating_value;
+            if (alpha >= mating_value) return mating_value;
+        }
+        mating_value = -MAX_CHECKMATE_VALUE + currentDepth;
+        if (mating_value > alpha) {
+            alpha = mating_value;
+            if (beta <= mating_value) return mating_value;
+        }
+
+
+
+        /**
          * checking for transpositions
          */
         if (use_transposition) {
@@ -548,7 +566,7 @@ public class AdvancedSearch implements AI {
                 score = -pvSearch(-beta, -alpha, currentDepth+1, depthLeft-1-reduction+extensions, true, false);
             } else {
                 score = -pvSearch(-alpha-1, -alpha, currentDepth+1, depthLeft-1-reduction+extensions, false, false);
-                if (score > alpha && score < beta) // in fail-soft ... && score < beta ) is common
+                if (score > alpha && score < beta && pv) // in fail-soft ... && score < beta ) is common
                     score = -pvSearch(-beta, -alpha, currentDepth+1, depthLeft-1-reduction+extensions, true,false); // re-search
             }
             _board.undoMove();
@@ -604,8 +622,8 @@ public class AdvancedSearch implements AI {
          * storing in the TT
          */
         if(bestMove != null){
-            if (alpha > origonalAlpha) {
-                placeInTT(zobrist, currentDepth, depthLeft, alpha, TranspositionEntry.PV_NODE, bestMove);
+            if (pv) {
+                placeInTT(zobrist, currentDepth, depthLeft, highestScore, TranspositionEntry.PV_NODE, bestMove);
             } else {
                 if (use_transposition) {
                     placeInTT(zobrist, currentDepth, depthLeft, alpha, TranspositionEntry.ALL_NODE, bestMove);
@@ -961,6 +979,8 @@ public class AdvancedSearch implements AI {
         FastBoard fb = new FastBoard(Setup.DEFAULT);
 
 
+        fb = IO.read_FEN(fb, "8/7K/8/8/8/8/R7/7k w - -");
+
         //        AdvancedSearch advancedSearch = new AdvancedSearch(
 //                new AdvancedEvaluator(new SimpleDecider()),
 //                new SystematicOrderer2(),
@@ -973,13 +993,13 @@ public class AdvancedSearch implements AI {
         //advancedSearch.bestMove(fb);
 
 
+
+
         AdvancedSearch advancedSearch = new AdvancedSearch(
                 new AdvancedEvaluator(new SimpleDecider()),
                 new SystematicOrderer2(),
-                new SenpaiReducer(5), 2, 10);
+                new SenpaiReducer(5), 2, 2);
 
-        advancedSearch.setUse_transposition(true);
-        advancedSearch.setUse_aspiration(false);
 
         advancedSearch.bestMove(fb);
 
