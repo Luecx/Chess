@@ -1,6 +1,5 @@
 package ai.evaluator.decider;
 
-import ai.evaluator.Evaluator;
 import board.Board;
 
 public interface BoardPhaseDecider {

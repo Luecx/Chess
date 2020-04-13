@@ -1,7 +1,5 @@
 package ai.monte_carlo;
 
-import board.Board;
-import board.moves.Move;
 import ai.monte_carlo.expandor.Expander;
 import ai.monte_carlo.nodedata.ChessNodeData;
 import ai.monte_carlo.nodedata.NodeData;
@@ -9,6 +7,8 @@ import ai.monte_carlo.selection.Selector;
 import ai.monte_carlo.selection.UCT;
 import ai.monte_carlo.simulator.Simulator;
 import ai.search.AI;
+import board.Board;
+import board.moves.Move;
 
 import java.util.List;
 

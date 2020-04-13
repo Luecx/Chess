@@ -1,6 +1,5 @@
 package ai.tools.transpositions;
 
-import java.util.Arrays;
 import java.util.HashMap;
 
 public class TranspositionTable<V> extends HashMap<Long, V> {

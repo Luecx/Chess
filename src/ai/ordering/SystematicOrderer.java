@@ -1,12 +1,12 @@
 package ai.ordering;
 
-import ai.tools.tables.HistoryTable;
-import board.Board;
-import board.moves.Move;
-import ai.tools.tables.KillerTable;
 import ai.tools.PVLine;
+import ai.tools.tables.HistoryTable;
+import ai.tools.tables.KillerTable;
 import ai.tools.transpositions.TranspositionEntry;
 import ai.tools.transpositions.TranspositionTable;
+import board.Board;
+import board.moves.Move;
 
 import java.util.ArrayList;
 import java.util.List;

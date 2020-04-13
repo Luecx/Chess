@@ -1,13 +1,13 @@
 package ai.evaluator.optimiser;
 
-import ai.evaluator.*;
-import ai.evaluator.decider.BoardPhaseDecider;
+import ai.evaluator.AdvancedEvaluator;
+import ai.evaluator.Evaluator;
+import ai.evaluator.SimpleEvaluator;
 import ai.evaluator.decider.SimpleDecider;
 import ai.ordering.SystematicOrderer2;
 import ai.reducing.SenpaiReducer;
 import ai.search.AdvancedSearch;
 import ai.tools.threads.Pool;
-import ai.tools.threads.PoolFunction;
 import board.Board;
 import board.FastBoard;
 import io.IO;

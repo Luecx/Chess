@@ -1,7 +1,5 @@
 package ai.evaluator;
 
-import board.Board;
-
 /**
  * The interface is used to create Midgame-Evaluators.
  * Evaluators are used in Search-algorithms in the leaf-nodes and

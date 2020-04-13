@@ -1,14 +1,14 @@
 package ai.search;
 
-import board.Board;
-import board.moves.Move;
 import ai.evaluator.Evaluator;
 import ai.ordering.Orderer;
 import ai.tools.PVLine;
 import ai.tools.transpositions.TranspositionEntry;
 import ai.tools.transpositions.TranspositionTable;
+import board.Board;
+import board.moves.Move;
 
-import java.util.*;
+import java.util.List;
 
 @Deprecated
 public class AlphaBeta implements AI {

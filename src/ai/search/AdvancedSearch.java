@@ -1,8 +1,8 @@
 package ai.search;
 
 import ai.evaluator.AdvancedEvaluator;
-import ai.evaluator.decider.SimpleDecider;
 import ai.evaluator.Evaluator;
+import ai.evaluator.decider.SimpleDecider;
 import ai.ordering.Orderer;
 import ai.ordering.SystematicOrderer2;
 import ai.reducing.Reducer;
@@ -16,12 +16,9 @@ import board.FastBoard;
 import board.moves.Move;
 import board.moves.MoveListBuffer;
 import board.setup.Setup;
-import io.IO;
-import visual.game.Player;
 import io.UCI;
-import visual.Frame;
 
-import java.util.*;
+import java.util.List;
 
 public class AdvancedSearch implements AI {
 
@@ -547,12 +544,12 @@ public class AdvancedSearch implements AI {
             int extensions = _board.givesCheck(m) ? 1:0;
 
             _board.move(m);
-            if (legalMoves == 0) {
-                score = -pvSearch(-beta, -alpha, currentDepth+1, depthLeft-1-reduction+extensions, pv, false);
+            if (legalMoves == 0 && pv) {
+                score = -pvSearch(-beta, -alpha, currentDepth+1, depthLeft-1-reduction+extensions, true, false);
             } else {
                 score = -pvSearch(-alpha-1, -alpha, currentDepth+1, depthLeft-1-reduction+extensions, false, false);
                 if (score > alpha && score < beta) // in fail-soft ... && score < beta ) is common
-                    score = -pvSearch(-beta, -alpha, currentDepth+1, depthLeft-1-reduction+extensions, false,false); // re-search
+                    score = -pvSearch(-beta, -alpha, currentDepth+1, depthLeft-1-reduction+extensions, true,false); // re-search
             }
             _board.undoMove();
 
@@ -979,7 +976,7 @@ public class AdvancedSearch implements AI {
         AdvancedSearch advancedSearch = new AdvancedSearch(
                 new AdvancedEvaluator(new SimpleDecider()),
                 new SystematicOrderer2(),
-                new SenpaiReducer(1), 2, 10);
+                new SenpaiReducer(5), 2, 10);
 
         advancedSearch.setUse_transposition(true);
         advancedSearch.setUse_aspiration(false);

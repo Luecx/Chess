@@ -1,12 +1,12 @@
 package ai.search;
 
+import ai.evaluator.Evaluator;
+import ai.tools.transpositions.TranspositionTable;
 import board.Board;
 import board.FastBoard;
 import board.moves.Move;
 import board.moves.MoveListBuffer;
 import board.setup.Setup;
-import ai.evaluator.Evaluator;
-import ai.tools.transpositions.TranspositionTable;
 
 import java.util.List;
 

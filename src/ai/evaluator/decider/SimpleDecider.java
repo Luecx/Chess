@@ -1,8 +1,5 @@
 package ai.evaluator.decider;
 
-import ai.evaluator.Evaluator;
-import ai.evaluator.LateGameEvaluator;
-import ai.evaluator.MidGameEvaluator;
 import board.Board;
 import board.FastBoard;
 

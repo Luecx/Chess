@@ -1,10 +1,10 @@
 package ai.monte_carlo.expandor;
 
 
-import board.Board;
-import board.moves.Move;
 import ai.monte_carlo.Node;
 import ai.monte_carlo.nodedata.ChessNodeData;
+import board.Board;
+import board.moves.Move;
 
 import java.util.ArrayList;
 import java.util.List;

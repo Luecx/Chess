@@ -6,7 +6,6 @@ import ai.tools.tensor.Tensor1D;
 import board.Board;
 import board.FastBoard;
 import board.bitboards.BitBoard;
-import board.moves.Move;
 import board.pieces.PieceList;
 import io.IO;
 
