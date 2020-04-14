@@ -622,7 +622,7 @@ public class AdvancedSearch implements AI {
          * storing in the TT
          */
         if(bestMove != null){
-            if (pv) {
+            if (pv && highestScore >= alpha && highestScore <= beta) {
                 placeInTT(zobrist, currentDepth, depthLeft, highestScore, TranspositionEntry.PV_NODE, bestMove);
             } else {
                 if (use_transposition) {
