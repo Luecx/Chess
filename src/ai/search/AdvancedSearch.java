@@ -47,15 +47,20 @@ public class AdvancedSearch implements AI {
     protected boolean                                   use_killer_heuristic    = true;         //flag for killer tables
     protected boolean                                   use_history_heuristic   = true;         //flag for history heuristic
     protected boolean                                   use_aspiration          = false;        //flag for aspiriation windows
+    protected boolean                                   use_futility_pruning    = false;        //flag for futility pruning at depth<=1 nodes
+    protected boolean                                   use_delta_pruning       = false;        //flag for delta pruning inside quiescence search
 
     protected boolean                                   print_overview          = true;         //flag for output-printing
 
-
+    protected int                                       deepening_start_depth   = 6;            //initial depth for it-deepening
     protected int                                       killer_count            = 3;            //amount of killer moves
     protected int                                       null_move_reduction     = 2;            //how much to reduce null moves
     protected int                                       razor_offset            = 300;
-
-
+    protected int                                       futility_pruning_margin = 200;          //safety margin for futility pruning
+    protected int                                       delta_pruning_margin    = 200;          //safety margin for futility pruning
+    protected int                                       delta_pruning_big_margin= 1000;         //safety margin for delta pruning without checking nodes
+    protected int[]                                     delta_pruning_captures  =               //adding these values to captures for delta pruning
+                                    new int[]{0,100,500,300,315,800};
 
     private KillerTable                                 _killerTable;
     private HistoryTable                                _historyTable;
@@ -426,6 +431,101 @@ public class AdvancedSearch implements AI {
         this.use_aspiration = use_aspiration;
     }
 
+    /**
+     * gets the usage of futility pruning at depth<=1 nodes
+     * @return
+     */
+    public boolean isUse_futility_pruning() {
+        return use_futility_pruning;
+    }
+
+    /**
+     * sets the usage of futility pruning at depth<=1 nodes
+     * @param use_futility_pruning
+     */
+    public void setUse_futility_pruning(boolean use_futility_pruning) {
+        this.use_futility_pruning = use_futility_pruning;
+    }
+
+    /**
+     * gets the usage of delta pruning at quiescence nodes
+     * @return
+     */
+    public boolean isUse_delta_pruning() {
+        return use_delta_pruning;
+    }
+
+    /**
+     * sets the usage of delta pruning at quiescence nodes
+     * @param use_delta_pruning
+     */
+    public void setUse_delta_pruning(boolean use_delta_pruning) {
+        this.use_delta_pruning = use_delta_pruning;
+    }
+
+    /**
+     * gets the futiltiy margin for depth<=1 nodes
+     * @return
+     */
+    public int getFutility_pruning_margin() {
+        return futility_pruning_margin;
+    }
+
+    /**
+     * sets the futiltiy margin for depth<=1 nodes
+     */
+    public void setFutility_pruning_margin(int futility_pruning_margin) {
+        this.futility_pruning_margin = futility_pruning_margin;
+    }
+
+    /**
+     * gets the delta pruning margin for quiescence nodes
+     * @return
+     */
+    public int getDelta_pruning_margin() {
+        return delta_pruning_margin;
+    }
+
+    /**
+     * sets the delta pruning margin for quiescence nodes
+     */
+    public void setDelta_pruning_margin(int delta_pruning_margin) {
+        this.delta_pruning_margin = delta_pruning_margin;
+    }
+
+    /**
+     * gets the big margin for delta pruning at quiescence nodes.
+     * If the stand_pat is this much below alpha, this node will not be searched at all.
+     * @return
+     */
+    public int getDelta_pruning_big_margin() {
+        return delta_pruning_big_margin;
+    }
+
+    /**
+     * sets the big margin for delta pruning at quiescence nodes.
+     * If the stand_pat is this much below alpha, this node will not be searched at all.
+     */
+    public void setDelta_pruning_big_margin(int delta_pruning_big_margin) {
+        this.delta_pruning_big_margin = delta_pruning_big_margin;
+    }
+
+    /**
+     * gets the initial depth at which iterative deepening is started
+     * @return
+     */
+    public int getDeepening_start_depth() {
+        return deepening_start_depth;
+    }
+
+    /**
+     * sets the initial depth at which iterative deepening is started
+     * @return
+     */
+    public void setDeepening_start_depth(int deepening_start_depth) {
+        this.deepening_start_depth = deepening_start_depth;
+    }
+
     private double pvSearch(double alpha, double beta, int currentDepth, int depthLeft, boolean pv, boolean extension) {
         _selDepth = Math.max(_selDepth, currentDepth);
 
@@ -437,6 +537,7 @@ public class AdvancedSearch implements AI {
         double      highestScore    = score;
         double      eval            = evaluator.evaluate(_board) * _board.getActivePlayer();
         int         legalMoves      = 0;
+        boolean     isInCheck       = _board.isInCheck(_board.getActivePlayer());
         Move        bestMove        = null;
 
 
@@ -528,7 +629,7 @@ public class AdvancedSearch implements AI {
          * null move pruning
          */
         if (use_null_moves) {
-            if(!pv && !_board.isInCheck(_board.getActivePlayer())){
+            if(!pv && !isInCheck){
                 _board.move_null();
                 score = -pvSearch(-alpha-1, -alpha, currentDepth+1, depthLeft-1-null_move_reduction, false, false);
                 _board.undoMove_null();
@@ -557,6 +658,43 @@ public class AdvancedSearch implements AI {
             if(!_board.isLegal(m)){
                 continue;
             }
+
+
+
+            boolean givesCheck = _board.givesCheck(m);
+            boolean moveCanBePruned =
+                    !pv &&
+                            !m.isCapture() &&
+                            !m.isPromotion() &&
+                            !givesCheck;
+
+
+            //TODO: futility pruning
+            /**
+             * futility pruning. if eval is way smaller than alpha it probably wont raise alpha
+             */
+            if (
+                    moveCanBePruned
+                    && !isInCheck
+                    && depthLeft <= 1
+                    && Math.abs(alpha) < MIN_CHECKMATE_VALUE
+                    && Math.abs(beta)  < MIN_CHECKMATE_VALUE
+                    && eval <= alpha - futility_pruning_margin
+                ){
+                continue;
+            }
+
+//            /**
+//             * if the SEE value of the capture is too small, dont bother this move.
+//             */
+//            if (!pv
+//                    && depthLeft <= 4
+//                    && m.isCapture()
+//                    && evaluator.staticExchangeEvaluation(_board, m.getTo(), _board.getActivePlayer()) < -100){
+//                continue;
+//            }
+
+
 
             int reduction = use_LMR ? reducer.reduce(_board, m, currentDepth, depthLeft, legalMoves, pv) : 0;
             int extensions = _board.givesCheck(m) ? 1:0;
@@ -657,10 +795,22 @@ public class AdvancedSearch implements AI {
         double      origonalAlpha   = alpha;
         long        zobrist         = _board.zobrist();
 
+        /**
+         * if no quiescene shall be used at all
+         */
         if(!use_qSearch){
             return stand_pat;
         }
 
+        /**
+         * delta pruning check if there is no way that any move could increase alpha
+         *
+         */
+        if(use_delta_pruning){
+            if(stand_pat < alpha-delta_pruning_big_margin){
+                return alpha;
+            }
+        }
 
         List<Move> allMoves = _board.getCaptureMoves(_buffer.get(currentDepth));
         if (allMoves.size() == 0){
@@ -674,11 +824,21 @@ public class AdvancedSearch implements AI {
 
 
         orderer.sort(allMoves, 0, null, _board, false, _killerTable, _historyTable, null);
-        int legalMoves = 0;         //count the amount of legal captures.
-        // if its 0, we do a full research with all moves (most of them will be illegal as well)
+        int legalMoves = 0;
         for (Move m : allMoves) {
 
             if(!_board.isLegal(m)) continue;
+
+
+            /**
+             * delta pruning check if there is no way that any move could increase alpha
+             *
+             */
+            if(use_delta_pruning){
+                if(stand_pat+delta_pruning_captures[Math.abs(m.getPieceTo())] < alpha-delta_pruning_big_margin){
+                    continue;
+                }
+            }
 
             _board.move(m);
             double score = -qSearch(-beta, -alpha, currentDepth+1, depthLeft);
@@ -688,13 +848,10 @@ public class AdvancedSearch implements AI {
 
 
             if (score >= beta) {
-//                if (use_transposition) {
-//                    placeInTT(zobrist, currentDepth, depthLeft, beta, TranspositionEntry.CUT_NODE, bestMove);
-//                }
+
                 return beta;
             }
             if (score > alpha){
-//                bestMove = m.copy();
                 alpha = score;
             }
 
@@ -705,16 +862,10 @@ public class AdvancedSearch implements AI {
             return stand_pat;
         }
 
-
-
         if(bestMove != null){
             if (alpha > origonalAlpha) {
                 placeInTT(zobrist, currentDepth, depthLeft, alpha, TranspositionEntry.PV_NODE, bestMove);
-            } else {
-//                if (use_transposition) {
-//                    placeInTT(zobrist, currentDepth, depthLeft, alpha, TranspositionEntry.ALL_NODE, bestMove);
-//                }
-            }
+            } 
         }
 
         return alpha;
@@ -757,7 +908,7 @@ public class AdvancedSearch implements AI {
         if(limit_flag == FLAG_TIME_LIMIT){
 
             long time = System.currentTimeMillis();
-            int depth = 1;
+            int depth = deepening_start_depth;
             long prevTime = System.currentTimeMillis();
             long prevNode = 1;
             double branchingFactor;
@@ -782,7 +933,7 @@ public class AdvancedSearch implements AI {
             if(limit > MAXIMUM_STORE_DEPTH/2){
                 limit = MAXIMUM_STORE_DEPTH/2;
             }
-            for(int i = 1; i <= limit; i++){
+            for(int i = Math.min(limit, deepening_start_depth); i <= limit; i++){
                 iteration(i);
             }
         }
@@ -979,7 +1130,7 @@ public class AdvancedSearch implements AI {
         FastBoard fb = new FastBoard(Setup.DEFAULT);
 
 
-        fb = IO.read_FEN(fb, "8/7K/8/8/8/8/R7/7k w - -");
+        fb = IO.read_FEN(fb, "r3kbr1/1p1q1p1p/3p2p1/pNn1p2n/P1Q1P3/1N6/1PPB1PPP/R3R1K1 w q -");
 
         //        AdvancedSearch advancedSearch = new AdvancedSearch(
 //                new AdvancedEvaluator(new SimpleDecider()),
@@ -998,8 +1149,10 @@ public class AdvancedSearch implements AI {
         AdvancedSearch advancedSearch = new AdvancedSearch(
                 new AdvancedEvaluator(new SimpleDecider()),
                 new SystematicOrderer2(),
-                new SenpaiReducer(5), 2, 2);
+                new SenpaiReducer(5), 2, 10);
 
+        advancedSearch.setUse_delta_pruning(true);
+        advancedSearch.setUse_futility_pruning(true);
 
         advancedSearch.bestMove(fb);
 

@@ -106,7 +106,9 @@ public final class Move {
         return type == PROMOTION;
     }
 
-
+    public boolean isCapture() {
+        return getPieceTo() != 0;
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -133,7 +135,6 @@ public final class Move {
                 ", pieceTo=" + pieceTo +
                 '}';
     }
-
 
 
 }

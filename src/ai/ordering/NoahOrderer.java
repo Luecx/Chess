@@ -125,9 +125,6 @@ public class NoahOrderer implements Orderer {
 
     public static final int[] EVALUATE_PRICE = new int[]{0, 100, 500, 315, 341, 950, 20000};
 
-    public static final Tensor3D W_POSITION_PRICE = new Tensor3D(W_PAWN_VALUES, W_ROOK_VALUES, KNIGHT_VALUES, W_BISHOP_VALUES, QUEEN_VALUES, W_KING_VALUES_MID);
-    public static final Tensor3D B_POSITION_PRICE = new Tensor3D(B_PAWN_VALUES, B_ROOK_VALUES, KNIGHT_VALUES, B_BISHOP_VALUES, QUEEN_VALUES, B_KING_VALUES_MID);
-
     public static final int[] COMPLETE_EVALUATE_PRICE = new int[]{
             EVALUATE_PRICE[6],
             EVALUATE_PRICE[5],
@@ -143,21 +140,7 @@ public class NoahOrderer implements Orderer {
             EVALUATE_PRICE[5],
             EVALUATE_PRICE[6],
             };
-    public static final int[] SIGNED_COMPLETE_EVALUATE_PRICE = new int[]{
-            -EVALUATE_PRICE[6],
-            -EVALUATE_PRICE[5],
-            -EVALUATE_PRICE[4],
-            -EVALUATE_PRICE[3],
-            -EVALUATE_PRICE[2],
-            -EVALUATE_PRICE[1],
-            -EVALUATE_PRICE[0],
-            EVALUATE_PRICE[1],
-            EVALUATE_PRICE[2],
-            EVALUATE_PRICE[3],
-            EVALUATE_PRICE[4],
-            EVALUATE_PRICE[5],
-            EVALUATE_PRICE[6],
-            };
+
     public static final Tensor3D COMPLETE_POSITION_PRICE = new Tensor3D(
             B_KING_VALUES_MID,
             QUEEN_VALUES,
@@ -175,23 +158,16 @@ public class NoahOrderer implements Orderer {
             QUEEN_VALUES,
             W_KING_VALUES_MID
     );
+
     public static void setOrderPriority(Move move, Board tokenSB) {
         int priority = 0;
-        //  int color = move.getPieceFrom() > 0 ? 1 : -1;
 
         priority += COMPLETE_EVALUATE_PRICE[move.getPieceTo() + 6];
         priority -= COMPLETE_EVALUATE_PRICE[move.getPieceFrom() + 6];
 
         priority += COMPLETE_POSITION_PRICE.get(move.getPieceFrom()+6,tokenSB.x(move.getTo()),    tokenSB.y(move.getTo()));
         priority -= COMPLETE_POSITION_PRICE.get(move.getPieceFrom()+6,tokenSB.x(move.getFrom()),  tokenSB.y(move.getFrom()));
-//        if (color == 1) {
-//            priority += NoahEvaluator.W_POSITION_PRICE.get( move.getPieceFrom()-1,   tokenSB.x(move.getTo()),    tokenSB.y(move.getTo()));
-//            priority -= NoahEvaluator.W_POSITION_PRICE.get( move.getPieceFrom()-1,   tokenSB.x(move.getFrom()),  tokenSB.y(move.getFrom()));
-//        }
-//        if (color == -1) {
-//            priority += NoahEvaluator.B_POSITION_PRICE.get(Math.abs(move.getPieceFrom())-1,tokenSB.x(move.getTo()),tokenSB.y(move.getTo()));
-//            priority -= NoahEvaluator.B_POSITION_PRICE.get(Math.abs(move.getPieceFrom())-1,tokenSB.x(move.getFrom()),tokenSB.y(move.getFrom()));
-//        }
+
 
         move.setOrderPriority(priority);
     }

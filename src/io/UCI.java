@@ -61,24 +61,34 @@ public class UCI {
                                 switch (c.getTextArgument("name").getValue()) {
                                     case "log":
                                         useLog(Boolean.parseBoolean(value));
+
                                     case "null_moves":
                                         ai.setUse_null_moves(Boolean.parseBoolean(value));
                                         break;
+
                                     case "lmr":
                                         ai.setUse_LMR(Boolean.parseBoolean(value));
                                         break;
+
                                     case "killers":
                                         ai.setUse_killer_heuristic(Boolean.parseBoolean(value));
                                         break;
+
                                     case "transpositions":
                                         ai.setUse_transposition(Boolean.parseBoolean(value));
                                         break;
+
                                     case "iterative":
                                         ai.setUse_iteration(Boolean.parseBoolean(value));
                                         break;
+                                    case "deepening_initial_depth":
+                                        ai.setDeepening_start_depth(Integer.parseInt(value));
+                                        break;
+
                                     case "razoring":
                                         ai.setUse_razoring(Boolean.parseBoolean(value));
                                         break;
+
                                     case "reduction_divisionFactor":
                                         senpaiReducer.setDivision_factor(Integer.parseInt(value));
                                         break;
@@ -87,6 +97,24 @@ public class UCI {
                                         break;
                                     case "reduction_numMovesNotReduced":
                                         senpaiReducer.setNum_moves_not_reduced(Integer.parseInt(value));
+                                        break;
+
+
+                                    case "futility_pruning":
+                                        ai.setUse_futility_pruning(Boolean.parseBoolean(value));
+                                        break;
+                                    case "futility_pruning_margin":
+                                        ai.setFutility_pruning_margin(Integer.parseInt(value));
+                                        break;
+
+                                    case "delta_pruning":
+                                        ai.setUse_delta_pruning(Boolean.parseBoolean(value));
+                                        break;
+                                    case "delta_pruning_big_margin":
+                                        ai.setDelta_pruning_big_margin(Integer.parseInt(value));
+                                        break;
+                                    case "delta_pruning_margin":
+                                        ai.setDelta_pruning_margin(Integer.parseInt(value));
                                         break;
                                 }
                             }
@@ -100,12 +128,24 @@ public class UCI {
                             System.out.println("option name lmr type check default true");
                             System.out.println("option name killers type check default true");
                             System.out.println("option name transpositions type check default true");
+
                             System.out.println("option name iterative type check default true");
+                            System.out.println("option name deepening_initial_depth type spin default " + ai.getDeepening_start_depth() + " min 1 max 99");
+
                             System.out.println("option name razoring type check default false");
                             System.out.println("option name log type check default false");
                             System.out.println("option name reduction_divisionFactor type spin default 4 min 1 max 100");
                             System.out.println("option name reduction_greaterReductionDepth type spin default 4 min 0 max 100");
                             System.out.println("option name reduction_numMovesNotReduced type spin default 5 min 0 max 1000");
+
+                            System.out.println("option name futility_pruning type check default "+ai.isUse_futility_pruning());
+                            System.out.println("option name futility_pruning_margin type spin default "+ai.getFutility_pruning_margin()+" min 1 max 9999");
+
+                            System.out.println("option name delta_pruning type check default "+ai.isUse_delta_pruning());
+                            System.out.println("option name delta_pruning_margin type spin default "+ai.getDelta_pruning_margin()+" min 1 max 9999");
+                            System.out.println("option name delta_pruning_big_margin type spin default "+ai.getDelta_pruning_big_margin()+" min 1 max 9999");
+
+
                             System.out.println("uciok");
                         }));
         cdb.registerCommand(
