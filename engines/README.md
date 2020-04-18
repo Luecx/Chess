@@ -1,8 +1,16 @@
 
 
-Elo-Ratings:
+## Elo-Ratings:
 
 
-Waldi5:     1800-1850
-Waldi6:     1950
+### Waldi
 
+Engine  | CCRL-Rating
+------------- | -------------
+Waldi 5  | 1800-1850  
+Waldi 6  | 1950
+
+
+
+
+----
