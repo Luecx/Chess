@@ -124,19 +124,20 @@ public class UCI {
                         .setExecutable(c -> {
                             System.out.println("id name " + ENGINENAME);
                             System.out.println("id author Finn/Noah");
-                            System.out.println("option name null_moves type check default true");
-                            System.out.println("option name lmr type check default true");
-                            System.out.println("option name killers type check default true");
-                            System.out.println("option name transpositions type check default true");
+                            System.out.println("option name log type check default false");
 
-                            System.out.println("option name iterative type check default true");
+                            System.out.println("option name null_moves type check default "+ai.isUse_null_moves());
+                            System.out.println("option name lmr type check default " + ai.isUse_LMR());
+                            System.out.println("option name killers type check default " + ai.isUse_killer_heuristic());
+                            System.out.println("option name transpositions type check default " + ai.isUse_transposition());
+
+                            System.out.println("option name iterative type check default " + ai.isUse_iteration());
                             System.out.println("option name deepening_initial_depth type spin default " + ai.getDeepening_start_depth() + " min 1 max 99");
 
-                            System.out.println("option name razoring type check default false");
-                            System.out.println("option name log type check default false");
-                            System.out.println("option name reduction_divisionFactor type spin default 4 min 1 max 100");
-                            System.out.println("option name reduction_greaterReductionDepth type spin default 4 min 0 max 100");
-                            System.out.println("option name reduction_numMovesNotReduced type spin default 5 min 0 max 1000");
+                            System.out.println("option name razoring type check default " + ai.isUse_razoring());
+                            System.out.println("option name reduction_divisionFactor type spin default "+senpaiReducer.getDivision_factor()+" min 1 max 100");
+                            System.out.println("option name reduction_greaterReductionDepth type spin default "+senpaiReducer.getHigher_reduction_depth()+" min 0 max 100");
+                            System.out.println("option name reduction_numMovesNotReduced type spin default "+senpaiReducer.getNum_moves_not_reduced()+" min 0 max 1000");
 
                             System.out.println("option name futility_pruning type check default "+ai.isUse_futility_pruning());
                             System.out.println("option name futility_pruning_margin type spin default "+ai.getFutility_pruning_margin()+" min 1 max 9999");

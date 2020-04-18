@@ -19,7 +19,6 @@ import board.setup.Setup;
 import io.IO;
 import io.UCI;
 
-import java.util.Arrays;
 import java.util.List;
 
 public class AdvancedSearch implements AI {
@@ -47,15 +46,15 @@ public class AdvancedSearch implements AI {
     protected boolean                                   use_killer_heuristic    = true;         //flag for killer tables
     protected boolean                                   use_history_heuristic   = true;         //flag for history heuristic
     protected boolean                                   use_aspiration          = false;        //flag for aspiriation windows
-    protected boolean                                   use_futility_pruning    = false;        //flag for futility pruning at depth<=1 nodes
-    protected boolean                                   use_delta_pruning       = false;        //flag for delta pruning inside quiescence search
+    protected boolean                                   use_futility_pruning    = true;         //flag for futility pruning at depth<=1 nodes
+    protected boolean                                   use_delta_pruning       = true;         //flag for delta pruning inside quiescence search
 
     protected boolean                                   print_overview          = true;         //flag for output-printing
 
     protected int                                       deepening_start_depth   = 6;            //initial depth for it-deepening
     protected int                                       killer_count            = 3;            //amount of killer moves
     protected int                                       null_move_reduction     = 2;            //how much to reduce null moves
-    protected int                                       razor_offset            = 300;
+    protected int                                       razor_margin            = 300;          //margin for razoring
     protected int                                       futility_pruning_margin = 200;          //safety margin for futility pruning
     protected int                                       delta_pruning_margin    = 200;          //safety margin for futility pruning
     protected int                                       delta_pruning_big_margin= 1000;         //safety margin for delta pruning without checking nodes
@@ -402,16 +401,16 @@ public class AdvancedSearch implements AI {
      * returns the offset for razoring
      * @return
      */
-    public int getRazor_offset() {
-        return razor_offset;
+    public int getRazor_margin() {
+        return razor_margin;
     }
 
     /**
      * sets the offset for razoring
-     * @param razor_offset
+     * @param razor_margin
      */
-    public void setRazor_offset(int razor_offset) {
-        this.razor_offset = razor_offset;
+    public void setRazor_margin(int razor_margin) {
+        this.razor_margin = razor_margin;
     }
 
 
@@ -611,12 +610,12 @@ public class AdvancedSearch implements AI {
                 !pv &&
                 !_board.isInCheck(_board.getActivePlayer()) &&
                 depthLeft <= 2 &&
-                (evaluator.evaluate(_board) * _board.getActivePlayer()) <= alpha - razor_offset) {
+                (evaluator.evaluate(_board) * _board.getActivePlayer()) <= alpha - razor_margin) {
 
                 if (depthLeft == 1) {
                     return qSearch(alpha, beta, currentDepth,0);
                 }
-                double rWindow = alpha - razor_offset;
+                double rWindow = alpha - razor_margin;
                 double value = qSearch(rWindow, rWindow + 1, currentDepth,0);
                 if (value <= rWindow) {
                     return value;
@@ -792,6 +791,7 @@ public class AdvancedSearch implements AI {
 
         double      stand_pat       = evaluator.evaluate(_board) * _board.getActivePlayer();
         Move        bestMove        = null;
+        double      bestScore       = Double.NEGATIVE_INFINITY;
         double      origonalAlpha   = alpha;
         long        zobrist         = _board.zobrist();
 
@@ -848,13 +848,16 @@ public class AdvancedSearch implements AI {
 
 
             if (score >= beta) {
-
                 return beta;
             }
             if (score > alpha){
                 alpha = score;
+//                bestMove = m.copy();
             }
-
+            if (score > bestScore){
+                bestScore = score;
+//                bestMove = m.copy();
+            }
         }
 
 
@@ -862,11 +865,11 @@ public class AdvancedSearch implements AI {
             return stand_pat;
         }
 
-        if(bestMove != null){
-            if (alpha > origonalAlpha) {
-                placeInTT(zobrist, currentDepth, depthLeft, alpha, TranspositionEntry.PV_NODE, bestMove);
-            } 
-        }
+//        if(bestMove != null){
+//            if (alpha <= origonalAlpha) {
+//                placeInTT(zobrist, currentDepth, depthLeft, alpha, TranspositionEntry.ALL_NODE, bestMove);
+//            }
+//        }
 
         return alpha;
     }
@@ -966,7 +969,7 @@ public class AdvancedSearch implements AI {
 
         /**
          * calculating bounds for the search.
-         * If aspiriation shall be used, aspiration windows will be initiated
+         * If aspiration shall be used, aspiration windows will be initiated
          */
         double alphaInc;
         double betaInc;
@@ -1152,6 +1155,7 @@ public class AdvancedSearch implements AI {
                 new SenpaiReducer(5), 2, 10);
 
         advancedSearch.setUse_delta_pruning(true);
+        advancedSearch.setDeepening_start_depth(1);
         advancedSearch.setUse_futility_pruning(true);
 
         advancedSearch.bestMove(fb);

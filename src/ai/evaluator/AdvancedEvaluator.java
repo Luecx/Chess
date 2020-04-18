@@ -13,10 +13,21 @@ import java.util.Arrays;
 
 public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
 
+    /**
+     * used to determine the gamestate (0 for early game, 1 for endgame)
+     */
     private BoardPhaseDecider phaseDecider;
 
 
+
+    /**
+     * piece square tables (PST) for white pieces.
+     * the first row equals line-8.
+     * They are scaled by 0.01 (=1/100) in order to be tuned using PARAMETER_...._TABLE_FACTOR_....
+     */
     //<editor-fold desc="Early PST">
+
+
     public static final Tensor1D PAWN_VALUES_WHITE = (Tensor1D) flipTensor(new Tensor1D(new double[]{
             0, 0, 0, 0, 0, 0, 0, 0,
             50, 50, 50, 50, 50, 50, 50, 50,
@@ -208,12 +219,17 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
     //</editor-fold>
 
 
-
+    /**
+     * some constants like pawn/king values
+     */
     private double CONST_PARAMETER_KING_VALUE_EARLY =                                10000;
     private double CONST_PARAMETER_PAWN_VALUE_LATE =                                 100;
     private double CONST_PARAMETER_KING_VALUE_LATE =                                 10000;
     private double CONST_PARAMETER_PAWN_VALUE_EARLY =                                100;
 
+    /**
+     * tunable params
+     */
     private double PARAMETER_PAWN_TABLE_FACTOR_EARLY =                               44;
     private double PARAMETER_ROOK_TABLE_FACTOR_EARLY =                               44;
     private double PARAMETER_KNIGHT_TABLE_FACTOR_EARLY =                             44;
@@ -281,7 +297,8 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
     private double PARAMETER_CONNECTED_PAWN_LATE =                                   5;
 
 
-    double[] pieceVals = new double[]{0, CONST_PARAMETER_PAWN_VALUE_EARLY,
+    double[] pieceVals = new double[]{0,
+                                      CONST_PARAMETER_PAWN_VALUE_EARLY,
                                       PARAMETER_ROOK_VALUE_EARLY,
                                       PARAMETER_KNIGHT_VALUE_EARLY,
                                       PARAMETER_BISHOP_VALUE_EARLY,
@@ -317,7 +334,7 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
     /**
      * returns true if the board is likely to be a draw
      */
-    public boolean probablyInsuficientMaterial(PieceList[] white, PieceList[] black){
+    public boolean probablyInsufficientMaterial(PieceList[] white, PieceList[] black){
         if(white[0].size() != 0 || black[0].size() != 0) return false; //if pawns exist
 
 
@@ -346,37 +363,37 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
         double phase = phaseDecider.getGamePhase(board);
         FastBoard fb = (FastBoard) board;
 
-        if(probablyInsuficientMaterial(fb.getWhite_pieces(),fb.getBlack_pieces())) return 0;
+        if(probablyInsufficientMaterial(fb.getWhite_pieces(), fb.getBlack_pieces())) return 0;
 
         return evaluateWhite(fb, phase) - evaluateBlack(fb, phase);
     }
 
     public double evaluateWhite(FastBoard fb, double phase){
-        return evalateSide(1,
-                    fb.getWhite_pieces(),
-                    WHITE_PST_EARLY,
-                    WHITE_PST_LATE,
-                    fb.getWhite_values(),
-                    fb.getTeam_total()[0],
-                    BitBoard.whitePassedPawnMask,
-                    fb.getBlack_values(),
-                    fb.getTeam_total()[1],
-                    fb.getOccupied(),
-                    phase);
+        return evaluateSide(1,
+                            fb.getWhite_pieces(),
+                            WHITE_PST_EARLY,
+                            WHITE_PST_LATE,
+                            fb.getWhite_values(),
+                            fb.getTeam_total()[0],
+                            BitBoard.whitePassedPawnMask,
+                            fb.getBlack_values(),
+                            fb.getTeam_total()[1],
+                            fb.getOccupied(),
+                            phase);
     }
 
     public double evaluateBlack(FastBoard fb, double phase){
-        return evalateSide(-1,
-                    fb.getBlack_pieces(),
-                    BLACK_PST_EARLY,
-                    BLACK_PST_LATE,
-                    fb.getBlack_values(),
-                    fb.getTeam_total()[1],
-                    BitBoard.blackPassedPawnMask,
-                    fb.getWhite_values(),
-                    fb.getTeam_total()[0],
-                    fb.getOccupied(),
-                    phase);
+        return evaluateSide(-1,
+                            fb.getBlack_pieces(),
+                            BLACK_PST_EARLY,
+                            BLACK_PST_LATE,
+                            fb.getBlack_values(),
+                            fb.getTeam_total()[1],
+                            BitBoard.blackPassedPawnMask,
+                            fb.getWhite_values(),
+                            fb.getTeam_total()[0],
+                            fb.getOccupied(),
+                            phase);
     }
 
 
@@ -396,7 +413,7 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
      * @param taper                     the taper value for interpolation
      * @return
      */
-    public double evalateSide(
+    public double evaluateSide(
             int color,
             PieceList[] ourPieces,
             Tensor1D[] earlyPST,
@@ -941,7 +958,7 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
 
 
 
-        FastBoard fb = IO.read_FEN(new FastBoard(), "rnbqk1nr/pppp1ppp/8/4P3/1b6/8/PPP1PPPP/RNBQKBNR w QKqk -");
+        FastBoard fb = IO.read_FEN(new FastBoard(), "6r1/p4kp1/1p1p1b2/2pP1P2/b1P1BN2/2Q1PK1p/P6P/1R6 b - - 0 45");
 
         System.out.println(fb);
 
