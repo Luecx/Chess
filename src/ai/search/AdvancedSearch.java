@@ -51,7 +51,7 @@ public class AdvancedSearch implements AI {
 
     protected boolean                                   print_overview          = true;         //flag for output-printing
 
-    protected int                                       deepening_start_depth   = 6;            //initial depth for it-deepening
+    protected int                                       deepening_start_depth   = 1;            //initial depth for it-deepening
     protected int                                       killer_count            = 3;            //amount of killer moves
     protected int                                       null_move_reduction     = 2;            //how much to reduce null moves
     protected int                                       razor_margin            = 300;          //margin for razoring
