@@ -861,9 +861,54 @@ public class AdvancedSearch implements AI {
         }
 
 
-        if(legalMoves == 0){
+        if(legalMoves == 0 ){
             return stand_pat;
         }
+
+
+//        if(!_board.isInCheck(_board.getActivePlayer())){
+//            if(legalMoves == 0){
+//                return alpha;
+//            }
+//        }
+
+
+//        allMoves = _board.getPseudoLegalMoves(_buffer.get(currentDepth));
+//
+//        for (Move m : allMoves) {
+//
+//            if(!_board.isLegal(m)) continue;
+//
+//            _board.move(m);
+//            double score = -qSearch(-beta, -alpha, currentDepth+1, depthLeft);
+//            _board.undoMove();
+//
+//            legalMoves ++;
+//
+//            if (score >= beta) {
+//                return beta;
+//            }
+//            if (score > alpha){
+//                alpha = score;
+//            }
+//            if (score > bestScore){
+//                bestScore = score;
+//            }
+//        }
+
+
+
+
+
+
+//        if(legalMoves == 0){
+//            if(!_board.isInCheck(_board.getActivePlayer())){
+//                return stand_pat;
+//            }
+//
+//        }
+
+
 
 //        if(bestMove != null){
 //            if (alpha <= origonalAlpha) {
@@ -1127,7 +1172,7 @@ public class AdvancedSearch implements AI {
 
         return builder.toString();
     }
-    
+
 
     public static void main(String[] args) {
         FastBoard fb = new FastBoard(Setup.DEFAULT);

@@ -57,7 +57,7 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
             -5, 0, 0, 0, 0, 0, 0, -5,
             -5, 0, 0, 0, 0, 0, 0, -5,
             -5, 0, 0, 0, 0, 0, 0, -5,
-            0, 0, 0, 5, 5, 0, 0, 0
+            -5, 0, 5, 7, 5, 7, 0, -5
     })).scale(0.01);
 
     public static final Tensor1D KNIGHT_VALUES_WHITE = (Tensor1D) flipTensor(new Tensor1D(new double[]{
@@ -98,7 +98,7 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
     public static final Tensor1D BISHOP_VALUES_BLACK = flipTensor(BISHOP_VALUES_WHITE);
     public static final Tensor1D KNIGHT_VALUES_BLACK = flipTensor(KNIGHT_VALUES_WHITE);
     public static final Tensor1D PAWN_VALUES_BLACK = flipTensor(PAWN_VALUES_WHITE);
-    
+
     public static final Tensor1D[] WHITE_PST_EARLY = new Tensor1D[]{
             PAWN_VALUES_WHITE,
             ROOK_VALUES_WHITE,
@@ -131,8 +131,8 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
     //<editor-fold desc="Late PST">
     public static final Tensor1D PAWN_VALUES_WHITE_LATE = (Tensor1D) flipTensor(new Tensor1D(new double[]{
             0, 0, 0, 0, 0, 0, 0, 0,
-            50, 50, 50, 50, 50, 50, 50, 50,
-            10, 10, 20, 30, 30, 20, 10, 10,
+            100, 150, 150, 150, 150, 150, 150, 100,
+            10, 30, 60, 100, 100, 60, 30, 10,
             5, 5, 10, 25, 25, 10, 5, 5,
             0, 0, 0, 20, 20, 0, 0, 0,
             5, -5, -10, 0, 0, -10, -5, 5,
@@ -158,7 +158,7 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
             -5, 0, 0, 0, 0, 0, 0, -5,
             -5, 0, 0, 0, 0, 0, 0, -5,
             -5, 0, 0, 0, 0, 0, 0, -5,
-            0, 0, 0, 5, 5, 0, 0, 0
+            -5, 0, 5, 7, 5, 7, 0, -5
     })).scale(0.01);
 
     public static final Tensor1D KNIGHT_VALUES_WHITE_LATE = (Tensor1D) flipTensor(new Tensor1D(new double[]{
@@ -231,70 +231,88 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
      * tunable params
      */
     private double PARAMETER_PAWN_TABLE_FACTOR_EARLY =                               44;
-    private double PARAMETER_ROOK_TABLE_FACTOR_EARLY =                               44;
+    private double PARAMETER_PAWN_CONNECTED_EARLY =                                  5;
+    private double PARAMETER_PAWN_PASSED_EARLY =                                     38;
+    private double PARAMETER_PAWN_ISOLATED_EARLY =                                   -7;
+    private double PARAMETER_PAWN_DOUBLED_EARLY =                                    -29;
+
     private double PARAMETER_KNIGHT_TABLE_FACTOR_EARLY =                             44;
-    private double PARAMETER_BISHOP_TABLE_FACTOR_EARLY =                             44;
-    private double PARAMETER_QUEEN_TABLE_FACTOR_EARLY =                              43;
-    private double PARAMETER_KING_TABLE_FACTOR_EARLY =                               44;
-    private double PARAMETER_ROOK_VALUE_EARLY =                                      424;
     private double PARAMETER_KNIGHT_VALUE_EARLY =                                    293;
-    private double PARAMETER_BISHOP_VALUE_EARLY =                                    301;
-    private double PARAMETER_QUEEN_VALUE_EARLY =                                     598;
-    private double PARAMETER_ROOK_VISIBILITY_EARLY =                                 9;
-    private double PARAMETER_BISHOP_VISIBILITY_EARLY =                               6;
     private double PARAMETER_KNIGHT_VISIBILITY_EARLY =                               8;
-    private double PARAMETER_QUEEN_VISIBILITY_EARLY =                                17;
-    private double PARAMETER_ROOK_VISIBILITY_PAWN_COVER_EARLY =                      -6;
-    private double PARAMETER_BISHOP_VISIBILITY_PAWN_COVER_EARLY =                    0;
     private double PARAMETER_KNIGHT_VISIBILITY_PAWN_COVER_EARLY =                    -4;
-    private double PARAMETER_QUEEN_VISIBILITY_PAWN_COVER_EARLY =                     -21;
-    private double PARAMETER_ROOK_TRAPPED_EARLY =                                    -19;
-    private double PARAMETER_BISHOP_TRAPPED_EARLY =                                  -21;
     private double PARAMETER_KNIGHT_TRAPPED_EARLY =                                  -18;
-    private double PARAMETER_QUEEN_TRAPPED_EARLY =                                   -20;
+
+    private double PARAMETER_ROOK_TABLE_FACTOR_EARLY =                               90;
+    private double PARAMETER_ROOK_VALUE_EARLY =                                      424;
+    private double PARAMETER_ROOK_VISIBILITY_EARLY =                                 9;
+    private double PARAMETER_ROOK_VISIBILITY_PAWN_COVER_EARLY =                      -6;
+    private double PARAMETER_ROOK_TRAPPED_EARLY =                                    -19;
     private double PARAMETER_ROOK_KING_LINE_EARLY =                                  24;
-    private double PARAMETER_PASSED_PAWN_EARLY =                                     38;
-    private double PARAMETER_ISOLATED_PAWN_EARLY =                                   -7;
-    private double PARAMETER_DOUBLED_PAWN_EARLY =                                    -29;
-    private double PARAMETER_DOUBLE_BISHOP_EARLY =                                   52;
-    private double PARAMETER_KING_SAFETY_1_EARLY =                                   10;
-    private double PARAMETER_KING_SAFETY_2_EARLY =                                   25;
     private double PARAMETER_ROOK_HALF_OPEN_EARLY =                                  21;
     private double PARAMETER_ROOK_OPEN_EARLY =                                       2;
-    private double PARAMETER_CONNECTED_PAWN_EARLY =                                  5;
+
+    private double PARAMETER_BISHOP_TABLE_FACTOR_EARLY =                             44;
+    private double PARAMETER_BISHOP_VALUE_EARLY =                                    301;
+    private double PARAMETER_BISHOP_VISIBILITY_EARLY =                               6;
+    private double PARAMETER_BISHOP_VISIBILITY_PAWN_COVER_EARLY =                    0;
+    private double PARAMETER_BISHOP_TRAPPED_EARLY =                                  -21;
+    private double PARAMETER_BISHOP_DOUBLED_EARLY =                                   52;
+
+    private double PARAMETER_QUEEN_TABLE_FACTOR_EARLY =                              43;
+    private double PARAMETER_QUEEN_VALUE_EARLY =                                     598;
+    private double PARAMETER_QUEEN_VISIBILITY_EARLY =                                17;
+    private double PARAMETER_QUEEN_TRAPPED_EARLY =                                   -20;
+    private double PARAMETER_QUEEN_VISIBILITY_PAWN_COVER_EARLY =                     -21;
+
+    private double PARAMETER_KING_TABLE_FACTOR_EARLY =                               44;
+    private double PARAMETER_KING_SAFETY_1_EARLY =                                   10;
+    private double PARAMETER_KING_SAFETY_2_EARLY =                                   25;
+    private double PARAMETER_KING_SAFETY_3_EARLY =                                   -1;
+    private double PARAMETER_KING_PAWN_SHIELD_EARLY =                                2;
+
+
+
+
 
     private double PARAMETER_PAWN_TABLE_FACTOR_LATE =                                44;
+    private double PARAMETER_PAWN_PASSED_LATE =                                      38;
+    private double PARAMETER_PAWN_ISOLATED_LATE =                                    -7;
+    private double PARAMETER_PAWN_DOUBLED_LATE =                                     -29;
+    private double PARAMETER_PAWN_CONNECTED_LATE =                                   5;
+
     private double PARAMETER_ROOK_TABLE_FACTOR_LATE =                                44;
-    private double PARAMETER_KNIGHT_TABLE_FACTOR_LATE =                              44;
-    private double PARAMETER_BISHOP_TABLE_FACTOR_LATE =                              44;
-    private double PARAMETER_QUEEN_TABLE_FACTOR_LATE =                               43;
-    private double PARAMETER_KING_TABLE_FACTOR_LATE =                                44;
     private double PARAMETER_ROOK_VALUE_LATE =                                       424;
-    private double PARAMETER_KNIGHT_VALUE_LATE =                                     293;
-    private double PARAMETER_BISHOP_VALUE_LATE =                                     301;
-    private double PARAMETER_QUEEN_VALUE_LATE =                                      800;
     private double PARAMETER_ROOK_VISIBILITY_LATE =                                  9;
-    private double PARAMETER_BISHOP_VISIBILITY_LATE =                                6;
-    private double PARAMETER_KNIGHT_VISIBILITY_LATE =                                8;
-    private double PARAMETER_QUEEN_VISIBILITY_LATE =                                 17;
     private double PARAMETER_ROOK_VISIBILITY_PAWN_COVER_LATE =                       -6;
-    private double PARAMETER_BISHOP_VISIBILITY_PAWN_COVER_LATE =                     0;
-    private double PARAMETER_KNIGHT_VISIBILITY_PAWN_COVER_LATE =                     -4;
-    private double PARAMETER_QUEEN_VISIBILITY_PAWN_COVER_LATE =                      -21;
     private double PARAMETER_ROOK_TRAPPED_LATE =                                     -19;
-    private double PARAMETER_BISHOP_TRAPPED_LATE =                                   -21;
-    private double PARAMETER_KNIGHT_TRAPPED_LATE =                                   -18;
-    private double PARAMETER_QUEEN_TRAPPED_LATE =                                    -20;
     private double PARAMETER_ROOK_KING_LINE_LATE =                                   24;
-    private double PARAMETER_PASSED_PAWN_LATE =                                      38;
-    private double PARAMETER_ISOLATED_PAWN_LATE =                                    -7;
-    private double PARAMETER_DOUBLED_PAWN_LATE =                                     -29;
-    private double PARAMETER_DOUBLE_BISHOP_LATE =                                    52;
-    private double PARAMETER_KING_SAFETY_1_LATE =                                    10;
-    private double PARAMETER_KING_SAFETY_2_LATE =                                    25;
     private double PARAMETER_ROOK_HALF_OPEN_LATE =                                   21;
     private double PARAMETER_ROOK_OPEN_LATE =                                        2;
-    private double PARAMETER_CONNECTED_PAWN_LATE =                                   5;
+
+    private double PARAMETER_KNIGHT_TABLE_FACTOR_LATE =                              44;
+    private double PARAMETER_KNIGHT_VALUE_LATE =                                     293;
+    private double PARAMETER_KNIGHT_VISIBILITY_LATE =                                8;
+    private double PARAMETER_KNIGHT_VISIBILITY_PAWN_COVER_LATE =                     -4;
+    private double PARAMETER_KNIGHT_TRAPPED_LATE =                                   -18;
+
+    private double PARAMETER_BISHOP_TABLE_FACTOR_LATE =                              44;
+    private double PARAMETER_BISHOP_VALUE_LATE =                                     301;
+    private double PARAMETER_BISHOP_VISIBILITY_LATE =                                6;
+    private double PARAMETER_BISHOP_VISIBILITY_PAWN_COVER_LATE =                     0;
+    private double PARAMETER_BISHOP_TRAPPED_LATE =                                   -21;
+    private double PARAMETER_BISHOP_DOUBLED_LATE =                                    52;
+
+    private double PARAMETER_QUEEN_TABLE_FACTOR_LATE =                               43;
+    private double PARAMETER_QUEEN_VALUE_LATE =                                      800;
+    private double PARAMETER_QUEEN_VISIBILITY_LATE =                                 17;
+    private double PARAMETER_QUEEN_VISIBILITY_PAWN_COVER_LATE =                      -21;
+    private double PARAMETER_QUEEN_TRAPPED_LATE =                                    -20;
+
+    private double PARAMETER_KING_TABLE_FACTOR_LATE =                                44;
+    private double PARAMETER_KING_SAFETY_1_LATE =                                    10;
+    private double PARAMETER_KING_SAFETY_2_LATE =                                    25;
+    private double PARAMETER_KING_SAFETY_3_LATE =                                    -1;
+    private double PARAMETER_KING_PAWN_SHIELD_LATE =                                 2;
 
 
     double[] pieceVals = new double[]{0,
@@ -310,7 +328,7 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
 
     private String[] evalNames  = new String[]{"Pawns", "Rooks", "Knights", "Bishops",
                                                "Queen Position", "Queen Existence", "Queen visibility", "Queen covered visibility", "Queen trapped",
-                                               "King position", "King friendly pieces", "King hostile pieces"};
+                                               "King position", "King friendly pieces", "King hostile pieces", "King pawn shield"};
 
     private double[] evalResults = new double[evalNames.length];
 
@@ -365,6 +383,8 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
 
         if(probablyInsufficientMaterial(fb.getWhite_pieces(), fb.getBlack_pieces())) return 0;
 
+
+
         return evaluateWhite(fb, phase) - evaluateBlack(fb, phase);
     }
 
@@ -379,6 +399,7 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
                             fb.getBlack_values(),
                             fb.getTeam_total()[1],
                             fb.getOccupied(),
+                            fb.getAttackedSquaresFromBlack(),
                             phase);
     }
 
@@ -393,6 +414,7 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
                             fb.getWhite_values(),
                             fb.getTeam_total()[0],
                             fb.getOccupied(),
+                            fb.getAttackedSquaresFromWhite(),
                             phase);
     }
 
@@ -410,6 +432,7 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
      * @param opponentPieceOccupancy    an array for the occupancy of opponent pieces
      * @param opponentTotalOccupancy    a bitboard which marks all occupied squares by the opponent
      * @param totalOccupied             a bitboard which marks all occupied squares
+     * @param attackedSquares           a bitboard which marks all squares attacked by the opponent
      * @param taper                     the taper value for interpolation
      * @return
      */
@@ -424,6 +447,7 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
             long[] opponentPieceOccupancy,
             long opponentTotalOccupancy,
             long totalOccupied,
+            long attackedSquares,
             double taper) {
 
 
@@ -444,7 +468,7 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
         eval += feature_rooks(ourPieces, ourTotalOccupancy, ourPieceOccupancy, opponentPieceOccupancy, totalOccupied, opponentPawnCover, earlyPST, latePST, taper);
         eval += feature_bishops(ourPieces, ourTotalOccupancy, totalOccupied, opponentPawnCover, earlyPST, latePST, taper);
         eval += feature_queens(ourPieces, ourTotalOccupancy, totalOccupied, opponentPawnCover, earlyPST, latePST, taper);
-        eval += feature_kings(ourPieces, ourTotalOccupancy, opponentTotalOccupancy, earlyPST, latePST, taper);
+        eval += feature_kings(ourPieces, ourPieceOccupancy, ourTotalOccupancy, opponentTotalOccupancy, attackedSquares, earlyPST, latePST, taper);
 
         return eval;
 
@@ -490,23 +514,23 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
                   taper(pstEarly[0].get(index), pstLate[0].get(index), taper);
             ev += taper(CONST_PARAMETER_PAWN_VALUE_EARLY, CONST_PARAMETER_PAWN_VALUE_LATE, taper);
             if ((ourPassedPawnMask[index] & opponentPieceOccupancy[0]) == 0) {
-                ev += taper(PARAMETER_PASSED_PAWN_EARLY, PARAMETER_PASSED_PAWN_LATE, taper);
+                ev += taper(PARAMETER_PAWN_PASSED_EARLY, PARAMETER_PAWN_PASSED_LATE, taper);
             }
             if ((BitBoard.files_neighbour[BitBoard.fileIndex(index)] & ourPieceOccupancy[0]) == 0) {
-                ev += taper(PARAMETER_ISOLATED_PAWN_EARLY, PARAMETER_ISOLATED_PAWN_LATE, taper);
+                ev += taper(PARAMETER_PAWN_ISOLATED_EARLY, PARAMETER_PAWN_ISOLATED_LATE, taper);
             }
         }
-        ev += taper(PARAMETER_DOUBLED_PAWN_EARLY, PARAMETER_DOUBLED_PAWN_LATE, taper) *
+        ev += taper(PARAMETER_PAWN_DOUBLED_EARLY, PARAMETER_PAWN_DOUBLED_LATE, taper) *
               (color == 1 ?
                        BitBoard.bitCount(BitBoard.shiftNorth(ourPieceOccupancy[0]) & ourPieceOccupancy[0]) :
                        BitBoard.bitCount(BitBoard.shiftSouth(ourPieceOccupancy[0]) & ourPieceOccupancy[0]));
-        ev += taper(PARAMETER_CONNECTED_PAWN_EARLY, PARAMETER_CONNECTED_PAWN_LATE, taper) *
+        ev += taper(PARAMETER_PAWN_CONNECTED_EARLY, PARAMETER_PAWN_CONNECTED_LATE, taper) *
               (color == 1 ?
                        (BitBoard.bitCount(BitBoard.shiftNorthEast(ourPieceOccupancy[0]) & ourPieceOccupancy[0]) +
                         BitBoard.bitCount(BitBoard.shiftNorthWest(ourPieceOccupancy[0]) & ourPieceOccupancy[0])) :
                        (BitBoard.bitCount(BitBoard.shiftSouthEast(ourPieceOccupancy[0]) & ourPieceOccupancy[0]) +
                         BitBoard.bitCount(BitBoard.shiftSouthWest(ourPieceOccupancy[0]) & ourPieceOccupancy[0])));
-        evalResults[0] = ev;
+        //evalResults[0] = ev;
         return ev;
     }
 
@@ -541,7 +565,7 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
                 ev += taper(PARAMETER_ROOK_HALF_OPEN_EARLY, PARAMETER_ROOK_HALF_OPEN_LATE, taper);
             }
         }
-        evalResults[1] = ev;
+        //evalResults[1] = ev;
         return ev;
     }
 
@@ -567,9 +591,9 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
                   * (attacks & opponentPawnCover) == attacks ? 1 : 0;
         }
         if (ourPieces[3].size() > 1) {
-            ev += taper(PARAMETER_DOUBLE_BISHOP_EARLY, PARAMETER_DOUBLE_BISHOP_LATE, taper);
+            ev += taper(PARAMETER_BISHOP_DOUBLED_EARLY, PARAMETER_BISHOP_DOUBLED_LATE, taper);
         }
-        evalResults[3] = ev;
+        //evalResults[3] = ev;
         return ev;
     }
 
@@ -588,21 +612,31 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
                             BitBoard.lookUpRookAttack(index, totalOccupied))
                            & ~ourTotalOccupancy;
 
-            evalResults[4] = taper(PARAMETER_QUEEN_TABLE_FACTOR_EARLY, PARAMETER_QUEEN_TABLE_FACTOR_LATE, taper) *
-                             taper(pstEarly[4].get(index), pstLate[4].get(index), taper);
-            evalResults[5] = taper(PARAMETER_QUEEN_VALUE_EARLY, PARAMETER_QUEEN_VALUE_LATE, taper);
-            evalResults[6] = taper(PARAMETER_QUEEN_VISIBILITY_EARLY, PARAMETER_QUEEN_VISIBILITY_LATE, taper)
-                             * BitBoard.bitCount(attacks);
-            evalResults[7] = taper(PARAMETER_QUEEN_VISIBILITY_PAWN_COVER_EARLY, PARAMETER_QUEEN_VISIBILITY_PAWN_COVER_LATE, taper)
-                             * BitBoard.bitCount(attacks & opponentPawnCover);
-            evalResults[8] = taper(PARAMETER_QUEEN_TRAPPED_EARLY, PARAMETER_QUEEN_TRAPPED_LATE, taper)
-                             * (attacks & opponentPawnCover) == attacks ? 1 : 0;
+//            evalResults[4] = taper(PARAMETER_QUEEN_TABLE_FACTOR_EARLY, PARAMETER_QUEEN_TABLE_FACTOR_LATE, taper) *
+//                             taper(pstEarly[4].get(index), pstLate[4].get(index), taper);
+//            evalResults[5] = taper(PARAMETER_QUEEN_VALUE_EARLY, PARAMETER_QUEEN_VALUE_LATE, taper);
+//            evalResults[6] = taper(PARAMETER_QUEEN_VISIBILITY_EARLY, PARAMETER_QUEEN_VISIBILITY_LATE, taper)
+//                             * BitBoard.bitCount(attacks);
+//            evalResults[7] = taper(PARAMETER_QUEEN_VISIBILITY_PAWN_COVER_EARLY, PARAMETER_QUEEN_VISIBILITY_PAWN_COVER_LATE, taper)
+//                             * BitBoard.bitCount(attacks & opponentPawnCover);
+//            evalResults[8] = taper(PARAMETER_QUEEN_TRAPPED_EARLY, PARAMETER_QUEEN_TRAPPED_LATE, taper)
+//                             * (attacks & opponentPawnCover) == attacks ? 1 : 0;
+//
+//            ev += evalResults[4];
+//            ev += evalResults[5];
+//            ev += evalResults[6];
+//            ev += evalResults[7];
+//            ev += evalResults[8];
 
-            ev += evalResults[4];
-            ev += evalResults[5];
-            ev += evalResults[6];
-            ev += evalResults[7];
-            ev += evalResults[8];
+            ev += taper(PARAMETER_QUEEN_TABLE_FACTOR_EARLY, PARAMETER_QUEEN_TABLE_FACTOR_LATE, taper) *
+                             taper(pstEarly[4].get(index), pstLate[4].get(index), taper);
+            ev += taper(PARAMETER_QUEEN_VALUE_EARLY, PARAMETER_QUEEN_VALUE_LATE, taper);
+            ev += taper(PARAMETER_QUEEN_VISIBILITY_EARLY, PARAMETER_QUEEN_VISIBILITY_LATE, taper)
+                             * BitBoard.bitCount(attacks);
+            ev += taper(PARAMETER_QUEEN_VISIBILITY_PAWN_COVER_EARLY, PARAMETER_QUEEN_VISIBILITY_PAWN_COVER_LATE, taper)
+                             * BitBoard.bitCount(attacks & opponentPawnCover);
+            ev += taper(PARAMETER_QUEEN_TRAPPED_EARLY, PARAMETER_QUEEN_TRAPPED_LATE, taper)
+                             * (attacks & opponentPawnCover) == attacks ? 1 : 0;
         }
         //evalResults[4] = ev;
         return ev;
@@ -610,8 +644,10 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
 
 
     private double feature_kings(PieceList[] ourPieces,
+                                 long[] ourPieceOccupancy,
                                  long ourTotalOccupancy,
                                  long opponentTotalOccupancy,
+                                 long attackedSquares,
                                  Tensor1D[] pstEarly,
                                  Tensor1D[] pstLate,
                                  double taper) {
@@ -620,16 +656,32 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
             int index = ourPieces[5].get(i);
 
 
-            evalResults[9] = taper(PARAMETER_KING_TABLE_FACTOR_EARLY, PARAMETER_KING_TABLE_FACTOR_LATE, taper) *
-                             taper(pstEarly[5].get(index), pstLate[5].get(index), taper);
-            evalResults[10] = taper(PARAMETER_KING_SAFETY_1_EARLY, PARAMETER_KING_SAFETY_1_LATE, taper) *
-                            (BitBoard.bitCount(BitBoard.KING_ATTACKS[index] & ourTotalOccupancy));
-            evalResults[11] = taper(PARAMETER_KING_SAFETY_2_EARLY, PARAMETER_KING_SAFETY_2_LATE, taper) *
-                            (BitBoard.bitCount(BitBoard.KING_ATTACKS[index] & opponentTotalOccupancy));
+//            evalResults[9] = taper(PARAMETER_KING_TABLE_FACTOR_EARLY, PARAMETER_KING_TABLE_FACTOR_LATE, taper) *
+//                             taper(pstEarly[5].get(index), pstLate[5].get(index), taper);
+//            evalResults[10] = taper(PARAMETER_KING_SAFETY_1_EARLY, PARAMETER_KING_SAFETY_1_LATE, taper) *
+//                            (BitBoard.bitCount(BitBoard.KING_ATTACKS[index] & ourTotalOccupancy));
+//            evalResults[11] = taper(PARAMETER_KING_SAFETY_2_EARLY, PARAMETER_KING_SAFETY_2_LATE, taper) *
+//                            (BitBoard.bitCount(BitBoard.KING_ATTACKS[index] & opponentTotalOccupancy));
+//            evalResults[12] = taper(PARAMETER_KING_PAWN_SHIELD_EARLY, PARAMETER_KING_PAWN_SHIELD_LATE, taper) *
+//                              (BitBoard.bitCount(BitBoard.KING_ATTACKS[index] & ourPieceOccupancy[0]));
+//
+//            ev += evalResults[9];
+//            ev += evalResults[10];
+//            ev += evalResults[11];
+//            ev += evalResults[12];
 
-            ev += evalResults[9];
-            ev += evalResults[10];
-            ev += evalResults[11];
+            ev += taper(PARAMETER_KING_TABLE_FACTOR_EARLY, PARAMETER_KING_TABLE_FACTOR_LATE, taper) *
+                             taper(pstEarly[5].get(index), pstLate[5].get(index), taper);
+            ev += taper(PARAMETER_KING_SAFETY_1_EARLY, PARAMETER_KING_SAFETY_1_LATE, taper) *
+                              (BitBoard.bitCount(BitBoard.KING_ATTACKS[index] & ourTotalOccupancy));
+            ev += taper(PARAMETER_KING_SAFETY_2_EARLY, PARAMETER_KING_SAFETY_2_LATE, taper) *
+                              (BitBoard.bitCount(BitBoard.KING_ATTACKS[index] & opponentTotalOccupancy));
+            ev += taper(PARAMETER_KING_PAWN_SHIELD_EARLY, PARAMETER_KING_PAWN_SHIELD_LATE, taper) *
+                              (BitBoard.bitCount(BitBoard.KING_ATTACKS[index] & ourPieceOccupancy[0]));
+
+
+            ev += taper(PARAMETER_KING_SAFETY_3_EARLY, PARAMETER_KING_SAFETY_3_LATE, taper) * BitBoard.bitCount(
+                    attackedSquares & BitBoard.KING_ATTACKS[index]);
             ev += taper(CONST_PARAMETER_KING_VALUE_EARLY, CONST_PARAMETER_KING_VALUE_LATE, taper);
 
         }
@@ -639,9 +691,9 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
     public void printEvaluation(Board board){
         double phase = phaseDecider.getGamePhase(board);
         FastBoard fb = (FastBoard) board;
-        evaluateWhite(fb, phase);
+        double w = evaluateWhite(fb, phase);
         double[] whiteRes = Arrays.copyOf(evalResults, evalResults.length);
-        evaluateBlack(fb, phase);
+        double b = evaluateBlack(fb, phase);
         double[] blackRes = Arrays.copyOf(evalResults, evalResults.length);
 
 
@@ -657,6 +709,9 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
 
             builder.append(String.format(format, evalNames[i], whiteRes[i], blackRes[i]));
         }
+        builder.append("───────────────────────────────┼──────────────────────┼────────────────────────\n");
+        builder.append(String.format(format, "total", w, b));
+        builder.append("eval=" + (w-b));
 
         System.out.println(builder.toString());
     }
@@ -693,15 +748,15 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
                 PARAMETER_KNIGHT_TRAPPED_EARLY,
                 PARAMETER_QUEEN_TRAPPED_EARLY,
                 PARAMETER_ROOK_KING_LINE_EARLY,
-                PARAMETER_PASSED_PAWN_EARLY,
-                PARAMETER_ISOLATED_PAWN_EARLY,
-                PARAMETER_DOUBLED_PAWN_EARLY,
-                PARAMETER_DOUBLE_BISHOP_EARLY,
+                PARAMETER_PAWN_PASSED_EARLY,
+                PARAMETER_PAWN_ISOLATED_EARLY,
+                PARAMETER_PAWN_DOUBLED_EARLY,
+                PARAMETER_BISHOP_DOUBLED_EARLY,
                 PARAMETER_KING_SAFETY_1_EARLY,
                 PARAMETER_KING_SAFETY_2_EARLY,
                 PARAMETER_ROOK_HALF_OPEN_EARLY,
                 PARAMETER_ROOK_OPEN_EARLY,
-                PARAMETER_CONNECTED_PAWN_EARLY,
+                PARAMETER_PAWN_CONNECTED_EARLY,
                 PARAMETER_PAWN_TABLE_FACTOR_LATE,
                 PARAMETER_ROOK_TABLE_FACTOR_LATE,
                 PARAMETER_KNIGHT_TABLE_FACTOR_LATE,
@@ -727,15 +782,15 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
                 PARAMETER_KNIGHT_TRAPPED_LATE,
                 PARAMETER_QUEEN_TRAPPED_LATE,
                 PARAMETER_ROOK_KING_LINE_LATE,
-                PARAMETER_PASSED_PAWN_LATE,
-                PARAMETER_ISOLATED_PAWN_LATE,
-                PARAMETER_DOUBLED_PAWN_LATE,
-                PARAMETER_DOUBLE_BISHOP_LATE,
+                PARAMETER_PAWN_PASSED_LATE,
+                PARAMETER_PAWN_ISOLATED_LATE,
+                PARAMETER_PAWN_DOUBLED_LATE,
+                PARAMETER_BISHOP_DOUBLED_LATE,
                 PARAMETER_KING_SAFETY_1_LATE,
                 PARAMETER_KING_SAFETY_2_LATE,
                 PARAMETER_ROOK_HALF_OPEN_LATE,
                 PARAMETER_ROOK_OPEN_LATE,
-                PARAMETER_CONNECTED_PAWN_LATE,
+                PARAMETER_PAWN_CONNECTED_LATE,
                 };
     }
 
@@ -768,15 +823,15 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
         PARAMETER_KNIGHT_TRAPPED_EARLY = ar[i++];
         PARAMETER_QUEEN_TRAPPED_EARLY = ar[i++];
         PARAMETER_ROOK_KING_LINE_EARLY = ar[i++];
-        PARAMETER_PASSED_PAWN_EARLY = ar[i++];
-        PARAMETER_ISOLATED_PAWN_EARLY = ar[i++];
-        PARAMETER_DOUBLED_PAWN_EARLY = ar[i++];
-        PARAMETER_DOUBLE_BISHOP_EARLY = ar[i++];
+        PARAMETER_PAWN_PASSED_EARLY = ar[i++];
+        PARAMETER_PAWN_ISOLATED_EARLY = ar[i++];
+        PARAMETER_PAWN_DOUBLED_EARLY = ar[i++];
+        PARAMETER_BISHOP_DOUBLED_EARLY = ar[i++];
         PARAMETER_KING_SAFETY_1_EARLY = ar[i++];
         PARAMETER_KING_SAFETY_2_EARLY = ar[i++];
         PARAMETER_ROOK_HALF_OPEN_EARLY = ar[i++];
         PARAMETER_ROOK_OPEN_EARLY = ar[i++];
-        PARAMETER_CONNECTED_PAWN_EARLY = ar[i++];
+        PARAMETER_PAWN_CONNECTED_EARLY = ar[i++];
 
         PARAMETER_PAWN_TABLE_FACTOR_LATE = ar[i++];
         PARAMETER_ROOK_TABLE_FACTOR_LATE = ar[i++];
@@ -803,15 +858,15 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
         PARAMETER_KNIGHT_TRAPPED_LATE = ar[i++];
         PARAMETER_QUEEN_TRAPPED_LATE = ar[i++];
         PARAMETER_ROOK_KING_LINE_LATE = ar[i++];
-        PARAMETER_PASSED_PAWN_LATE = ar[i++];
-        PARAMETER_ISOLATED_PAWN_LATE = ar[i++];
-        PARAMETER_DOUBLED_PAWN_LATE = ar[i++];
-        PARAMETER_DOUBLE_BISHOP_LATE = ar[i++];
+        PARAMETER_PAWN_PASSED_LATE = ar[i++];
+        PARAMETER_PAWN_ISOLATED_LATE = ar[i++];
+        PARAMETER_PAWN_DOUBLED_LATE = ar[i++];
+        PARAMETER_BISHOP_DOUBLED_LATE = ar[i++];
         PARAMETER_KING_SAFETY_1_LATE = ar[i++];
         PARAMETER_KING_SAFETY_2_LATE = ar[i++];
         PARAMETER_ROOK_HALF_OPEN_LATE = ar[i++];
         PARAMETER_ROOK_OPEN_LATE = ar[i++];
-        PARAMETER_CONNECTED_PAWN_LATE = ar[i++];
+        PARAMETER_PAWN_CONNECTED_LATE = ar[i++];
     }
 
     @Override
