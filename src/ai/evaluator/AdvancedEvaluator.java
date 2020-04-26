@@ -259,16 +259,16 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
     private double PARAMETER_BISHOP_DOUBLED_EARLY =                                   52;
 
     private double PARAMETER_QUEEN_TABLE_FACTOR_EARLY =                              43;
-    private double PARAMETER_QUEEN_VALUE_EARLY =                                     598;
-    private double PARAMETER_QUEEN_VISIBILITY_EARLY =                                17;
+    private double PARAMETER_QUEEN_VALUE_EARLY =                                     650;
+    private double PARAMETER_QUEEN_VISIBILITY_EARLY =                                10;
     private double PARAMETER_QUEEN_TRAPPED_EARLY =                                   -20;
     private double PARAMETER_QUEEN_VISIBILITY_PAWN_COVER_EARLY =                     -21;
 
     private double PARAMETER_KING_TABLE_FACTOR_EARLY =                               44;
     private double PARAMETER_KING_SAFETY_1_EARLY =                                   10;
     private double PARAMETER_KING_SAFETY_2_EARLY =                                   25;
-    private double PARAMETER_KING_SAFETY_3_EARLY =                                   -1;
-    private double PARAMETER_KING_PAWN_SHIELD_EARLY =                                2;
+    private double PARAMETER_KING_SAFETY_3_EARLY =                                   -10;
+    private double PARAMETER_KING_PAWN_SHIELD_EARLY =                                10;
 
 
 
