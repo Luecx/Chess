@@ -236,6 +236,7 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
     private double PARAMETER_PAWN_ISOLATED_EARLY =                                   -7;
     private double PARAMETER_PAWN_DOUBLED_EARLY =                                    -29;
 
+
     private double PARAMETER_KNIGHT_TABLE_FACTOR_EARLY =                             44;
     private double PARAMETER_KNIGHT_VALUE_EARLY =                                    293;
     private double PARAMETER_KNIGHT_VISIBILITY_EARLY =                               8;

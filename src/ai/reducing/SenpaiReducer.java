@@ -17,6 +17,12 @@ public class SenpaiReducer implements Reducer {
         this.num_moves_not_reduced = num_moves_not_reduced;
     }
 
+    public SenpaiReducer(int num_moves_not_reduced, int higher_reduction_depth, int division_factor) {
+        this.num_moves_not_reduced = num_moves_not_reduced;
+        this.higher_reduction_depth = higher_reduction_depth;
+        this.division_factor = division_factor;
+    }
+
     @Override
     public int reduce(Board board, Move move, int depth, int depthLeft, int moveIndex, boolean pv_node) {
         if (

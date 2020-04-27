@@ -35,7 +35,7 @@ public class UCI {
     private static Board b = new FastBoard(Setup.DEFAULT);
 
     private static TimeManager timeManager = new SimpleTimeManager();
-    private static SenpaiReducer senpaiReducer = new SenpaiReducer(5);
+    private static SenpaiReducer senpaiReducer = new SenpaiReducer(10,4,3);
     private static AdvancedSearch ai = new AdvancedSearch(
             new AdvancedEvaluator(new SimpleDecider()),
             //new SimpleEvaluator(),
