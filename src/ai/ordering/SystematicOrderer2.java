@@ -92,7 +92,7 @@ public class SystematicOrderer2 implements Orderer {
             }
 
             //promotions
-            if(m.isPromotion()){
+            else if(m.isPromotion()){
                 goodCaptures.add(m);
                 m.setOrderPriority(1000);
             }
