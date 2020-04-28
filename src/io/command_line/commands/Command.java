@@ -57,7 +57,6 @@ public class Command {
             arg.reset();
         }
 
-
         int upperBound = argumentValues.length;
         for(int i = argumentValues.length-1; i>= 0; i--){
             Argument argument = getArgument(argumentValues[i]);

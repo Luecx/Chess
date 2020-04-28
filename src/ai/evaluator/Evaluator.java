@@ -48,11 +48,10 @@ public interface Evaluator<T extends Evaluator<T>> {
      * the result equals 0 if the exchange is equal OR losing!
      *
      * @param board
-     * @param sq
      * @param color
      * @return
      */
-    public abstract double staticExchangeEvaluation(Board board, int sq, int color);
+    public abstract double staticExchangeEvaluation(Board board, int toSquare, int target, int fromSquare, int attacker, int color);
 
 
     public static void createParameters(Class<?> cl, double[] params){

@@ -12,6 +12,10 @@ public final class Move {
     public static final byte PROMOTION = 2;
     public static final byte CASTLING = 3;
 
+
+
+
+
     int from;
     int to;
 
@@ -22,6 +26,7 @@ public final class Move {
 
 
     int orderPriority;
+    int seeScore;
 
 
 
@@ -45,6 +50,14 @@ public final class Move {
         copy.setType(type);
         copy.setOrderPriority(orderPriority);
         return copy;
+    }
+
+    public int getSeeScore() {
+        return seeScore;
+    }
+
+    public void setSeeScore(int seeScore) {
+        this.seeScore = seeScore;
     }
 
     public int getOrderPriority() { return orderPriority; }

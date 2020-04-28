@@ -31,7 +31,7 @@ import static io.IO.*;
 public class UCI {
 
     private static String LOG_NAME = null;
-    private static String ENGINENAME = "Waldi"; // we should decide on a name of the engine
+    private static String ENGINENAME = "Waldi";
     private static Board b = new FastBoard(Setup.DEFAULT);
 
     private static TimeManager timeManager = new SimpleTimeManager();
@@ -51,6 +51,20 @@ public class UCI {
     static {
         long t = System.currentTimeMillis();
         System.out.print("registering commands...");
+        cdb.registerCommand(
+                new Command("debug", "enables/disables debugging")
+                        .registerArgument(new BooleanArgument("ON", false))
+                        .registerArgument(new BooleanArgument("OFF", false))
+                        .setExecutable(c -> {
+                            if(c.getArgument("on").isSet()){
+                                ai.setDebug(true);
+                            }else if(c.getArgument("off").isSet()){
+                                ai.setDebug(false);
+                            }else{
+                                System.out.println("Error while parsing this command!");
+                            }
+                        })
+        );
         cdb.registerCommand(
                 new Command("setoption", "sets some options of the engine")
                         .registerArgument(new TextArgument("name", true, "none"))
@@ -209,7 +223,7 @@ public class UCI {
         cdb.registerCommand(
                 new Command("perft", "print the perft results for the given position")
                         .registerArgument(new NumericArgument("depth", true, 5d))
-                        .registerArgument(new BooleanArgument("dif", false, false))
+                        .registerArgument(new BooleanArgument("dif", false))
                         .setExecutable(c -> System.out.println("total:" + Testing.perft_pseudo(b,
                                                                                                (int) (double) c.getNumericArgument("depth").getValue(),
                                                                                                new MoveListBuffer(20, 300),

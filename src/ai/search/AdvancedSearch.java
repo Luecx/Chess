@@ -49,6 +49,7 @@ public class AdvancedSearch implements AI {
     protected boolean                                   use_futility_pruning    = true;         //flag for futility pruning at depth<=1 nodes
     protected boolean                                   use_delta_pruning       = true;         //flag for delta pruning inside quiescence search
 
+    protected boolean                                   debug                   = false;        //searches all moves at root with full window
     protected boolean                                   print_overview          = true;         //flag for output-printing
 
     protected int                                       deepening_start_depth   = 1;            //initial depth for it-deepening
@@ -146,6 +147,23 @@ public class AdvancedSearch implements AI {
      */
     public void setPrint_overview(boolean print_overview) {
         this.print_overview = print_overview;
+    }
+
+    /**
+     * setter for debugging
+     * @return
+     */
+    public boolean isDebug() {
+        return debug;
+    }
+
+    /**
+     * enables/disabled debugging.
+     * This includes searching each move at the root with an infinite window and printing its score
+     * @param debug
+     */
+    public void setDebug(boolean debug) {
+        this.debug = debug;
     }
 
     /**
@@ -650,6 +668,14 @@ public class AdvancedSearch implements AI {
         orderer.sort(allMoves, currentDepth, null, _board, pv, _killerTable,_historyTable, _transpositionTable);
 
         /**
+         * calculate SEE value
+         */
+        for(Move m:allMoves){
+            if(m.getType() == Move.DEFAULT)
+                m.setSeeScore((int) evaluator.staticExchangeEvaluation(_board, m.getTo(), m.getPieceTo(), m.getFrom(), m.getPieceFrom(), _board.getActivePlayer()));
+        }
+
+        /**
          * looping over all moves
          */
         for (Move m:allMoves)  {
@@ -683,15 +709,15 @@ public class AdvancedSearch implements AI {
                 continue;
             }
 
-//            /**
-//             * if the SEE value of the capture is too small, dont bother this move.
-//             */
-//            if (!pv
-//                    && depthLeft <= 4
-//                    && m.isCapture()
-//                    && evaluator.staticExchangeEvaluation(_board, m.getTo(), _board.getActivePlayer()) < -100){
-//                continue;
-//            }
+            /**
+             * if the SEE value of the capture is too small, dont bother this move.
+             */
+            if (!pv
+                    && depthLeft <= 4
+                    && m.isCapture()
+                    && m.getSeeScore() < -100){
+                continue;
+            }
 
 
 
@@ -699,13 +725,22 @@ public class AdvancedSearch implements AI {
             int extensions = _board.givesCheck(m) ? 1:0;
 
             _board.move(m);
-            if (legalMoves == 0 && pv) {
-                score = -pvSearch(-beta, -alpha, currentDepth+1, depthLeft-1-reduction+extensions, true, false);
-            } else {
-                score = -pvSearch(-alpha-1, -alpha, currentDepth+1, depthLeft-1-reduction+extensions, false, false);
-                if (score > alpha && score < beta && pv) // in fail-soft ... && score < beta ) is common
-                    score = -pvSearch(-beta, -alpha, currentDepth+1, depthLeft-1-reduction+extensions, true,false); // re-search
+
+            if (debug && currentDepth == 0){
+                score = -pvSearch(- Double.POSITIVE_INFINITY, -Double.NEGATIVE_INFINITY, currentDepth+1, depthLeft-1-reduction+extensions, true, false);
+                System.out.format("%-6s %10.1f %n",UCI.moveToUCI(m, _board), score);
+            }else{
+                if (legalMoves == 0 && pv) {
+                    score = -pvSearch(-beta, -alpha, currentDepth+1, depthLeft-1-reduction+extensions, true, false);
+                } else {
+                    score = -pvSearch(-alpha-1, -alpha, currentDepth+1, depthLeft-1-reduction+extensions, false, false);
+                    if (score > alpha && score < beta && pv) // in fail-soft ... && score < beta ) is common
+                        score = -pvSearch(-beta, -alpha, currentDepth+1, depthLeft-1-reduction+extensions, true,false); // re-search
+                }
+
             }
+
+
             _board.undoMove();
 
 

@@ -877,112 +877,188 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
         return evaluator;
     }
 
-    private int smallestAttackerSquare(Board b, int square, int side){
+    private int smallestAttackerSquare(long[] pieceOcc, long occupied, int square, int side){
 
-        FastBoard fb = (FastBoard) b;
 
-        PieceList[] pieces = side > 0 ? ((FastBoard)b).getWhite_pieces() : ((FastBoard)b).getBlack_pieces();
-        int index;
+        long occ = occupied;
+        long[] pOcc = pieceOcc;
         long squareBB = 1L << square;
+
+
 
 
         //pawns
         if(side > 0){
-            if((BitBoard.shiftNorthWest(fb.getWhite_values()[0]) & squareBB) != 0){
+            if((BitBoard.shiftNorthWest(pOcc[0]) & squareBB) != 0){
                 return square-7;
             }
-            if((BitBoard.shiftNorthEast(fb.getWhite_values()[0]) & squareBB) != 0){
+            if((BitBoard.shiftNorthEast(pOcc[0]) & squareBB) != 0){
                 return square-9;
             }
         }else{
-            if((BitBoard.shiftSouthWest(fb.getBlack_values()[0]) & squareBB) != 0){
+            if((BitBoard.shiftSouthWest(pOcc[0]) & squareBB) != 0){
                 return square+9;
             }
-            if((BitBoard.shiftSouthEast(fb.getBlack_values()[0]) & squareBB) != 0){
+            if((BitBoard.shiftSouthEast(pOcc[0]) & squareBB) != 0){
                 return square+7;
             }
         }
 
 
-        //knights
-        for (int i = 0; i < pieces[2].size(); i++) {
-            index = pieces[2].get(i);
-            if((BitBoard.KNIGHT_ATTACKS[index] & squareBB) != 0){
-                return index;
-            }
+        long nA = BitBoard.KNIGHT_ATTACKS[square];
+        long kA = BitBoard.KING_ATTACKS[square];
+        long rA = BitBoard.lookUpRookAttack(square, occ);
+        long bA = BitBoard.lookUpBishopAttack(square, occ);
+
+        if((nA & pOcc[2]) != 0){
+            return BitBoard.bitscanForward(nA & pOcc[2]);
         }
 
-        //bishops
-        for (int i = 0; i < pieces[3].size(); i++){
-            index = pieces[3].get(i);
-            if((BitBoard.lookUpBishopAttack(index, fb.getOccupied()) & squareBB) != 0){
-                return index;
-            }
+        if((bA & pOcc[3]) != 0){
+            return BitBoard.bitscanForward(bA & pOcc[3]);
         }
 
-        //rooks
-        for (int i = 0; i < pieces[1].size(); i++){
-            index = pieces[1].get(i);
-            if((BitBoard.lookUpRookAttack(index, fb.getOccupied()) & squareBB) != 0){
-                return index;
-            }
+        if((rA & pOcc[1]) != 0){
+            return BitBoard.bitscanForward(rA & pOcc[1]);
         }
 
-        //queen
-        for (int i = 0; i < pieces[4].size(); i++) {
-            index = pieces[4].get(i);
-            if ((
-                        (BitBoard.lookUpRookAttack(index, fb.getOccupied()) |
-                         BitBoard.lookUpBishopAttack(index, fb.getOccupied()))
-                        & squareBB) != 0) {
-                return index;
-            }
+        if(((rA | bA) & pOcc[4]) != 0){
+            return BitBoard.bitscanForward((rA | bA)  & pOcc[4]);
         }
 
-        //kings
-        for (int i = 0; i < pieces[5].size(); i++) {
-            index = pieces[5].get(i);
-            if((BitBoard.KING_ATTACKS[index] & squareBB) != 0){
-                return index;
-            }
+        if((kA & pOcc[5]) != 0){
+            return BitBoard.bitscanForward(kA & pOcc[5]);
         }
+
+
 
         return -1;
     }
 
 
 
+    public double staticExchangeEvaluation(Board board, int toSqare, int target, int fromSquare, int attacker, int color){
+
+
+        long[] whiteOcc = Arrays.copyOf(((FastBoard)board).getWhite_values(), 6);
+        long[] blackOcc = Arrays.copyOf(((FastBoard)board).getBlack_values(), 6);
+
+
+        int gain[] = new int[32];
+        int d = 0;
+        gain[d] = (int) pieceVals[Math.abs(target)];
+
+
+        long fromSet = 1L << fromSquare;
+        long occ = ((FastBoard) board).getOccupied();
+
+
+        do{
+            d++;
+            gain[d] = (int) (pieceVals[Math.abs(attacker)] - gain[d-1]);
+            if(Math.max(-gain[d-1], gain[d]) < 0){
+                break;
+            }
+
+            if(color == 1){
+                whiteOcc[attacker-1] ^= (fromSet);
+            }else{
+                blackOcc[-attacker-1] ^= fromSet;
+            }
+            occ     ^= fromSet;
+            color = -color;
+
+            fromSquare = smallestAttackerSquare(color == 1 ? whiteOcc:blackOcc,occ, toSqare, color);
+
+            if(fromSquare == 64){
+                smallestAttackerSquare(color == 1 ? whiteOcc:blackOcc,occ, toSqare, color);
+                throw new RuntimeException();
+            }
+
+            if(fromSquare == -1 || fromSquare == 64) break;
+            attacker = board.getPiece(fromSquare);
+            fromSet = 1L << fromSquare;
+        }while (fromSet != 0);
+
+        while (--d > 0)
+            gain[d-1]= -Math.max(-gain[d-1], gain[d]);
+        return gain[0];
+    }
+
 
 
     public double staticExchangeEvaluation(Board board, int sq, int color){
         double val = 0;
 
-        int minAttackerSquare = smallestAttackerSquare(board, sq, color);
-
-        if(minAttackerSquare == -1) return val;
-
-        int attackedPiece = board.getPiece(sq);
-        int attackerPiece = board.getPiece(minAttackerSquare);
+        int nextCapturedPiece = Math.abs(board.getPiece(sq));
 
 
-        /* skip if the square isn't attacked anymore by this side */
-        if ( minAttackerSquare != -1)// && board.getPiece(minAttackerSquare) * color > 0)
-        {
-            board.setPiece(0, minAttackerSquare);
-            board.setPiece(attackerPiece, sq);
+        long[] whiteOcc = Arrays.copyOf(((FastBoard)board).getWhite_values(), 6);
+        long[] blackOcc = Arrays.copyOf(((FastBoard)board).getBlack_values(), 6);
 
-            /* Do not consider captures if they lose material, therefor max zero */
-            //val = Math.max(0, pieceVals[Math.abs(attackedPiece)] - staticExchangeEvaluation(board, sq, -color));
-
-            val = pieceVals[Math.abs(attackedPiece)] - staticExchangeEvaluation(board, sq, -color);
+        long occ = ((FastBoard) board).getOccupied();
+        int minAttackerSquare = smallestAttackerSquare(color == 1 ? whiteOcc:blackOcc,occ, sq, color);
 
 
-            board.setPiece(attackerPiece, minAttackerSquare);
-            board.setPiece(attackedPiece, sq);
+        int gain[] = new int[32];
+        int d = 0;
+
+        while(minAttackerSquare != -1){
+
+            int attackerPiece = board.getPiece(minAttackerSquare);
+
+            occ ^= (1L << minAttackerSquare);
+            if(color == 1){
+                whiteOcc[attackerPiece-1] ^= (1L << minAttackerSquare);
+                val += pieceVals[nextCapturedPiece];
+                nextCapturedPiece = attackerPiece;
+            }else{
+                blackOcc[-attackerPiece-1] ^= (1L << minAttackerSquare);
+                val -= pieceVals[nextCapturedPiece];
+                nextCapturedPiece = -attackerPiece;
+            }
+            color = -color;
+
+            minAttackerSquare = smallestAttackerSquare(color == 1 ? whiteOcc:blackOcc,occ, sq, color);
         }
 
+
         return val;
+
+
+
+
+//        if(minAttackerSquare == -1) return val;
+//
+//        int attackedPiece = board.getPiece(sq);
+//        int attackerPiece = board.getPiece(minAttackerSquare);
+//
+//
+//
+//
+//
+//
+//        /* skip if the square isn't attacked anymore by this side */
+//        if ( minAttackerSquare != -1)// && board.getPiece(minAttackerSquare) * color > 0)
+//        {
+//            board.setPiece(0, minAttackerSquare);
+//            board.setPiece(attackerPiece, sq);
+//
+//            /* Do not consider captures if they lose material, therefor max zero */
+//            //val = Math.max(0, pieceVals[Math.abs(attackedPiece)] - staticExchangeEvaluation(board, sq, -color));
+//
+//
+//            val = pieceVals[Math.abs(attackedPiece)] - staticExchangeEvaluation(board, sq, -color);
+//
+//
+//            board.setPiece(attackerPiece, minAttackerSquare);
+//            board.setPiece(attackedPiece, sq);
+//        }
+//
+//        return val;
     }
+
+
 
     public static void main(String[] args) {
 //        double[] ar = new double[]{
@@ -1014,18 +1090,16 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
 
 
 
-        FastBoard fb = IO.read_FEN(new FastBoard(), "6r1/p4kp1/1p1p1b2/2pP1P2/b1P1BN2/2Q1PK1p/P6P/1R6 b - - 0 45");
-
-        System.out.println(fb);
-
-        //System.out.println(BitBoard.squareIndex(4,4));
+        FastBoard fb = IO.read_FEN(new FastBoard(), "1k1r3q/1ppn3p/p4b2/4p3/8/P2N2P1/1PP1R1BP/2K1Q3 w - -");
 
         AdvancedEvaluator av =  new AdvancedEvaluator(new SimpleDecider());
 
 
+        System.out.println(fb);
 
-        av.printEvaluation(fb);
-
-
+        long t = System.currentTimeMillis();
+        for(int i = 0; i < 1e8; i++)
+            av.staticExchangeEvaluation(fb, 4+4*8,-1, 3+2*8,3,1);
+        System.out.println(System.currentTimeMillis()-t);
     }
 }

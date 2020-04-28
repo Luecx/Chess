@@ -83,36 +83,5 @@ public class MiniMax implements AI {
         return max;
     }
 
-    public static void main(String[] args) {
-        MiniMax m = new MiniMax(new Evaluator() {
-            @Override
-            public double evaluate(Board board) {
-                return 0;
-            }
-
-            @Override
-            public double[] getEvolvableValues() {
-                return new double[0];
-            }
-
-            @Override
-            public void setEvolvableValues(double[] ar) {
-            }
-
-            @Override
-            public Evaluator copy() {
-                return null;
-            }
-
-            @Override
-            public double staticExchangeEvaluation(Board board, int sq, int color) {
-                return 0;
-            }
-        }, 5);
-        FastBoard board = new FastBoard(Setup.DEFAULT);
-        long t = System.currentTimeMillis();
-        System.out.println(m.bestMove(board));
-        System.out.println(System.currentTimeMillis()-t);
-    }
 
 }
