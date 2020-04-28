@@ -672,7 +672,7 @@ public class AdvancedSearch implements AI {
          */
         for(Move m:allMoves){
             if(m.getType() == Move.DEFAULT)
-                m.setSeeScore((int) evaluator.staticExchangeEvaluation(_board, m.getTo(), m.getPieceTo(), m.getFrom(), m.getPieceFrom(), _board.getActivePlayer()));
+                m.setSeeScore(getSEE(m));
         }
 
         /**
@@ -722,7 +722,7 @@ public class AdvancedSearch implements AI {
 
 
             int reduction = use_LMR ? reducer.reduce(_board, m, currentDepth, depthLeft, legalMoves, pv) : 0;
-            int extensions = _board.givesCheck(m) ? 1:0;
+            int extensions = _board.givesCheck(m) && m.getSeeScore() > 0 ? 1:0;
 
             _board.move(m);
 
@@ -873,6 +873,12 @@ public class AdvancedSearch implements AI {
                 if(stand_pat+delta_pruning_captures[Math.abs(m.getPieceTo())] < alpha-delta_pruning_big_margin){
                     continue;
                 }
+            }
+            /**
+             * prune moves with SEE < 0
+             */
+            if(getSEE(m) < 0){
+                continue;
             }
 
             _board.move(m);
@@ -1134,6 +1140,15 @@ public class AdvancedSearch implements AI {
             return en;
         }
         return null;
+    }
+
+    /**
+     * calculates the SEE score for the given move using the internal board object.
+     * @param m
+     * @return
+     */
+    public int getSEE(Move m){
+        return (int)evaluator.staticExchangeEvaluation(_board, m.getTo(), m.getPieceTo(), m.getFrom(), m.getPieceFrom(), _board.getActivePlayer());
     }
 
     /**

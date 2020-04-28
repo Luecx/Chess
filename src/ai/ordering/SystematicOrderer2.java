@@ -79,18 +79,32 @@ public class SystematicOrderer2 implements Orderer {
 
 
 
-            if(m.getPieceTo() == 0 && historyTable != null){
+            if(!m.isCapture() && historyTable != null){
                 //H I S T O R Y
                 m.setOrderPriority((int)historyTable.get(m.getFrom(), m.getTo()));
             }else{
                 NoahOrderer.setOrderPriority(m, board);
             }
 
+            //killer moves
             if(killerTable != null && killerTable.isKillerMove(depth, m)){
                 killerMoves.add(m);
             }
 
+            //promotions
+            if(m.isPromotion()){
+                goodCaptures.add(m);
+                m.setOrderPriority(1000);
+            }
+
+            //captures
             else if(m.isCapture()){
+
+                if(m.getSeeScore() != 0){
+                    m.setOrderPriority(m.getSeeScore());
+                }else{
+                    NoahOrderer.setOrderPriority(m,board);
+                }
 
                 //if SEE is set (for default search)
                 if (m.getSeeScore() > 0) {
@@ -106,7 +120,15 @@ public class SystematicOrderer2 implements Orderer {
                     }
                 }
 
-            } else{
+            }
+
+            //no captures
+            else{
+                if(historyTable != null){
+                    m.setOrderPriority((int)historyTable.get(m.getFrom(), m.getTo()));
+                }else{
+                    NoahOrderer.setOrderPriority(m, board);
+                }
                 nonCaptureMoves.add(m);
                 m.setOrderPriority(m.getSeeScore());
             }

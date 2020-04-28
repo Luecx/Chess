@@ -995,6 +995,50 @@ public class BitBoard {
 //        return counter;
     }
 
+    /**
+     * The Chebyshev distance is the maximum of the absolute rank- and file-distance of both squares.
+     * @param f1
+     * @param r1
+     * @param f2
+     * @param r2
+     * @return
+     */
+    public static final int chebyshevDistance(int f1,int r1, int f2, int r2){
+        return Math.max(Math.abs(r2-r1), Math.abs(f2-f1));
+    }
+
+    /**
+     * The Chebyshev distance is the maximum of the absolute rank- and file-distance of both squares.
+     * @param sq1
+     * @param sq2
+     * @return
+     */
+    public static final int chebyshevDistance(int sq1,int sq2){
+        return chebyshevDistance(fileIndex(sq1), rankIndex(sq1), fileIndex(sq2), rankIndex(sq2));
+    }
+
+    /**
+     * the orthogonal Manhattan-Distance is the sum of both absolute rank- and file-distance distances
+     * @param f1
+     * @param r1
+     * @param f2
+     * @param r2
+     * @return
+     */
+    public static final int manhattanDistance(int f1,int r1, int f2, int r2){
+        return Math.max(Math.abs(r2-r1), Math.abs(f2-f1));
+    }
+
+    /**
+     * the orthogonal Manhattan-Distance is the sum of both absolute rank- and file-distance distances
+     * @param sq1
+     * @param sq2
+     * @return
+     */
+    public static final int manhattanDistance(int sq1,int sq2){
+        return manhattanDistance(fileIndex(sq1), rankIndex(sq1), fileIndex(sq2), rankIndex(sq2));
+    }
+
     public static void main(String[] args) {
 
 
