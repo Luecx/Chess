@@ -206,7 +206,7 @@ public class AlphaBeta implements AI {
     public Move bestMove(Board board) {
         _board = board;
         if (use_transposition){
-            _transpositionTable = new TranspositionTable<>();
+            _transpositionTable = new TranspositionTable<>(20);
         }
         long time = System.currentTimeMillis();
         if (use_iteration) {

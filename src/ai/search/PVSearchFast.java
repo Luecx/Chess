@@ -400,7 +400,7 @@ public class PVSearchFast implements AI {
         long time = System.currentTimeMillis();
 
         if (use_transposition){
-            _transpositionTable = new TranspositionTable<>();//50E6
+            _transpositionTable = new TranspositionTable<>(20);//50E6
         }
 
 

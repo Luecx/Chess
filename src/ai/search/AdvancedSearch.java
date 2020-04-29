@@ -18,6 +18,7 @@ import board.moves.MoveListBuffer;
 import board.setup.Setup;
 import io.IO;
 import io.UCI;
+import io.sizeFetcher.InstrumentationAgent;
 
 import java.util.List;
 
@@ -764,7 +765,7 @@ public class AdvancedSearch implements AI {
              */
             if( score > highestScore){
                 highestScore = score;
-                bestMove = m.copy();
+                bestMove = m;
             }
 
             /**
@@ -772,7 +773,7 @@ public class AdvancedSearch implements AI {
              */
             if( score > alpha       ){
                 alpha = score; // alpha acts like max in MiniMax
-                bestMove = m.copy();
+                bestMove = m;
             }
 
         }
@@ -795,10 +796,10 @@ public class AdvancedSearch implements AI {
          */
         if(bestMove != null){
             if (pv && highestScore >= alpha && highestScore <= beta) {
-                placeInTT(zobrist, currentDepth, depthLeft, highestScore, TranspositionEntry.PV_NODE, bestMove);
+                placeInTT(zobrist, currentDepth, depthLeft, highestScore, TranspositionEntry.PV_NODE, bestMove.copy());
             } else {
                 if (use_transposition) {
-                    placeInTT(zobrist, currentDepth, depthLeft, alpha, TranspositionEntry.ALL_NODE, bestMove);
+                    placeInTT(zobrist, currentDepth, depthLeft, alpha, TranspositionEntry.ALL_NODE, bestMove.copy());
                 }
             }
         }
@@ -978,16 +979,14 @@ public class AdvancedSearch implements AI {
         this._killerTable       = use_killer_heuristic  ? new KillerTable(MAXIMUM_STORE_DEPTH, killer_count)    :null;
         this._historyTable      = use_history_heuristic ? new HistoryTable()                                    :null;
 
-        if(this._transpositionTable == null)    this._transpositionTable = new TranspositionTable<>();
+        if(this._transpositionTable == null)    this._transpositionTable = new TranspositionTable<>(16);
         else                                    this._transpositionTable.clear();
 
         /**
          * without iterations
          */
         if(!use_iteration && limit_flag == FLAG_DEPTH_LIMIT){
-
             iteration(limit);
-
             return _transpositionTable.get(board.zobrist()).getBestMove();
         }
 
@@ -1125,7 +1124,15 @@ public class AdvancedSearch implements AI {
             }
         }
 
-        _transpositionTable.put(zobrist, new TranspositionEntry(zobrist, alpha, depthLeft, type, _board.getActivePlayer(), bestMove));
+        if(en != null){
+            en.setZobrist(zobrist);
+            en.setVal(alpha);
+            en.setNode_type(type);
+            en.setColor(_board.getActivePlayer());
+            en.setBestMove(bestMove);
+        }else{
+            _transpositionTable.put(zobrist, new TranspositionEntry(zobrist, alpha, depthLeft, type, _board.getActivePlayer(), bestMove));
+        }
     }
 
     /**
@@ -1140,7 +1147,6 @@ public class AdvancedSearch implements AI {
         TranspositionEntry en = _transpositionTable.get(zobrist);
 
         if(en != null && en.getDepthLeft() >= depthLeft && en.getZobrist() == zobrist && en.getColor() == _board.getActivePlayer()){
-            //System.out.println("retrieved");
             return en;
         }
         return null;
@@ -1161,6 +1167,10 @@ public class AdvancedSearch implements AI {
      */
     public String buildInfoString(int depth, long time){
         StringBuilder builder = new StringBuilder();
+
+
+//        InstrumentationAgent.printMemoryOverview();
+//        System.out.println("tt size: " + _transpositionTable.size());
 
 
         builder.append("info ");
@@ -1251,13 +1261,12 @@ public class AdvancedSearch implements AI {
         AdvancedSearch advancedSearch = new AdvancedSearch(
                 new AdvancedEvaluator(new SimpleDecider()),
                 new SystematicOrderer2(),
-                new SenpaiReducer(5), 2, 10);
+                new SenpaiReducer(5), 2, 20);
 
-        advancedSearch.setUse_delta_pruning(true);
-        advancedSearch.setDeepening_start_depth(1);
-        advancedSearch.setUse_futility_pruning(true);
+        advancedSearch.setUse_transposition(true);
 
         advancedSearch.bestMove(fb);
+//        advancedSearch.bestMove(fb);
 
 
 
