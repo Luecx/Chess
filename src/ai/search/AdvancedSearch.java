@@ -1098,7 +1098,6 @@ public class AdvancedSearch implements AI {
 
         String infoString = buildInfoString(depth, System.currentTimeMillis()-t0);
         System.out.println(infoString);
-        System.out.println(_transpositionTable.size());
 
         UCI.log(infoString+"\n");
     }
