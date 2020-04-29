@@ -43,22 +43,6 @@ public class SystematicOrderer2 implements Orderer {
         badCaptures.clear();
         nonCaptureMoves.clear();
 
-//        for (Move m:collection){
-//            NoahOrderer.setOrderPriority(m, board);
-//        }
-
-        //PV nodes
-//        if(lastIteration != null && pvNode){
-//            if(depth < lastIteration.getLine().length){
-//                int index = collection.indexOf(lastIteration.getLine()[depth]);
-//                if(index != -1){
-//                    pvMoves.add(collection.get(index));
-//                    collection.remove(index);
-//                }
-//            }
-//        }
-
-        //hash moves
 
         long zobrist = board.zobrist();
         if (transpositionTable != null && pvMoves.size() == 0) {
@@ -76,39 +60,22 @@ public class SystematicOrderer2 implements Orderer {
 
         //capture moves / non capture / killers
         for(Move m:collection){
-
-
-
-            if(m.getPieceTo() == 0 && historyTable != null){
-                //H I S T O R Y
+            if (m.getPieceTo() == 0 && historyTable != null) {
                 m.setOrderPriority((int)historyTable.get(m.getFrom(), m.getTo()));
-            }else{
+            } else {
                 NoahOrderer.setOrderPriority(m, board);
             }
 
-            if(killerTable != null && killerTable.isKillerMove(depth, m)){
-                killerMoves.add(m);
-            }
-
-            else if(m.isCapture()){
-
-                //if SEE is set (for default search)
-                if (m.getSeeScore() > 0) {
-                    goodCaptures.add(m);
-                } else if(m.getSeeScore() < 0){
-                    badCaptures.add(m);
-                } else{
-                    //if not set (qSearch)
-                    if(AdvancedMidGameEvaluator.EVALUATE_PRICE[Math.abs(m.getPieceTo())] >= AdvancedMidGameEvaluator.EVALUATE_PRICE[Math.abs(m.getPieceFrom())]){
-                        goodCaptures.add(m);
-                    }else{
-                        badCaptures.add(m);
-                    }
+            if (killerTable != null && killerTable.isKillerMove(depth, m)) {
+                this.killerMoves.add(m);
+            } else if (m.getPieceTo() != 0) {
+                if (AdvancedMidGameEvaluator.EVALUATE_PRICE[Math.abs(m.getPieceTo())] >= AdvancedMidGameEvaluator.EVALUATE_PRICE[Math.abs(m.getPieceFrom())]) {
+                    this.goodCaptures.add(m);
+                } else {
+                    this.badCaptures.add(m);
                 }
-
-            } else{
-                nonCaptureMoves.add(m);
-                m.setOrderPriority(m.getSeeScore());
+            } else {
+                this.nonCaptureMoves.add(m);
             }
         }
 

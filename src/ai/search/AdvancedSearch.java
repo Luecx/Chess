@@ -722,7 +722,7 @@ public class AdvancedSearch implements AI {
 
 
             int reduction = use_LMR ? reducer.reduce(_board, m, currentDepth, depthLeft, legalMoves, pv) : 0;
-            int extensions = _board.givesCheck(m) && m.getSeeScore() > 0 ? 1:0;
+            int extensions = _board.givesCheck(m) & m.getSeeScore() >= 0 ? 1:0;
 
             _board.move(m);
 
