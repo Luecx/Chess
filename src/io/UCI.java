@@ -5,6 +5,7 @@ import ai.evaluator.decider.SimpleDecider;
 import ai.search.AdvancedSearch;
 import ai.time_manager.SimpleTimeManager;
 import ai.time_manager.TimeManager;
+import ai.tools.transpositions.TranspositionEntry;
 import board.Board;
 import board.FastBoard;
 import board.moves.Move;
@@ -18,6 +19,7 @@ import io.command_line.commands.Executable;
 import io.command_line.commands.arguments.BooleanArgument;
 import io.command_line.commands.arguments.NumericArgument;
 import io.command_line.commands.arguments.TextArgument;
+import io.sizeFetcher.InstrumentationAgent;
 
 import java.io.File;
 import java.io.IOException;
@@ -359,6 +361,8 @@ public class UCI {
     }
 
     public static void main(String[] args) {
+        //System.out.println(InstrumentationAgent.getObjectSize(new Double(3)));
+
         uciCommunication();
     }
 }

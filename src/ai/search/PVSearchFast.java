@@ -548,7 +548,7 @@ public class PVSearchFast implements AI {
         }
         TranspositionEntry en = _transpositionTable.get(key);
         if (en == null) {
-            _transpositionTable.put(key, new TranspositionEntry(alpha, depthLeft, nodeType, _board.getActivePlayer(), bestMove.copy()));
+            //transpositionTable.put(key, new TranspositionEntry(alpha, depthLeft, nodeType, _board.getActivePlayer(), bestMove.copy()));
         } else {
             if (en.getDepthLeft() < depthLeft) {
                 en.setNode_type(nodeType);

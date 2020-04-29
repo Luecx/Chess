@@ -895,7 +895,7 @@ public class AdvancedSearch implements AI {
                 alpha = score;
 //                bestMove = m.copy();
             }
-            if (score > bestScore){
+                if (score > bestScore){
                 bestScore = score;
 //                bestMove = m.copy();
             }
@@ -1030,7 +1030,9 @@ public class AdvancedSearch implements AI {
         /**
          * returning the best move stored in the TT.
          */
-        return _transpositionTable.get(board.zobrist()).getBestMove();
+        Move m = _transpositionTable.get(board.zobrist()).getBestMove();
+        _transpositionTable.clear();
+        return m;
     }
 
     public void iteration(int depth) {
@@ -1045,6 +1047,7 @@ public class AdvancedSearch implements AI {
 
         _nodes = 0;
         _selDepth = 0;
+
 
 
         /**
@@ -1095,6 +1098,8 @@ public class AdvancedSearch implements AI {
 
         String infoString = buildInfoString(depth, System.currentTimeMillis()-t0);
         System.out.println(infoString);
+        System.out.println(_transpositionTable.size());
+
         UCI.log(infoString+"\n");
     }
 

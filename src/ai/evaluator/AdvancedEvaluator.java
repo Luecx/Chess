@@ -235,6 +235,7 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
     private double PARAMETER_PAWN_PASSED_EARLY =                                     38;
     private double PARAMETER_PAWN_ISOLATED_EARLY =                                   -7;
     private double PARAMETER_PAWN_DOUBLED_EARLY =                                    -29;
+    private double PARAMETER_PAWN_CONNECTED_PASSED_EARLY =                           10;
 
 
     private double PARAMETER_KNIGHT_TABLE_FACTOR_EARLY =                             44;
@@ -269,7 +270,7 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
     private double PARAMETER_KING_SAFETY_1_EARLY =                                   10;
     private double PARAMETER_KING_SAFETY_2_EARLY =                                   25;
     private double PARAMETER_KING_SAFETY_3_EARLY =                                   -10;
-    private double PARAMETER_KING_PAWN_SHIELD_EARLY =                                10;
+    private double PARAMETER_KING_PAWN_SHIELD_EARLY =                                20;
 
 
 
@@ -280,6 +281,7 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
     private double PARAMETER_PAWN_ISOLATED_LATE =                                    -7;
     private double PARAMETER_PAWN_DOUBLED_LATE =                                     -29;
     private double PARAMETER_PAWN_CONNECTED_LATE =                                   5;
+    private double PARAMETER_PAWN_CONNECTED_PASSED_LATE =                            40;
 
     private double PARAMETER_ROOK_TABLE_FACTOR_LATE =                                44;
     private double PARAMETER_ROOK_VALUE_LATE =                                       424;
@@ -508,29 +510,53 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
                                  Tensor1D[] pstEarly,
                                  Tensor1D[] pstLate,
                                  double taper) {
+
+
+        //connected from east and west
+        long connectedPawnsEast;
+        long connectedPawnsWest;
+
+        if(color == 1){
+            connectedPawnsEast = BitBoard.shiftNorthEast(ourPieceOccupancy[0]) & ourPieceOccupancy[0];
+            connectedPawnsWest = BitBoard.shiftNorthWest(ourPieceOccupancy[0]) & ourPieceOccupancy[0];
+        }else{
+            connectedPawnsEast = BitBoard.shiftSouthEast(ourPieceOccupancy[0]) & ourPieceOccupancy[0];
+            connectedPawnsWest = BitBoard.shiftSouthWest(ourPieceOccupancy[0]) & ourPieceOccupancy[0];
+        }
+
         double ev = 0;
         for (int i = 0; i < ourPieces[0].size(); i++) {
             int index = ourPieces[0].get(i);
             ev += taper(PARAMETER_PAWN_TABLE_FACTOR_EARLY, PARAMETER_PAWN_TABLE_FACTOR_LATE, taper) *
                   taper(pstEarly[0].get(index), pstLate[0].get(index), taper);
             ev += taper(CONST_PARAMETER_PAWN_VALUE_EARLY, CONST_PARAMETER_PAWN_VALUE_LATE, taper);
-            if ((ourPassedPawnMask[index] & opponentPieceOccupancy[0]) == 0) {
-                ev += taper(PARAMETER_PAWN_PASSED_EARLY, PARAMETER_PAWN_PASSED_LATE, taper);
+
+            boolean passed = (ourPassedPawnMask[index] & opponentPieceOccupancy[0]) == 0;
+            boolean connected = ((1L << index) & (connectedPawnsEast | connectedPawnsWest)) != 0;
+
+            //passed and connected
+            if(passed){
+                if(connected){
+                        ev += taper(PARAMETER_PAWN_CONNECTED_PASSED_EARLY, PARAMETER_PAWN_CONNECTED_PASSED_LATE, taper);
+                }else{
+                    ev += taper(PARAMETER_PAWN_PASSED_EARLY, PARAMETER_PAWN_PASSED_LATE, taper);
+                }
             }
+
             if ((BitBoard.files_neighbour[BitBoard.fileIndex(index)] & ourPieceOccupancy[0]) == 0) {
                 ev += taper(PARAMETER_PAWN_ISOLATED_EARLY, PARAMETER_PAWN_ISOLATED_LATE, taper);
             }
         }
+
+
+
         ev += taper(PARAMETER_PAWN_DOUBLED_EARLY, PARAMETER_PAWN_DOUBLED_LATE, taper) *
               (color == 1 ?
                        BitBoard.bitCount(BitBoard.shiftNorth(ourPieceOccupancy[0]) & ourPieceOccupancy[0]) :
                        BitBoard.bitCount(BitBoard.shiftSouth(ourPieceOccupancy[0]) & ourPieceOccupancy[0]));
         ev += taper(PARAMETER_PAWN_CONNECTED_EARLY, PARAMETER_PAWN_CONNECTED_LATE, taper) *
-              (color == 1 ?
-                       (BitBoard.bitCount(BitBoard.shiftNorthEast(ourPieceOccupancy[0]) & ourPieceOccupancy[0]) +
-                        BitBoard.bitCount(BitBoard.shiftNorthWest(ourPieceOccupancy[0]) & ourPieceOccupancy[0])) :
-                       (BitBoard.bitCount(BitBoard.shiftSouthEast(ourPieceOccupancy[0]) & ourPieceOccupancy[0]) +
-                        BitBoard.bitCount(BitBoard.shiftSouthWest(ourPieceOccupancy[0]) & ourPieceOccupancy[0])));
+                       (BitBoard.bitCount(connectedPawnsEast) +
+                        BitBoard.bitCount(connectedPawnsWest));
         //evalResults[0] = ev;
         return ev;
     }

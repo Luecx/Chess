@@ -4,9 +4,9 @@ import board.moves.Move;
 
 public class TranspositionEntry {
 
-    public static final int PV_NODE = 1;
-    public static final int CUT_NODE = 2;
-    public static final int ALL_NODE = 3;
+    public static final byte PV_NODE = 1;
+    public static final byte CUT_NODE = 2;
+    public static final byte ALL_NODE = 3;
 
     private double val;
 

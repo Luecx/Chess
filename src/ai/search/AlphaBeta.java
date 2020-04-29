@@ -288,7 +288,7 @@ public class AlphaBeta implements AI {
         if (!use_transposition || _transpositionTable == null) return;
         TranspositionEntry en = _transpositionTable.get(key);
         if (en == null) {
-            _transpositionTable.put(key, new TranspositionEntry(alpha, _depth - depth, nodeType, _board.getActivePlayer(), null));
+            //_transpositionTable.put(key, new TranspositionEntry(alpha, _depth - depth, nodeType, _board.getActivePlayer(), null));
         } else {
             if (en.getDepthLeft() > depth) {
                 en.setVal(alpha);
