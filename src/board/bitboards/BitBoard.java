@@ -35,6 +35,8 @@ public class BitBoard {
     public static final long rank_7                                 = rank_1 << 48;
     public static final long rank_8                                 = rank_1 << 56;
 
+    public static final long center_4_squares                       = (rank_4 | rank_5) & (d_file | e_file);
+
     public static final long anti_diagonal_7                        = 0x102040810204080L;
     public static final long anti_diagonal_6                        = shiftSouth(anti_diagonal_7);
     public static final long anti_diagonal_5                        = shiftSouth(anti_diagonal_6);
