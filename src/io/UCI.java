@@ -363,30 +363,6 @@ public class UCI {
     }
 
     public static void main(String[] args) {
-        //System.out.println(InstrumentationAgent.getObjectSize(new Double(3)));
-
-        InstrumentationAgent.printMemoryOverview();
-        TranspositionTable<TranspositionEntry> entryTranspositionTable = new TranspositionTable<>((int)1E6);
-
-        Random random = new Random();
-
-        for(int i = 0; i < 1E6; i++){
-            entryTranspositionTable.put(random.nextLong(), new TranspositionEntry(1,2,3,4, new Move(1,2,3,4)));
-        }
-        System.out.println(entryTranspositionTable.size());
-        InstrumentationAgent.printMemoryOverview();
-        for(int i = 0; i < 1E6; i++){
-            entryTranspositionTable.put(random.nextLong(), new TranspositionEntry(1,2,3,4, new Move(1,2,3,4)));
-        }
-        System.out.println(entryTranspositionTable.size());
-
-//        double[] a = new double[3000000];
-//        for(int i = 0; i < 3000000; i++){
-//            a[i] = i;
-//        }
-
-        InstrumentationAgent.printMemoryOverview();
-
         uciCommunication();
     }
 }
