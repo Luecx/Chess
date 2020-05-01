@@ -264,7 +264,7 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
     private double PARAMETER_BISHOP_OPEN_BONUS_EARLY =                               20;
 
     private double PARAMETER_QUEEN_TABLE_FACTOR_EARLY =                              43;
-    private double PARAMETER_QUEEN_VALUE_EARLY =                                     800; //700;
+    private double PARAMETER_QUEEN_VALUE_EARLY =                                     870;
     private double PARAMETER_QUEEN_VISIBILITY_EARLY =                                1;
     private double PARAMETER_QUEEN_TRAPPED_EARLY =                                   -1;
     private double PARAMETER_QUEEN_VISIBILITY_PAWN_COVER_EARLY =                     0;
@@ -288,7 +288,7 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
     private double PARAMETER_PAWN_DOUBLED_ISOLATED_LATE =                            -40;
 
     private double PARAMETER_ROOK_TABLE_FACTOR_LATE =                                44;
-    private double PARAMETER_ROOK_VALUE_LATE =                                       470;  //424
+    private double PARAMETER_ROOK_VALUE_LATE =                                       470;
     private double PARAMETER_ROOK_VISIBILITY_LATE =                                  9;
     private double PARAMETER_ROOK_VISIBILITY_PAWN_COVER_LATE =                       0;
     private double PARAMETER_ROOK_TRAPPED_LATE =                                     -40;
@@ -312,7 +312,7 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
     private double PARAMETER_BISHOP_OPEN_BONUS_LATE =                                30;
 
     private double PARAMETER_QUEEN_TABLE_FACTOR_LATE =                               43;
-    private double PARAMETER_QUEEN_VALUE_LATE =                                      1000;  //900
+    private double PARAMETER_QUEEN_VALUE_LATE =                                      1050;
     private double PARAMETER_QUEEN_VISIBILITY_LATE =                                 5;
     private double PARAMETER_QUEEN_VISIBILITY_PAWN_COVER_LATE =                      0;
     private double PARAMETER_QUEEN_TRAPPED_LATE =                                    -40;

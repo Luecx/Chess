@@ -59,7 +59,7 @@ public class AdvancedSearch implements AI {
     protected int                                       razor_margin            = 300;          //margin for razoring
     protected int                                       futility_pruning_margin = 200;          //safety margin for futility pruning
     protected int                                       delta_pruning_margin    = 200;          //safety margin for futility pruning
-    protected int                                       delta_pruning_big_margin= 1000;         //safety margin for delta pruning without checking nodes
+    protected int                                       delta_pruning_big_margin= 1100;         //safety margin for delta pruning without checking nodes
     protected int[]                                     delta_pruning_captures  =               //adding these values to captures for delta pruning
                                     new int[]{0,100,500,300,315,800};
 
