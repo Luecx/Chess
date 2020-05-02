@@ -133,11 +133,11 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
             0, 0, 0, 0, 0, 0, 0, 0,
             100, 150, 150, 150, 150, 150, 150, 100,
             10, 30, 60, 100, 100, 60, 30, 10,
-            5, 5, 10, 25, 25, 10, 5, 5,
-            0, 0, 0, 20, 20, 0, 0, 0,
-            5, -5, -10, 0, 0, -10, -5, 5,
-            5, 10, 10, -20, -20, 10, 10, 5,
-            0, 0, 0, 0, 0, 0, 0, 0})).scale(0.01);
+            5,  5, 10, 25, 25, 10,  5,  5,
+            0,  0,  0, 20, 20,  0,  0,  0,
+            5, -5,-10,  0,  0,-10, -5,  5,
+            5,  0,  0,-20,-20,  0,  0,  0,
+            0,  0,  0,  0,  0,  0,  0,  0})).scale(0.01);
 
     public static final Tensor1D BISHOP_VALUES_WHITE_LATE = (Tensor1D) flipTensor(new Tensor1D(new double[]{
             -20, -10, -10, -10, -10, -10, -10, -20,
@@ -641,9 +641,9 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
             ev += taper(PARAMETER_BISHOP_TRAPPED_EARLY, PARAMETER_BISHOP_TRAPPED_LATE, taper)
                   * (attacks & opponentPawnCover) == attacks ? 1 : 0;
             //// VERY POSSIBLY WRONG --Noah
-            if (BitBoard.bitCount(BitBoard.center_4_squares & (ourPieceOccupancy[0] | opponentPieceOccupancy[0])) <= 1)  {
+            if (BitBoard.bitCount(BitBoard.center_squares & (ourPieceOccupancy[0] | opponentPieceOccupancy[0])) <= 1)  {
                 ev += taper(PARAMETER_BISHOP_OPEN_BONUS_EARLY, PARAMETER_BISHOP_OPEN_BONUS_LATE,taper);
-            } else if (BitBoard.bitCount(BitBoard.center_4_squares & (ourPieceOccupancy[0] | opponentPieceOccupancy[0])) >= 3) {
+            } else if (BitBoard.bitCount(BitBoard.center_squares & (ourPieceOccupancy[0] | opponentPieceOccupancy[0])) >= 3) {
                 ev += taper(PARAMETER_BISHOP_CLOSED_PENALTY_EARLY, PARAMETER_BISHOP_CLOSED_PENALTY_LATE,taper);
             }
         }

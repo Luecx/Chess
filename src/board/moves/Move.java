@@ -123,6 +123,19 @@ public final class Move {
         return getPieceTo() != 0;
     }
 
+    public int packMove(){
+        int i = 0;
+        i |= (this.getFrom());
+        i |= (this.getTo()) << 6;
+        i |= (this.getPieceFrom()+6) << 12;
+        i |= (this.getPieceTo()+6) << 16;
+        i |= (this.getType()) << 20;
+        return i;
+    }
+
+
+
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

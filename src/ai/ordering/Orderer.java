@@ -1,7 +1,6 @@
 package ai.ordering;
 
-import ai.tools.PVLine;
-import ai.tools.tables.HistoryTable;
+import ai.tools.tables.CounterMoveTable;
 import ai.tools.tables.KillerTable;
 import ai.tools.transpositions.TranspositionTable;
 import board.Board;
@@ -25,7 +24,6 @@ public interface Orderer {
      *
      * @param collection            the moves to be sorted.
      * @param depth                 the current depth. (depth increases)
-     * @param lastIteration         [can be NULL] the principal variation line from the last iterationGradient
      * @param board                 the board object
      * @param killerTable           [can be NULL] a killerTable storing killer moves.
      * @param killerTable           [can be NULL] a historyTable for the history heuristic.
@@ -36,12 +34,11 @@ public interface Orderer {
     void sort(
             List<Move>                  collection,
             int                         depth,
-            PVLine                      lastIteration,
             Board                       board,
             boolean                     pvNode,
             KillerTable                 killerTable,
-            HistoryTable                historyTable,
-            TranspositionTable          transpositionTable);
+            TranspositionTable          transpositionTable,
+            CounterMoveTable            counterMoveTable);
 
 
 

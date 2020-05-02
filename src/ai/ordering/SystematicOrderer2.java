@@ -1,8 +1,7 @@
 package ai.ordering;
 
 import ai.evaluator.AdvancedMidGameEvaluator;
-import ai.tools.PVLine;
-import ai.tools.tables.HistoryTable;
+import ai.tools.tables.CounterMoveTable;
 import ai.tools.tables.KillerTable;
 import ai.tools.transpositions.TranspositionEntry;
 import ai.tools.transpositions.TranspositionTable;
@@ -26,12 +25,11 @@ public class SystematicOrderer2 implements Orderer {
     public void sort(
             List<Move> collection,
             int depth,
-            PVLine lastIteration,
             Board board,
             boolean pvNode,
             KillerTable killerTable,
-            HistoryTable historyTable,
-            TranspositionTable transpositionTable){
+            TranspositionTable transpositionTable,
+            CounterMoveTable counterMoveTable){
 
         int initSize = collection.size();
 
@@ -42,6 +40,11 @@ public class SystematicOrderer2 implements Orderer {
         killerMoves.clear();
         badCaptures.clear();
         nonCaptureMoves.clear();
+
+        Move lastMove = null;
+        if(!board.getMoveHistory().isEmpty()){
+            lastMove = (Move) board.getMoveHistory().lastElement();
+        }
 
 
         long zobrist = board.zobrist();
@@ -60,8 +63,12 @@ public class SystematicOrderer2 implements Orderer {
 
         //capture moves / non capture / killers
         for(Move m:collection){
-            if (m.getPieceTo() == 0 && historyTable != null) {
-                m.setOrderPriority((int)historyTable.get(m.getFrom(), m.getTo()));
+            if (!m.isCapture() && counterMoveTable != null && lastMove != null) {
+                m.setOrderPriority((int)counterMoveTable.get(
+                        Math.abs(lastMove.getPieceFrom())-1,
+                        lastMove.getTo(),
+                        Math.abs(m.getPieceFrom())-1,
+                        m.getTo()));
             } else {
                 NoahOrderer.setOrderPriority(m, board);
             }

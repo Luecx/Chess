@@ -1,7 +1,6 @@
 package ai.ordering;
 
-import ai.tools.PVLine;
-import ai.tools.tables.HistoryTable;
+import ai.tools.tables.CounterMoveTable;
 import ai.tools.tables.KillerTable;
 import ai.tools.transpositions.TranspositionEntry;
 import ai.tools.transpositions.TranspositionTable;
@@ -31,12 +30,11 @@ public class ChiefOrderer implements Orderer {
     public void sort(
             List<Move> collection,
             int depth,
-            PVLine lastIteration,
             Board board,
             boolean pvNode,
             KillerTable killerTable,
-            HistoryTable historyTable,
-            TranspositionTable transpositionTable) {
+            TranspositionTable transpositionTable,
+            CounterMoveTable counterMoveTable) {
 
 
 
@@ -105,7 +103,7 @@ public class ChiefOrderer implements Orderer {
 
 
             nonCaptureMoves.add(m);
-            m.setOrderPriority((int)historyTable.get(m.getFrom(),m.getTo()));
+            //m.setOrderPriority((int)historyTable.get(m.getFrom(),m.getTo()));
         }
 
         nonCaptureMoves.sort(Comparator.comparingInt(Move::getOrderPriority));

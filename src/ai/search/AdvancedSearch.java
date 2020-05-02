@@ -7,6 +7,7 @@ import ai.ordering.Orderer;
 import ai.ordering.SystematicOrderer2;
 import ai.reducing.Reducer;
 import ai.reducing.SenpaiReducer;
+import ai.tools.tables.CounterMoveTable;
 import ai.tools.tables.HistoryTable;
 import ai.tools.tables.KillerTable;
 import ai.tools.transpositions.TranspositionEntry;
@@ -45,10 +46,11 @@ public class AdvancedSearch implements AI {
     protected boolean                                   use_LMR                 = true;         //flag for LMR
     protected boolean                                   use_razoring            = true;         //flag for razoring
     protected boolean                                   use_killer_heuristic    = true;         //flag for killer tables
-    protected boolean                                   use_history_heuristic   = true;         //flag for history heuristic
     protected boolean                                   use_aspiration          = false;        //flag for aspiriation windows
     protected boolean                                   use_futility_pruning    = true;         //flag for futility pruning at depth<=1 nodes
     protected boolean                                   use_delta_pruning       = true;         //flag for delta pruning inside quiescence search
+    protected boolean                                   use_counterMove_heuristic=true;         //flag for countermove heuristic
+
 
     protected boolean                                   debug                   = false;        //searches all moves at root with full window
     protected boolean                                   print_overview          = true;         //flag for output-printing
@@ -63,6 +65,7 @@ public class AdvancedSearch implements AI {
     protected int[]                                     delta_pruning_captures  =               //adding these values to captures for delta pruning
                                     new int[]{0,100,500,300,315,800};
 
+    private CounterMoveTable                            _counterMoveTable;
     private KillerTable                                 _killerTable;
     private HistoryTable                                _historyTable;
     private TranspositionTable<TranspositionEntry>      _transpositionTable;
@@ -88,27 +91,6 @@ public class AdvancedSearch implements AI {
         this.limit = limit;
     }
 
-    /**
-     * getter for the history heuristic flag.
-     * If the flag is set to "true", beta cutoffs will be be stored in a table by their move from-to value
-     * and this will be used to sort the moves if the orderer makes use of the history heuristic
-     * @return      history heuristic flag
-     */
-    public boolean isUse_history_heuristic() {
-        return use_history_heuristic;
-    }
-
-    /**
-     * setter for the history heuristic flag.
-     * If the flag is set to "true", beta cutoffs will be be stored in a table by their move from-to value
-     * and this will be used to sort the moves if the orderer makes use of the history heuristic
-     * killer moves
-     *
-     * @param use_history_heuristic      new flag for using the history heuristic
-     */
-    public void setUse_history_heuristic(boolean use_history_heuristic) {
-        this.use_history_heuristic = use_history_heuristic;
-    }
 
 
     /**
@@ -544,6 +526,21 @@ public class AdvancedSearch implements AI {
         this.deepening_start_depth = deepening_start_depth;
     }
 
+    /**
+     * getter for the counter move heuristic flag
+     * @return
+     */
+    public boolean isUse_counterMove_heuristic() {
+        return use_counterMove_heuristic;
+    }
+
+    /**
+     * setter for the counter move heuristic flag
+     */
+    public void setUse_counterMove_heuristic(boolean use_counterMove_heuristic) {
+        this.use_counterMove_heuristic = use_counterMove_heuristic;
+    }
+
     private double pvSearch(double alpha, double beta, int currentDepth, int depthLeft, boolean pv, boolean extension) {
         _selDepth = Math.max(_selDepth, currentDepth);
 
@@ -666,7 +663,7 @@ public class AdvancedSearch implements AI {
         if(allMoves.size() == 0){
             return eval;
         }
-        orderer.sort(allMoves, currentDepth, null, _board, pv, _killerTable,_historyTable, _transpositionTable);
+        orderer.sort(allMoves, currentDepth, _board, pv, _killerTable, _transpositionTable, _counterMoveTable);
 
         /**
          * calculate SEE value
@@ -753,8 +750,8 @@ public class AdvancedSearch implements AI {
              * beta cutoff
              */
             if( score >= beta       ){
-                if(use_killer_heuristic && m.getPieceTo() == 0)     _killerTable.put(currentDepth, m.copy());
-                if(use_history_heuristic)                           _historyTable.add(depthLeft*depthLeft,m.getFrom(), m.getTo());
+                if(use_killer_heuristic && !m.isCapture())          _killerTable.put(currentDepth, m.copy());
+                if(use_counterMove_heuristic && !m.isCapture())     placeInCounterMoveTable(m, depthLeft * depthLeft);
                 if(use_transposition)                               placeInTT(zobrist, currentDepth, depthLeft, beta, TranspositionEntry.CUT_NODE, m.copy());
                 _betaCutoffs ++;
                 return beta;   // fail-hard beta-cutoff
@@ -859,7 +856,7 @@ public class AdvancedSearch implements AI {
             alpha = stand_pat;
 
 
-        orderer.sort(allMoves, 0, null, _board, false, _killerTable, _historyTable, null);
+        orderer.sort(allMoves, 0, _board, false, _killerTable, _transpositionTable, _counterMoveTable);
         int legalMoves = 0;
         for (Move m : allMoves) {
 
@@ -977,7 +974,7 @@ public class AdvancedSearch implements AI {
 
         this._board             = board;
         this._killerTable       = use_killer_heuristic  ? new KillerTable(MAXIMUM_STORE_DEPTH, killer_count)    :null;
-        this._historyTable      = use_history_heuristic ? new HistoryTable()                                    :null;
+        this._counterMoveTable  = use_counterMove_heuristic ? new CounterMoveTable()                            :null;
 
         if(this._transpositionTable == null)    this._transpositionTable = new TranspositionTable<>(16);
         else                                    this._transpositionTable.clear();
@@ -1099,6 +1096,25 @@ public class AdvancedSearch implements AI {
         System.out.println(infoString);
 
         UCI.log(infoString+"\n");
+    }
+
+
+    /**
+     * places the move in the counter move table
+     * @param m
+     */
+    public void placeInCounterMoveTable(Move m, int val){
+
+
+        if(_board.getMoveHistory().isEmpty()) return;
+        Move prev = (Move) _board.getMoveHistory().get(_board.getMoveHistory().size() - 1);
+
+        _counterMoveTable.add(val,
+                              Math.abs(prev.getPieceFrom())-1,
+                              prev.getTo(),
+                              Math.abs(m.getPieceFrom())-1,
+                              m.getTo());
+
     }
 
     /**
@@ -1236,6 +1252,12 @@ public class AdvancedSearch implements AI {
 
         return builder.toString();
     }
+
+
+
+
+
+
 
 
     public static void main(String[] args) {

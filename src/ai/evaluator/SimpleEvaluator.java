@@ -3,6 +3,8 @@ package ai.evaluator;
 import ai.tools.tensor.Tensor2D;
 import ai.tools.tensor.Tensor3D;
 import board.Board;
+import board.FastBoard;
+import board.bitboards.BitBoard;
 
 @Deprecated
 public class SimpleEvaluator implements Evaluator {
@@ -125,13 +127,33 @@ public class SimpleEvaluator implements Evaluator {
     @Override
     public double evaluate(Board board) {
         double score = 0;
-        for(int i = 0; i < 8; i++){
-            for(int n = 0; n < 8; n++){
-                int p = board.getPiece((byte)i,(byte)n);
-                if(p == 0) continue;
-                byte sign = (byte) (p / Math.abs(p));
-                score += sign * EVALUATE_PRICE[Math.abs(p)];
-                score += sign * BW_POSITION_PRICE.get(Math.abs(p),n,i);
+
+        if(board instanceof FastBoard){
+            FastBoard fb = (FastBoard) board;
+
+
+            for(int i = 0; i < 6; i++){
+                for(int ind = 0; ind < fb.getWhite_pieces()[i].size(); ind++){
+                    int sq = fb.getWhite_pieces()[i].get(ind);
+                    score += W_POSITION_PRICE.get(i, BitBoard.fileIndex(sq), BitBoard.rankIndex(sq));
+                    score += EVALUATE_PRICE[i+1];
+                }
+
+                for(int ind = 0; ind < fb.getBlack_pieces()[i].size(); ind++){
+                    int sq = fb.getBlack_pieces()[i].get(ind);
+                    score += B_POSITION_PRICE.get(i, BitBoard.fileIndex(sq), BitBoard.rankIndex(sq));
+                    score += EVALUATE_PRICE[i+1];
+                }
+            }
+        }
+        else{
+            for(int i = 0; i < 8; i++){
+                for(int n = 0; n < 8; n++){
+                    int p = board.getPiece((byte)i,(byte)n);
+                    if(p == 0) continue;
+                    byte sign = (byte) (p / Math.abs(p));
+                    score += sign * EVALUATE_PRICE[Math.abs(p)];
+                    score += sign * BW_POSITION_PRICE.get(Math.abs(p),n,i);
 //                switch (Math.abs(p)){
 //                    case 1: score += sign * 100; break;
 //                    case 2: score += sign * 4; break;
@@ -139,9 +161,11 @@ public class SimpleEvaluator implements Evaluator {
 //                    case 4: score += sign * 3.25; break;
 //                    case 5: score += sign * 7; break;
 //                    case 6: score += sign * 1000; break;
-                //}
+                    //}
+                }
             }
         }
+
         return score;
     }
 

@@ -35,8 +35,6 @@ public class BitBoard {
     public static final long rank_7                                 = rank_1 << 48;
     public static final long rank_8                                 = rank_1 << 56;
 
-    public static final long center_4_squares                       = (rank_4 | rank_5) & (d_file | e_file);
-
     public static final long anti_diagonal_7                        = 0x102040810204080L;
     public static final long anti_diagonal_6                        = shiftSouth(anti_diagonal_7);
     public static final long anti_diagonal_5                        = shiftSouth(anti_diagonal_6);
@@ -80,6 +78,9 @@ public class BitBoard {
     public static final long circle_b                               = 0x7E424242427E00L;
     public static final long circle_c                               = 0x3C24243C0000L;
     public static final long circle_d                               = 0x1818000000L;
+
+    public static final long center_squares                         = circle_d;
+    public static final long center_squares_extended                = circle_c | circle_d;
 
     public static final long[] ranks = new long[]{rank_1, rank_2, rank_3, rank_4, rank_5, rank_6, rank_7, rank_8};
     public static final long[] files = new long[]{a_file, b_file, c_file, d_file, e_file, f_file, g_file, h_file};

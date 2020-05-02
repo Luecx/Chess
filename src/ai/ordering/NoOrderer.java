@@ -1,7 +1,6 @@
 package ai.ordering;
 
-import ai.tools.PVLine;
-import ai.tools.tables.HistoryTable;
+import ai.tools.tables.CounterMoveTable;
 import ai.tools.tables.KillerTable;
 import ai.tools.transpositions.TranspositionTable;
 import board.Board;
@@ -13,8 +12,8 @@ public class NoOrderer implements Orderer {
 
 
     @Override
-    public void sort(List<Move> collection, int depth, PVLine lastIteration, Board board, boolean pvNode,  KillerTable killerTable,
-                     HistoryTable historyTable,
-                                      TranspositionTable transpositionTable) {
+    public void sort(List<Move> collection, int depth, Board board, boolean pvNode,  KillerTable killerTable,
+                                      TranspositionTable transpositionTable,
+                     CounterMoveTable counterMoveTable) {
     }
 }

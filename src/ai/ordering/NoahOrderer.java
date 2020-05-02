@@ -1,7 +1,6 @@
 package ai.ordering;
 
-import ai.tools.PVLine;
-import ai.tools.tables.HistoryTable;
+import ai.tools.tables.CounterMoveTable;
 import ai.tools.tables.KillerTable;
 import ai.tools.tensor.Tensor2D;
 import ai.tools.tensor.Tensor3D;
@@ -176,12 +175,11 @@ public class NoahOrderer implements Orderer {
     public void sort(
             List<Move> collection,
             int depth,
-            PVLine lastIteration,
             Board board,
             boolean pvNode,
             KillerTable killerTable,
-            HistoryTable historyTable,
-            TranspositionTable transpositionTable) {
+            TranspositionTable transpositionTable,
+            CounterMoveTable counterMoveTable) {
 
         for (Move m:collection){
             setOrderPriority(m, board);
@@ -194,15 +192,6 @@ public class NoahOrderer implements Orderer {
             return -Integer.compare(p1,p2);
         });
 
-        if(lastIteration != null){
-            if(depth < lastIteration.getLine().length){
-                int index = collection.indexOf(lastIteration.getLine()[depth]);
-                if(index != -1){
-                    Object object = collection.get(index);
-                    collection.remove(index);
-                    collection.add(0,(Move)object);
-                }
-            }
-        }
+
     }
 }
