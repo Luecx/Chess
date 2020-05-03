@@ -11,7 +11,7 @@ import java.util.List;
 
 public class Testing {
 
-   
+
     /**
      * calculates the perft value for a given board until it reaches a given depth.
      * @param board         the board object

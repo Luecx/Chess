@@ -230,98 +230,95 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
     /**
      * tunable params
      */
-    private double PARAMETER_PAWN_TABLE_FACTOR_EARLY =                               44;
-    private double PARAMETER_PAWN_CONNECTED_EARLY =                                  5;
-    private double PARAMETER_PAWN_PASSED_EARLY =                                     38;
-    private double PARAMETER_PAWN_ISOLATED_EARLY =                                   -18;
-    private double PARAMETER_PAWN_DOUBLED_EARLY =                                    -20;
-    private double PARAMETER_PAWN_CONNECTED_PASSED_EARLY =                           30;
-    private double PARAMETER_PAWN_DOUBLED_ISOLATED_EARLY =                           -20;
+    private double PARAMETER_PAWN_TABLE_FACTOR_EARLY =                               79;
+    private double PARAMETER_PAWN_CONNECTED_EARLY =                                  16;
+    private double PARAMETER_PAWN_PASSED_EARLY =                                     -3;
+    private double PARAMETER_PAWN_ISOLATED_EARLY =                                   -22;
+    private double PARAMETER_PAWN_DOUBLED_EARLY =                                    -3;
+    private double PARAMETER_PAWN_CONNECTED_PASSED_EARLY =                           20;
+    private double PARAMETER_PAWN_DOUBLED_ISOLATED_EARLY =                           -10;
 
-
-    private double PARAMETER_KNIGHT_TABLE_FACTOR_EARLY =                             44;
-    private double PARAMETER_KNIGHT_VALUE_EARLY =                                    293;
+    private double PARAMETER_KNIGHT_TABLE_FACTOR_EARLY =                             50;
+    private double PARAMETER_KNIGHT_VALUE_EARLY =                                    479;
     private double PARAMETER_KNIGHT_VISIBILITY_EARLY =                               10;
-    private double PARAMETER_KNIGHT_VISIBILITY_PAWN_COVER_EARLY =                    -7;
-    private double PARAMETER_KNIGHT_TRAPPED_EARLY =                                  -18;
+    private double PARAMETER_KNIGHT_VISIBILITY_PAWN_COVER_EARLY =                    -15;
+    private double PARAMETER_KNIGHT_TRAPPED_EARLY =                                  -34;
 
-    private double PARAMETER_ROOK_TABLE_FACTOR_EARLY =                               90;
-    private double PARAMETER_ROOK_VALUE_EARLY =                                      424;
-    private double PARAMETER_ROOK_VISIBILITY_EARLY =                                 9;
-    private double PARAMETER_ROOK_VISIBILITY_PAWN_COVER_EARLY =                      0;
-    private double PARAMETER_ROOK_TRAPPED_EARLY =                                    -10;
-    private double PARAMETER_ROOK_KING_LINE_EARLY =                                  24;
-    private double PARAMETER_ROOK_HALF_OPEN_EARLY =                                  30;
-    private double PARAMETER_ROOK_OPEN_EARLY =                                       15;
+    private double PARAMETER_ROOK_TABLE_FACTOR_EARLY =                               152;
+    private double PARAMETER_ROOK_VALUE_EARLY =                                      627;
+    private double PARAMETER_ROOK_VISIBILITY_EARLY =                                 5;
+    private double PARAMETER_ROOK_VISIBILITY_PAWN_COVER_EARLY =                      -13;
+    private double PARAMETER_ROOK_TRAPPED_EARLY =                                    -6;
+    private double PARAMETER_ROOK_KING_LINE_EARLY =                                  6;
+    private double PARAMETER_ROOK_HALF_OPEN_EARLY =                                  26;
+    private double PARAMETER_ROOK_OPEN_EARLY =                                       51;
 
-    private double PARAMETER_BISHOP_TABLE_FACTOR_EARLY =                             44;
-    private double PARAMETER_BISHOP_VALUE_EARLY =                                    301;
-    private double PARAMETER_BISHOP_VISIBILITY_EARLY =                               6;
-    private double PARAMETER_BISHOP_VISIBILITY_PAWN_COVER_EARLY =                    0;
-    private double PARAMETER_BISHOP_TRAPPED_EARLY =                                  -35;
-    private double PARAMETER_BISHOP_DOUBLED_EARLY =                                  52;
-    private double PARAMETER_BISHOP_CLOSED_PENALTY_EARLY =                           -20;
-    private double PARAMETER_BISHOP_OPEN_BONUS_EARLY =                               20;
+    private double PARAMETER_BISHOP_TABLE_FACTOR_EARLY =                             144;
+    private double PARAMETER_BISHOP_VALUE_EARLY =                                    474;
+    private double PARAMETER_BISHOP_VISIBILITY_EARLY =                               8;
+    private double PARAMETER_BISHOP_VISIBILITY_PAWN_COVER_EARLY =                    -10;
+    private double PARAMETER_BISHOP_TRAPPED_EARLY =                                  -67;
+    private double PARAMETER_BISHOP_DOUBLED_EARLY =                                  40;
+    private double PARAMETER_BISHOP_CLOSED_PENALTY_EARLY =                           2;
+    private double PARAMETER_BISHOP_OPEN_BONUS_EARLY =                               15;
 
-    private double PARAMETER_QUEEN_TABLE_FACTOR_EARLY =                              43;
-    private double PARAMETER_QUEEN_VALUE_EARLY =                                     870;
-    private double PARAMETER_QUEEN_VISIBILITY_EARLY =                                1;
-    private double PARAMETER_QUEEN_TRAPPED_EARLY =                                   -1;
-    private double PARAMETER_QUEEN_VISIBILITY_PAWN_COVER_EARLY =                     0;
+    private double PARAMETER_QUEEN_TABLE_FACTOR_EARLY =                              67;
+    private double PARAMETER_QUEEN_VALUE_EARLY =                                     1477;
+    private double PARAMETER_QUEEN_VISIBILITY_EARLY =                                3;
+    private double PARAMETER_QUEEN_TRAPPED_EARLY =                                   12;
+    private double PARAMETER_QUEEN_VISIBILITY_PAWN_COVER_EARLY =                     -16;
 
-    private double PARAMETER_KING_TABLE_FACTOR_EARLY =                               44;
-    private double PARAMETER_KING_SAFETY_1_EARLY =                                   10;
-    private double PARAMETER_KING_SAFETY_2_EARLY =                                   25;
-    private double PARAMETER_KING_SAFETY_3_EARLY =                                   -10;
-    private double PARAMETER_KING_PAWN_SHIELD_EARLY =                                15;
-
-
+    private double PARAMETER_KING_TABLE_FACTOR_EARLY =                               144;
+    private double PARAMETER_KING_SAFETY_1_EARLY =                                   11;
+    private double PARAMETER_KING_SAFETY_2_EARLY =                                   -73;
+    private double PARAMETER_KING_SAFETY_3_EARLY =                                   -28;
+    private double PARAMETER_KING_PAWN_SHIELD_EARLY =                                20;
 
 
 
-    private double PARAMETER_PAWN_TABLE_FACTOR_LATE =                                44;
-    private double PARAMETER_PAWN_PASSED_LATE =                                      65;
-    private double PARAMETER_PAWN_ISOLATED_LATE =                                    -13;
-    private double PARAMETER_PAWN_DOUBLED_LATE =                                     -29;
-    private double PARAMETER_PAWN_CONNECTED_LATE =                                   15;
-    private double PARAMETER_PAWN_CONNECTED_PASSED_LATE =                            90;
+    private double PARAMETER_PAWN_TABLE_FACTOR_LATE =                                137;
+    private double PARAMETER_PAWN_PASSED_LATE =                                      69;
+    private double PARAMETER_PAWN_ISOLATED_LATE =                                    -11;
+    private double PARAMETER_PAWN_DOUBLED_LATE =                                     -9;
+    private double PARAMETER_PAWN_CONNECTED_LATE =                                   11;
+    private double PARAMETER_PAWN_CONNECTED_PASSED_LATE =                            55;
     private double PARAMETER_PAWN_DOUBLED_ISOLATED_LATE =                            -40;
 
-    private double PARAMETER_ROOK_TABLE_FACTOR_LATE =                                44;
-    private double PARAMETER_ROOK_VALUE_LATE =                                       470;
-    private double PARAMETER_ROOK_VISIBILITY_LATE =                                  9;
-    private double PARAMETER_ROOK_VISIBILITY_PAWN_COVER_LATE =                       0;
-    private double PARAMETER_ROOK_TRAPPED_LATE =                                     -40;
-    private double PARAMETER_ROOK_KING_LINE_LATE =                                   24;
-    private double PARAMETER_ROOK_HALF_OPEN_LATE =                                   21;
-    private double PARAMETER_ROOK_OPEN_LATE =                                        2;
+    private double PARAMETER_ROOK_TABLE_FACTOR_LATE =                                82;
+    private double PARAMETER_ROOK_VALUE_LATE =                                       681;
+    private double PARAMETER_ROOK_VISIBILITY_LATE =                                  5;
+    private double PARAMETER_ROOK_VISIBILITY_PAWN_COVER_LATE =                       3;
+    private double PARAMETER_ROOK_TRAPPED_LATE =                                     -16;
+    private double PARAMETER_ROOK_KING_LINE_LATE =                                   9;
+    private double PARAMETER_ROOK_HALF_OPEN_LATE =                                   -1;
+    private double PARAMETER_ROOK_OPEN_LATE =                                        -16;
 
-    private double PARAMETER_KNIGHT_TABLE_FACTOR_LATE =                              44;
-    private double PARAMETER_KNIGHT_VALUE_LATE =                                     293;
-    private double PARAMETER_KNIGHT_VISIBILITY_LATE =                                8;
-    private double PARAMETER_KNIGHT_VISIBILITY_PAWN_COVER_LATE =                     -5;
-    private double PARAMETER_KNIGHT_TRAPPED_LATE =                                   -18;
+    private double PARAMETER_KNIGHT_TABLE_FACTOR_LATE =                              156;
+    private double PARAMETER_KNIGHT_VALUE_LATE =                                     349;
+    private double PARAMETER_KNIGHT_VISIBILITY_LATE =                                6;
+    private double PARAMETER_KNIGHT_VISIBILITY_PAWN_COVER_LATE =                     3;
+    private double PARAMETER_KNIGHT_TRAPPED_LATE =                                   -20;
 
-    private double PARAMETER_BISHOP_TABLE_FACTOR_LATE =                              44;
-    private double PARAMETER_BISHOP_VALUE_LATE =                                     301;
-    private double PARAMETER_BISHOP_VISIBILITY_LATE =                                6;
-    private double PARAMETER_BISHOP_VISIBILITY_PAWN_COVER_LATE =                     0;
-    private double PARAMETER_BISHOP_TRAPPED_LATE =                                   -21;
-    private double PARAMETER_BISHOP_DOUBLED_LATE =                                   52;
-    private double PARAMETER_BISHOP_CLOSED_PENALTY_LATE =                           -10;
-    private double PARAMETER_BISHOP_OPEN_BONUS_LATE =                                30;
+    private double PARAMETER_BISHOP_TABLE_FACTOR_LATE =                              91;
+    private double PARAMETER_BISHOP_VALUE_LATE =                                     374;
+    private double PARAMETER_BISHOP_VISIBILITY_LATE =                                2;
+    private double PARAMETER_BISHOP_VISIBILITY_PAWN_COVER_LATE =                     7;
+    private double PARAMETER_BISHOP_TRAPPED_LATE =                                   -2;
+    private double PARAMETER_BISHOP_DOUBLED_LATE =                                   65;
+    private double PARAMETER_BISHOP_CLOSED_PENALTY_LATE =                            -12;
+    private double PARAMETER_BISHOP_OPEN_BONUS_LATE =                                15;
 
-    private double PARAMETER_QUEEN_TABLE_FACTOR_LATE =                               43;
-    private double PARAMETER_QUEEN_VALUE_LATE =                                      1050;
-    private double PARAMETER_QUEEN_VISIBILITY_LATE =                                 5;
-    private double PARAMETER_QUEEN_VISIBILITY_PAWN_COVER_LATE =                      0;
-    private double PARAMETER_QUEEN_TRAPPED_LATE =                                    -40;
+    private double PARAMETER_QUEEN_TABLE_FACTOR_LATE =                               46;
+    private double PARAMETER_QUEEN_VALUE_LATE =                                      1169;
+    private double PARAMETER_QUEEN_VISIBILITY_LATE =                                 9;
+    private double PARAMETER_QUEEN_VISIBILITY_PAWN_COVER_LATE =                      12;
+    private double PARAMETER_QUEEN_TRAPPED_LATE =                                    -69;
 
-    private double PARAMETER_KING_TABLE_FACTOR_LATE =                                44;
-    private double PARAMETER_KING_SAFETY_1_LATE =                                    10;
-    private double PARAMETER_KING_SAFETY_2_LATE =                                    25;
-    private double PARAMETER_KING_SAFETY_3_LATE =                                    -1;
-    private double PARAMETER_KING_PAWN_SHIELD_LATE =                                 2;
+    private double PARAMETER_KING_TABLE_FACTOR_LATE =                                12;
+    private double PARAMETER_KING_SAFETY_1_LATE =                                    -7;
+    private double PARAMETER_KING_SAFETY_2_LATE =                                    53;
+    private double PARAMETER_KING_SAFETY_3_LATE =                                    13;
+    private double PARAMETER_KING_PAWN_SHIELD_LATE =                                 4;
 
 
     double[] pieceVals = new double[]{0,
@@ -775,155 +772,164 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
 
 
 
-    public double[] getEvolvableValues() {
-
-        //return new double[0];
-
+    @Override
+    public double[] getEvolvableValues(){
         return new double[]{
                 PARAMETER_PAWN_TABLE_FACTOR_EARLY,
-                PARAMETER_ROOK_TABLE_FACTOR_EARLY,
-                PARAMETER_KNIGHT_TABLE_FACTOR_EARLY,
-                PARAMETER_BISHOP_TABLE_FACTOR_EARLY,
-                PARAMETER_QUEEN_TABLE_FACTOR_EARLY,
-                PARAMETER_KING_TABLE_FACTOR_EARLY,
-
-                PARAMETER_ROOK_VALUE_EARLY,
-                PARAMETER_KNIGHT_VALUE_EARLY,
-                PARAMETER_BISHOP_VALUE_EARLY,
-                PARAMETER_QUEEN_VALUE_EARLY,
-
-                PARAMETER_ROOK_VISIBILITY_EARLY,
-                PARAMETER_BISHOP_VISIBILITY_EARLY,
-                PARAMETER_KNIGHT_VISIBILITY_EARLY,
-                PARAMETER_QUEEN_VISIBILITY_EARLY,
-                PARAMETER_ROOK_VISIBILITY_PAWN_COVER_EARLY,
-                PARAMETER_BISHOP_VISIBILITY_PAWN_COVER_EARLY,
-                PARAMETER_KNIGHT_VISIBILITY_PAWN_COVER_EARLY,
-                PARAMETER_QUEEN_VISIBILITY_PAWN_COVER_EARLY,
-                PARAMETER_ROOK_TRAPPED_EARLY,
-                PARAMETER_BISHOP_TRAPPED_EARLY,
-                PARAMETER_KNIGHT_TRAPPED_EARLY,
-                PARAMETER_QUEEN_TRAPPED_EARLY,
-                PARAMETER_ROOK_KING_LINE_EARLY,
+                PARAMETER_PAWN_CONNECTED_EARLY,
                 PARAMETER_PAWN_PASSED_EARLY,
                 PARAMETER_PAWN_ISOLATED_EARLY,
                 PARAMETER_PAWN_DOUBLED_EARLY,
-                PARAMETER_BISHOP_DOUBLED_EARLY,
-                PARAMETER_KING_SAFETY_1_EARLY,
-                PARAMETER_KING_SAFETY_2_EARLY,
+                PARAMETER_PAWN_CONNECTED_PASSED_EARLY,
+                PARAMETER_PAWN_DOUBLED_ISOLATED_EARLY,
+                PARAMETER_KNIGHT_TABLE_FACTOR_EARLY,
+                PARAMETER_KNIGHT_VALUE_EARLY,
+                PARAMETER_KNIGHT_VISIBILITY_EARLY,
+                PARAMETER_KNIGHT_VISIBILITY_PAWN_COVER_EARLY,
+                PARAMETER_KNIGHT_TRAPPED_EARLY,
+                PARAMETER_ROOK_TABLE_FACTOR_EARLY,
+                PARAMETER_ROOK_VALUE_EARLY,
+                PARAMETER_ROOK_VISIBILITY_EARLY,
+                PARAMETER_ROOK_VISIBILITY_PAWN_COVER_EARLY,
+                PARAMETER_ROOK_TRAPPED_EARLY,
+                PARAMETER_ROOK_KING_LINE_EARLY,
                 PARAMETER_ROOK_HALF_OPEN_EARLY,
                 PARAMETER_ROOK_OPEN_EARLY,
-                PARAMETER_PAWN_CONNECTED_EARLY,
+                PARAMETER_BISHOP_TABLE_FACTOR_EARLY,
+                PARAMETER_BISHOP_VALUE_EARLY,
+                PARAMETER_BISHOP_VISIBILITY_EARLY,
+                PARAMETER_BISHOP_VISIBILITY_PAWN_COVER_EARLY,
+                PARAMETER_BISHOP_TRAPPED_EARLY,
+                PARAMETER_BISHOP_DOUBLED_EARLY,
+                PARAMETER_BISHOP_CLOSED_PENALTY_EARLY,
+                PARAMETER_BISHOP_OPEN_BONUS_EARLY,
+                PARAMETER_QUEEN_TABLE_FACTOR_EARLY,
+                PARAMETER_QUEEN_VALUE_EARLY,
+                PARAMETER_QUEEN_VISIBILITY_EARLY,
+                PARAMETER_QUEEN_TRAPPED_EARLY,
+                PARAMETER_QUEEN_VISIBILITY_PAWN_COVER_EARLY,
+                PARAMETER_KING_TABLE_FACTOR_EARLY,
+                PARAMETER_KING_SAFETY_1_EARLY,
+                PARAMETER_KING_SAFETY_2_EARLY,
+                PARAMETER_KING_SAFETY_3_EARLY,
+                PARAMETER_KING_PAWN_SHIELD_EARLY,
                 PARAMETER_PAWN_TABLE_FACTOR_LATE,
-                PARAMETER_ROOK_TABLE_FACTOR_LATE,
-                PARAMETER_KNIGHT_TABLE_FACTOR_LATE,
-                PARAMETER_BISHOP_TABLE_FACTOR_LATE,
-                PARAMETER_QUEEN_TABLE_FACTOR_LATE,
-                PARAMETER_KING_TABLE_FACTOR_LATE,
-
-                PARAMETER_ROOK_VALUE_LATE,
-                PARAMETER_KNIGHT_VALUE_LATE,
-                PARAMETER_BISHOP_VALUE_LATE,
-                PARAMETER_QUEEN_VALUE_LATE,
-
-                PARAMETER_ROOK_VISIBILITY_LATE,
-                PARAMETER_BISHOP_VISIBILITY_LATE,
-                PARAMETER_KNIGHT_VISIBILITY_LATE,
-                PARAMETER_QUEEN_VISIBILITY_LATE,
-                PARAMETER_ROOK_VISIBILITY_PAWN_COVER_LATE,
-                PARAMETER_BISHOP_VISIBILITY_PAWN_COVER_LATE,
-                PARAMETER_KNIGHT_VISIBILITY_PAWN_COVER_LATE,
-                PARAMETER_QUEEN_VISIBILITY_PAWN_COVER_LATE,
-                PARAMETER_ROOK_TRAPPED_LATE,
-                PARAMETER_BISHOP_TRAPPED_LATE,
-                PARAMETER_KNIGHT_TRAPPED_LATE,
-                PARAMETER_QUEEN_TRAPPED_LATE,
-                PARAMETER_ROOK_KING_LINE_LATE,
                 PARAMETER_PAWN_PASSED_LATE,
                 PARAMETER_PAWN_ISOLATED_LATE,
                 PARAMETER_PAWN_DOUBLED_LATE,
-                PARAMETER_BISHOP_DOUBLED_LATE,
-                PARAMETER_KING_SAFETY_1_LATE,
-                PARAMETER_KING_SAFETY_2_LATE,
+                PARAMETER_PAWN_CONNECTED_LATE,
+                PARAMETER_PAWN_CONNECTED_PASSED_LATE,
+                PARAMETER_PAWN_DOUBLED_ISOLATED_LATE,
+                PARAMETER_ROOK_TABLE_FACTOR_LATE,
+                PARAMETER_ROOK_VALUE_LATE,
+                PARAMETER_ROOK_VISIBILITY_LATE,
+                PARAMETER_ROOK_VISIBILITY_PAWN_COVER_LATE,
+                PARAMETER_ROOK_TRAPPED_LATE,
+                PARAMETER_ROOK_KING_LINE_LATE,
                 PARAMETER_ROOK_HALF_OPEN_LATE,
                 PARAMETER_ROOK_OPEN_LATE,
-                PARAMETER_PAWN_CONNECTED_LATE,
-                };
-    }
-
-    public void setEvolvableValues(double[] ar) {
-
-        int i = 0;
-
-        PARAMETER_PAWN_TABLE_FACTOR_EARLY = ar[i++];
-        PARAMETER_ROOK_TABLE_FACTOR_EARLY = ar[i++];
-        PARAMETER_KNIGHT_TABLE_FACTOR_EARLY = ar[i++];
-        PARAMETER_BISHOP_TABLE_FACTOR_EARLY = ar[i++];
-        PARAMETER_QUEEN_TABLE_FACTOR_EARLY = ar[i++];
-        PARAMETER_KING_TABLE_FACTOR_EARLY = ar[i++];
-
-        PARAMETER_ROOK_VALUE_EARLY = ar[i++];
-        PARAMETER_KNIGHT_VALUE_EARLY = ar[i++];
-        PARAMETER_BISHOP_VALUE_EARLY = ar[i++];
-        PARAMETER_QUEEN_VALUE_EARLY = ar[i++];
-
-        PARAMETER_ROOK_VISIBILITY_EARLY = ar[i++];
-        PARAMETER_BISHOP_VISIBILITY_EARLY = ar[i++];
-        PARAMETER_KNIGHT_VISIBILITY_EARLY = ar[i++];
-        PARAMETER_QUEEN_VISIBILITY_EARLY = ar[i++];
-        PARAMETER_ROOK_VISIBILITY_PAWN_COVER_EARLY = ar[i++];
-        PARAMETER_BISHOP_VISIBILITY_PAWN_COVER_EARLY = ar[i++];
-        PARAMETER_KNIGHT_VISIBILITY_PAWN_COVER_EARLY = ar[i++];
-        PARAMETER_QUEEN_VISIBILITY_PAWN_COVER_EARLY = ar[i++];
-        PARAMETER_ROOK_TRAPPED_EARLY = ar[i++];
-        PARAMETER_BISHOP_TRAPPED_EARLY = ar[i++];
-        PARAMETER_KNIGHT_TRAPPED_EARLY = ar[i++];
-        PARAMETER_QUEEN_TRAPPED_EARLY = ar[i++];
-        PARAMETER_ROOK_KING_LINE_EARLY = ar[i++];
-        PARAMETER_PAWN_PASSED_EARLY = ar[i++];
-        PARAMETER_PAWN_ISOLATED_EARLY = ar[i++];
-        PARAMETER_PAWN_DOUBLED_EARLY = ar[i++];
-        PARAMETER_BISHOP_DOUBLED_EARLY = ar[i++];
-        PARAMETER_KING_SAFETY_1_EARLY = ar[i++];
-        PARAMETER_KING_SAFETY_2_EARLY = ar[i++];
-        PARAMETER_ROOK_HALF_OPEN_EARLY = ar[i++];
-        PARAMETER_ROOK_OPEN_EARLY = ar[i++];
-        PARAMETER_PAWN_CONNECTED_EARLY = ar[i++];
-
-        PARAMETER_PAWN_TABLE_FACTOR_LATE = ar[i++];
-        PARAMETER_ROOK_TABLE_FACTOR_LATE = ar[i++];
-        PARAMETER_KNIGHT_TABLE_FACTOR_LATE = ar[i++];
-        PARAMETER_BISHOP_TABLE_FACTOR_LATE = ar[i++];
-        PARAMETER_QUEEN_TABLE_FACTOR_LATE = ar[i++];
-        PARAMETER_KING_TABLE_FACTOR_LATE = ar[i++];
-
-        PARAMETER_ROOK_VALUE_LATE = ar[i++];
-        PARAMETER_KNIGHT_VALUE_LATE = ar[i++];
-        PARAMETER_BISHOP_VALUE_LATE = ar[i++];
-        PARAMETER_QUEEN_VALUE_LATE = ar[i++];
-
-        PARAMETER_ROOK_VISIBILITY_LATE = ar[i++];
-        PARAMETER_BISHOP_VISIBILITY_LATE = ar[i++];
-        PARAMETER_KNIGHT_VISIBILITY_LATE = ar[i++];
-        PARAMETER_QUEEN_VISIBILITY_LATE = ar[i++];
-        PARAMETER_ROOK_VISIBILITY_PAWN_COVER_LATE = ar[i++];
-        PARAMETER_BISHOP_VISIBILITY_PAWN_COVER_LATE = ar[i++];
-        PARAMETER_KNIGHT_VISIBILITY_PAWN_COVER_LATE = ar[i++];
-        PARAMETER_QUEEN_VISIBILITY_PAWN_COVER_LATE = ar[i++];
-        PARAMETER_ROOK_TRAPPED_LATE = ar[i++];
-        PARAMETER_BISHOP_TRAPPED_LATE = ar[i++];
-        PARAMETER_KNIGHT_TRAPPED_LATE = ar[i++];
-        PARAMETER_QUEEN_TRAPPED_LATE = ar[i++];
-        PARAMETER_ROOK_KING_LINE_LATE = ar[i++];
-        PARAMETER_PAWN_PASSED_LATE = ar[i++];
-        PARAMETER_PAWN_ISOLATED_LATE = ar[i++];
-        PARAMETER_PAWN_DOUBLED_LATE = ar[i++];
-        PARAMETER_BISHOP_DOUBLED_LATE = ar[i++];
-        PARAMETER_KING_SAFETY_1_LATE = ar[i++];
-        PARAMETER_KING_SAFETY_2_LATE = ar[i++];
-        PARAMETER_ROOK_HALF_OPEN_LATE = ar[i++];
-        PARAMETER_ROOK_OPEN_LATE = ar[i++];
-        PARAMETER_PAWN_CONNECTED_LATE = ar[i++];
+                PARAMETER_KNIGHT_TABLE_FACTOR_LATE,
+                PARAMETER_KNIGHT_VALUE_LATE,
+                PARAMETER_KNIGHT_VISIBILITY_LATE,
+                PARAMETER_KNIGHT_VISIBILITY_PAWN_COVER_LATE,
+                PARAMETER_KNIGHT_TRAPPED_LATE,
+                PARAMETER_BISHOP_TABLE_FACTOR_LATE,
+                PARAMETER_BISHOP_VALUE_LATE,
+                PARAMETER_BISHOP_VISIBILITY_LATE,
+                PARAMETER_BISHOP_VISIBILITY_PAWN_COVER_LATE,
+                PARAMETER_BISHOP_TRAPPED_LATE,
+                PARAMETER_BISHOP_DOUBLED_LATE,
+                PARAMETER_BISHOP_CLOSED_PENALTY_LATE,
+                PARAMETER_BISHOP_OPEN_BONUS_LATE,
+                PARAMETER_QUEEN_TABLE_FACTOR_LATE,
+                PARAMETER_QUEEN_VALUE_LATE,
+                PARAMETER_QUEEN_VISIBILITY_LATE,
+                PARAMETER_QUEEN_VISIBILITY_PAWN_COVER_LATE,
+                PARAMETER_QUEEN_TRAPPED_LATE,
+                PARAMETER_KING_TABLE_FACTOR_LATE,
+                PARAMETER_KING_SAFETY_1_LATE,
+                PARAMETER_KING_SAFETY_2_LATE,
+                PARAMETER_KING_SAFETY_3_LATE,
+                PARAMETER_KING_PAWN_SHIELD_LATE,
+                };}
+    @Override
+    public void setEvolvableValues(double[] ar){
+        PARAMETER_PAWN_TABLE_FACTOR_EARLY = ar[0];
+        PARAMETER_PAWN_CONNECTED_EARLY = ar[1];
+        PARAMETER_PAWN_PASSED_EARLY = ar[2];
+        PARAMETER_PAWN_ISOLATED_EARLY = ar[3];
+        PARAMETER_PAWN_DOUBLED_EARLY = ar[4];
+        PARAMETER_PAWN_CONNECTED_PASSED_EARLY = ar[5];
+        PARAMETER_PAWN_DOUBLED_ISOLATED_EARLY = ar[6];
+        PARAMETER_KNIGHT_TABLE_FACTOR_EARLY = ar[7];
+        PARAMETER_KNIGHT_VALUE_EARLY = ar[8];
+        PARAMETER_KNIGHT_VISIBILITY_EARLY = ar[9];
+        PARAMETER_KNIGHT_VISIBILITY_PAWN_COVER_EARLY = ar[10];
+        PARAMETER_KNIGHT_TRAPPED_EARLY = ar[11];
+        PARAMETER_ROOK_TABLE_FACTOR_EARLY = ar[12];
+        PARAMETER_ROOK_VALUE_EARLY = ar[13];
+        PARAMETER_ROOK_VISIBILITY_EARLY = ar[14];
+        PARAMETER_ROOK_VISIBILITY_PAWN_COVER_EARLY = ar[15];
+        PARAMETER_ROOK_TRAPPED_EARLY = ar[16];
+        PARAMETER_ROOK_KING_LINE_EARLY = ar[17];
+        PARAMETER_ROOK_HALF_OPEN_EARLY = ar[18];
+        PARAMETER_ROOK_OPEN_EARLY = ar[19];
+        PARAMETER_BISHOP_TABLE_FACTOR_EARLY = ar[20];
+        PARAMETER_BISHOP_VALUE_EARLY = ar[21];
+        PARAMETER_BISHOP_VISIBILITY_EARLY = ar[22];
+        PARAMETER_BISHOP_VISIBILITY_PAWN_COVER_EARLY = ar[23];
+        PARAMETER_BISHOP_TRAPPED_EARLY = ar[24];
+        PARAMETER_BISHOP_DOUBLED_EARLY = ar[25];
+        PARAMETER_BISHOP_CLOSED_PENALTY_EARLY = ar[26];
+        PARAMETER_BISHOP_OPEN_BONUS_EARLY = ar[27];
+        PARAMETER_QUEEN_TABLE_FACTOR_EARLY = ar[28];
+        PARAMETER_QUEEN_VALUE_EARLY = ar[29];
+        PARAMETER_QUEEN_VISIBILITY_EARLY = ar[30];
+        PARAMETER_QUEEN_TRAPPED_EARLY = ar[31];
+        PARAMETER_QUEEN_VISIBILITY_PAWN_COVER_EARLY = ar[32];
+        PARAMETER_KING_TABLE_FACTOR_EARLY = ar[33];
+        PARAMETER_KING_SAFETY_1_EARLY = ar[34];
+        PARAMETER_KING_SAFETY_2_EARLY = ar[35];
+        PARAMETER_KING_SAFETY_3_EARLY = ar[36];
+        PARAMETER_KING_PAWN_SHIELD_EARLY = ar[37];
+        PARAMETER_PAWN_TABLE_FACTOR_LATE = ar[38];
+        PARAMETER_PAWN_PASSED_LATE = ar[39];
+        PARAMETER_PAWN_ISOLATED_LATE = ar[40];
+        PARAMETER_PAWN_DOUBLED_LATE = ar[41];
+        PARAMETER_PAWN_CONNECTED_LATE = ar[42];
+        PARAMETER_PAWN_CONNECTED_PASSED_LATE = ar[43];
+        PARAMETER_PAWN_DOUBLED_ISOLATED_LATE = ar[44];
+        PARAMETER_ROOK_TABLE_FACTOR_LATE = ar[45];
+        PARAMETER_ROOK_VALUE_LATE = ar[46];
+        PARAMETER_ROOK_VISIBILITY_LATE = ar[47];
+        PARAMETER_ROOK_VISIBILITY_PAWN_COVER_LATE = ar[48];
+        PARAMETER_ROOK_TRAPPED_LATE = ar[49];
+        PARAMETER_ROOK_KING_LINE_LATE = ar[50];
+        PARAMETER_ROOK_HALF_OPEN_LATE = ar[51];
+        PARAMETER_ROOK_OPEN_LATE = ar[52];
+        PARAMETER_KNIGHT_TABLE_FACTOR_LATE = ar[53];
+        PARAMETER_KNIGHT_VALUE_LATE = ar[54];
+        PARAMETER_KNIGHT_VISIBILITY_LATE = ar[55];
+        PARAMETER_KNIGHT_VISIBILITY_PAWN_COVER_LATE = ar[56];
+        PARAMETER_KNIGHT_TRAPPED_LATE = ar[57];
+        PARAMETER_BISHOP_TABLE_FACTOR_LATE = ar[58];
+        PARAMETER_BISHOP_VALUE_LATE = ar[59];
+        PARAMETER_BISHOP_VISIBILITY_LATE = ar[60];
+        PARAMETER_BISHOP_VISIBILITY_PAWN_COVER_LATE = ar[61];
+        PARAMETER_BISHOP_TRAPPED_LATE = ar[62];
+        PARAMETER_BISHOP_DOUBLED_LATE = ar[63];
+        PARAMETER_BISHOP_CLOSED_PENALTY_LATE = ar[64];
+        PARAMETER_BISHOP_OPEN_BONUS_LATE = ar[65];
+        PARAMETER_QUEEN_TABLE_FACTOR_LATE = ar[66];
+        PARAMETER_QUEEN_VALUE_LATE = ar[67];
+        PARAMETER_QUEEN_VISIBILITY_LATE = ar[68];
+        PARAMETER_QUEEN_VISIBILITY_PAWN_COVER_LATE = ar[69];
+        PARAMETER_QUEEN_TRAPPED_LATE = ar[70];
+        PARAMETER_KING_TABLE_FACTOR_LATE = ar[71];
+        PARAMETER_KING_SAFETY_1_LATE = ar[72];
+        PARAMETER_KING_SAFETY_2_LATE = ar[73];
+        PARAMETER_KING_SAFETY_3_LATE = ar[74];
+        PARAMETER_KING_PAWN_SHIELD_LATE = ar[75];
     }
 
     @Override
@@ -991,8 +997,6 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
         return -1;
     }
 
-
-
     public double staticExchangeEvaluation(Board board, int toSqare, int target, int fromSquare, int attacker, int color){
 
 
@@ -1040,8 +1044,6 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
             gain[d-1]= -Math.max(-gain[d-1], gain[d]);
         return gain[0];
     }
-
-
 
     public double staticExchangeEvaluation(Board board, int sq, int color){
         double val = 0;

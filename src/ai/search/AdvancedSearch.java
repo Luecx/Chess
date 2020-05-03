@@ -240,6 +240,8 @@ public class AdvancedSearch implements AI {
         this.use_null_moves = use_null_moves;
     }
 
+
+
     /**
      * the limit flag determines if the given limit should be interpreted
      * as a maximum search depth or a maximum time the search is allowed to take.

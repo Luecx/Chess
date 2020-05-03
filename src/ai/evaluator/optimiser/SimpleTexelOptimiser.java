@@ -28,27 +28,27 @@ public class SimpleTexelOptimiser {
     private ArrayList<Integer>  results = new ArrayList<>();
 
 
-    private AdvancedSearch[] searchers;
+    //private AdvancedSearch[] searchers;
     private ArrayList<Board>[] boards;
 
 
     public void prepare(int cores) {
-        searchers = new AdvancedSearch[cores];
+        //searchers = new AdvancedSearch[cores];
 
 
         //boards = new ArrayList[cores];
 
-        for (int i = 0; i < cores; i++) {
-            searchers[i] = new AdvancedSearch(
-                    //new AdvancedEvaluator(new SimpleDecider()),
-                    new SimpleEvaluator(),
-                    new SystematicOrderer2(),
-                    new SenpaiReducer(1),
-                    AdvancedSearch.FLAG_TIME_LIMIT,
-                    0);
-
-            //boards[i] = new ArrayList<>();
-        }
+//        for (int i = 0; i < cores; i++) {
+//            searchers[i] = new AdvancedSearch(
+//                    //new AdvancedEvaluator(new SimpleDecider()),
+//                    new SimpleEvaluator(),
+//                    new SystematicOrderer2(),
+//                    new SenpaiReducer(1),
+//                    AdvancedSearch.FLAG_TIME_LIMIT,
+//                    0);
+//
+//            //boards[i] = new ArrayList<>();
+//        }
 
 //        int counter = 0;
 //        for(Board b:fen_strings){
@@ -281,13 +281,14 @@ public class SimpleTexelOptimiser {
     }
 
     private double errorSingleThreaded(Evaluator evaluator, double K){
-        if(searchers[0] == null){
-            prepare(0);
-        }
+//        if(searchers[0] == null){
+//            prepare(0);
+//        }
         double total = 0;
         for(int i = 0; i < fen_strings.size(); i++){
-            searchers[0].setEvaluator(evaluator);
-            double qi = searchers[0].qSearch(fen_strings.get(i));
+            //searchers[0].setEvaluator(evaluator);
+            //double qi = searchers[0].qSearch(fen_strings.get(i));
+            double qi= evaluator.evaluate(fen_strings.get(i));
             double expected = results.get(i) == DRAW ? 0.5:
                     results.get(i) == WHITE_WIN ? 1:0;
 
@@ -311,8 +312,9 @@ public class SimpleTexelOptimiser {
 
 
             for (int i = (int) lower; i < (int) upper; i++) {
-                searchers[core].setEvaluator(evaluator);
-                double qi = searchers[core].qSearch(fen_strings.get(i));
+//                searchers[core].setEvaluator(evaluator);
+//                double qi = searchers[core].qSearch(fen_strings.get(i));
+                double qi = evaluator.evaluate(fen_strings.get(i));
                 double expected = results.get(i) == DRAW ? 0.5 :
                         results.get(i) == WHITE_WIN ? 1 : 0;
                 double sig = SimpleTexelOptimiser.this.sigmoid(qi, K);
@@ -346,21 +348,12 @@ public class SimpleTexelOptimiser {
                      1000000);
 
         AdvancedEvaluator evaluator2 = new AdvancedEvaluator(new SimpleDecider());
-//        evaluator2.setEvolvableValues(new double[]{
-//                115.0, 414.0, -46.0, 207.0, -186.0, 319.0, 500, 315, 341, 920,
-//                1.0, 20.0, 50.0, 8.0, -35.0, -25.0, -29.0, -30.0, -38.0, -42.0,
-//                -41.0, -39.0, -6.0, -2.0, -40.0, 11.0, 240.0, 50.0, -195.0, 57.0,
-//                135.0, 18.0, 468.0, 54.0, -225.0, -280.0, -272.0, -89.0, 64.0, 43.0,
-//                51.0, 75.0, -2.0, 4.0, -10.0, 16.0, -80.0, -88.0, -88.0, -88.0,
-//                150.0, 220.0, 2.0, -7.0, 104.0, 8.0, 121.0, 26.0, -117.0, 61.0
-//        });
-
-//        double K = tex.computeK(evaluator2, 1E-9, 1, 10,2);
-//        System.out.println(K);
 
 
 
-        tex.iterationLocally(evaluator2, 1, 4);
+
+        double K = tex.computeK(evaluator2, 1E-9, 2, 100,2);
+        tex.iterationLocally(evaluator2, K, 16);
 
 
     }
