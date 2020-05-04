@@ -25,7 +25,7 @@ public final class Move {
     byte    type;
 
 
-    int orderPriority;
+    long orderPriority;
     int seeScore;
 
 
@@ -60,9 +60,9 @@ public final class Move {
         this.seeScore = seeScore;
     }
 
-    public int getOrderPriority() { return orderPriority; }
+    public long getOrderPriority() { return orderPriority; }
 
-    public void setOrderPriority(int orderPriority) {
+    public void setOrderPriority(long orderPriority) {
         this.orderPriority = orderPriority;
     }
 

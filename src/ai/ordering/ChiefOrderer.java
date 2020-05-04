@@ -106,7 +106,7 @@ public class ChiefOrderer implements Orderer {
             //m.setOrderPriority((int)historyTable.get(m.getFrom(),m.getTo()));
         }
 
-        nonCaptureMoves.sort(Comparator.comparingInt(Move::getOrderPriority));
+        //nonCaptureMoves.sort(Comparator.comparingInt(Move::getOrderPriority));
 
         collection.clear();
         collection.addAll(pvMoves);

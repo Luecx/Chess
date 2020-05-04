@@ -3,6 +3,8 @@ package io;
 import ai.evaluator.*;
 import ai.evaluator.decider.SimpleDecider;
 import ai.ordering.ChiefOrderer;
+import ai.ordering.DeweyOrderer;
+import ai.ordering.NoOrderer;
 import ai.search.AdvancedSearch;
 import ai.time_manager.SimpleTimeManager;
 import ai.time_manager.TimeManager;
@@ -43,8 +45,7 @@ public class UCI {
     private static SenpaiReducer senpaiReducer = new SenpaiReducer(10,4,3);
     private static AdvancedSearch ai = new AdvancedSearch(
             new AdvancedEvaluator(new SimpleDecider()),
-            //new PureMaterialEvaluator(),
-            new SystematicOrderer2(),
+            new DeweyOrderer(),
             senpaiReducer,
             AdvancedSearch.FLAG_TIME_LIMIT,
             1000);

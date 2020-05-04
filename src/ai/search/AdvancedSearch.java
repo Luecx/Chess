@@ -556,6 +556,8 @@ public class AdvancedSearch implements AI {
         int         legalMoves      = 0;
         boolean     isInCheck       = _board.isInCheck(_board.getActivePlayer());
         Move        bestMove        = null;
+        //int nextDistanceFromPV = use_dont_sort_expected_all_node ? distanceFromPV + 1 : 0;
+        int nextDistanceFromPV = 0;
 
 
         if(_board.isDraw()){

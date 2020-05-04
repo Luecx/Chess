@@ -87,28 +87,28 @@ public class SystematicOrderer2 implements Orderer {
         }
 
         killerMoves.sort((o1, o2) -> {
-            int p1 = o1.getOrderPriority();
-            int p2 = o2.getOrderPriority();
+            long p1 = o1.getOrderPriority();
+            long p2 = o2.getOrderPriority();
 
-            return -Integer.compare(p1,p2);
+            return -Long.compare(p1,p2);
         });
         goodCaptures.sort((o1, o2) -> {
-            int p1 = o1.getOrderPriority();
-            int p2 = o2.getOrderPriority();
+            long p1 = o1.getOrderPriority();
+            long p2 = o2.getOrderPriority();
 
-            return -Integer.compare(p1,p2);
+            return -Long.compare(p1,p2);
         });
         badCaptures.sort((o1, o2) -> {
-            int p1 = o1.getOrderPriority();
-            int p2 = o2.getOrderPriority();
+            long p1 = o1.getOrderPriority();
+            long p2 = o2.getOrderPriority();
 
-            return -Integer.compare(p1,p2);
+            return -Long.compare(p1,p2);
         });
         nonCaptureMoves.sort((o1, o2) -> {
-            int p1 = o1.getOrderPriority();
-            int p2 = o2.getOrderPriority();
+            long p1 = o1.getOrderPriority();
+            long p2 = o2.getOrderPriority();
 
-            return -Integer.compare(p1,p2);
+            return -Long.compare(p1,p2);
         });
 
 
@@ -118,8 +118,8 @@ public class SystematicOrderer2 implements Orderer {
         collection.clear();
         collection.addAll(pvMoves);
         collection.addAll(goodCaptures);
-        collection.addAll(badCaptures);
         collection.addAll(killerMoves);
+        collection.addAll(badCaptures);
         collection.addAll(nonCaptureMoves);
 
 

@@ -46,7 +46,7 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
             -10, 0, 10, 10, 10, 10, 0, -10,
             -10, 10, 10, 10, 10, 10, 10, -10,
             -10, 5, 0, 0, 0, 0, 5, -10,
-            -20, -10, -10, -10, -10, -10, -10, -20,
+            -20, -10, -40, -10, -10, -40, -10, -20,
             })).scale(0.01);
 
     public static final Tensor1D ROOK_VALUES_WHITE = (Tensor1D) flipTensor(new Tensor1D(new double[]{
@@ -68,7 +68,7 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
             -12, 2, 6, 10, 10, 6, 2, -12,
             -6, 10, 8, 6, 6, 8, 2, -6,
             -16, -8, 0, 2, 2, 0, -8, -16,
-            -24, -50, -12, -12, -12, -12, -50, -24,
+            -24, -60, -12, -12, -12, -12, -60, -24,
             })).scale(0.01);
     public static final Tensor1D QUEEN_VALUES_WHITE = (Tensor1D) flipTensor(new Tensor1D(new double[]{
             -20, -10, -10, -5, -5, -10, -10, -20,
@@ -78,7 +78,7 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
             0, 0, 5, 5, 5, 5, 0, -5,
             -10, 5, 5, 5, 5, 5, 0, -10,
             -10, 0, 5, 0, 0, 0, 0, -10,
-            -20, -10, -10, -5, -5, -10, -10, -20
+            -20, -10, -10, 2, -5, -10, -10, -20
     })).scale(0.01);
 
     public static final Tensor1D KING_VALUES_MID_WHITE = (Tensor1D) flipTensor(new Tensor1D(new double[]{

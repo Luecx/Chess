@@ -144,13 +144,14 @@ public class MoveList implements Iterable<Move>, List<Move> {
 
     @Override
     public void sort(Comparator<? super Move> c) {
+        if (this.size == 0) return;
         quicksort(0, this.size-1);
     }
 
     private void quicksort(int low, int high) {
         int i = low, j = high;
         // Get the pivot element from the middle of the list
-        int pivot = moves[low + (high-low)/2].getOrderPriority();
+        long pivot = moves[low + (high-low)/2].getOrderPriority();
 
         // Divide into two lists
         while (i <= j) {

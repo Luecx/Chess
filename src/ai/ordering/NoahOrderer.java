@@ -186,10 +186,10 @@ public class NoahOrderer implements Orderer {
         }
 
         collection.sort((o1, o2) -> {
-            int p1 = o1.getOrderPriority();
-            int p2 = o2.getOrderPriority();
+            Long p1 = o1.getOrderPriority();
+            Long p2 = o2.getOrderPriority();
 
-            return -Integer.compare(p1,p2);
+            return -Long.compare(p1,p2);
         });
 
 
