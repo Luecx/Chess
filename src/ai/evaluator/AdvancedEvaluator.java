@@ -8,6 +8,7 @@ import board.FastBoard;
 import board.bitboards.BitBoard;
 import board.pieces.PieceList;
 import io.IO;
+import io.UCI;
 
 import java.util.Arrays;
 
@@ -372,6 +373,7 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
         return false;
     }
 
+
     /**
      * used to evaluate the board.
      * First the game phase aka. taper is evaluated.
@@ -705,9 +707,33 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
                                  Tensor1D[] pstEarly,
                                  Tensor1D[] pstLate,
                                  double taper) {
+
+
+        boolean opponentKingIsAlone = BitBoard.bitCount(opponentTotalOccupancy) == 1;
+
         double ev = 0;
         for (int i = 0; i < ourPieces[5].size(); i++) {
             int index = ourPieces[5].get(i);
+
+            if(!opponentKingIsAlone){
+                ev += taper(PARAMETER_KING_TABLE_FACTOR_EARLY, PARAMETER_KING_TABLE_FACTOR_LATE, taper) *
+                      taper(pstEarly[5].get(index), pstLate[5].get(index), taper);
+                ev += taper(PARAMETER_KING_SAFETY_1_EARLY, PARAMETER_KING_SAFETY_1_LATE, taper) *
+                      (BitBoard.bitCount(BitBoard.KING_ATTACKS[index] & ourTotalOccupancy));
+                ev += taper(PARAMETER_KING_SAFETY_2_EARLY, PARAMETER_KING_SAFETY_2_LATE, taper) *
+                      (BitBoard.bitCount(BitBoard.KING_ATTACKS[index] & opponentTotalOccupancy));
+                ev += taper(PARAMETER_KING_PAWN_SHIELD_EARLY, PARAMETER_KING_PAWN_SHIELD_LATE, taper) *
+                      (BitBoard.bitCount(BitBoard.KING_ATTACKS[index] & ourPieceOccupancy[0]));
+
+
+                ev += taper(PARAMETER_KING_SAFETY_3_EARLY, PARAMETER_KING_SAFETY_3_LATE, taper) * BitBoard.bitCount(
+                        attackedSquares & BitBoard.KING_ATTACKS[index]);
+            }else{
+                ev -= BitBoard.chebyshevDistance(index, BitBoard.bitscanForward(opponentTotalOccupancy)) * 20;
+            }
+            ev += taper(CONST_PARAMETER_KING_VALUE_EARLY, CONST_PARAMETER_KING_VALUE_LATE, taper);
+
+
 
 
 //            evalResults[9] = taper(PARAMETER_KING_TABLE_FACTOR_EARLY, PARAMETER_KING_TABLE_FACTOR_LATE, taper) *
@@ -724,19 +750,7 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
 //            ev += evalResults[11];
 //            ev += evalResults[12];
 
-            ev += taper(PARAMETER_KING_TABLE_FACTOR_EARLY, PARAMETER_KING_TABLE_FACTOR_LATE, taper) *
-                             taper(pstEarly[5].get(index), pstLate[5].get(index), taper);
-            ev += taper(PARAMETER_KING_SAFETY_1_EARLY, PARAMETER_KING_SAFETY_1_LATE, taper) *
-                              (BitBoard.bitCount(BitBoard.KING_ATTACKS[index] & ourTotalOccupancy));
-            ev += taper(PARAMETER_KING_SAFETY_2_EARLY, PARAMETER_KING_SAFETY_2_LATE, taper) *
-                              (BitBoard.bitCount(BitBoard.KING_ATTACKS[index] & opponentTotalOccupancy));
-            ev += taper(PARAMETER_KING_PAWN_SHIELD_EARLY, PARAMETER_KING_PAWN_SHIELD_LATE, taper) *
-                              (BitBoard.bitCount(BitBoard.KING_ATTACKS[index] & ourPieceOccupancy[0]));
 
-
-            ev += taper(PARAMETER_KING_SAFETY_3_EARLY, PARAMETER_KING_SAFETY_3_LATE, taper) * BitBoard.bitCount(
-                    attackedSquares & BitBoard.KING_ATTACKS[index]);
-            ev += taper(CONST_PARAMETER_KING_VALUE_EARLY, CONST_PARAMETER_KING_VALUE_LATE, taper);
 
         }
         return ev;
@@ -1148,16 +1162,16 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
 
 
 
-        FastBoard fb = IO.read_FEN(new FastBoard(), "1k1r3q/1ppn3p/p4b2/4p3/8/P2N2P1/1PP1R1BP/2K1Q3 w - -");
+        FastBoard fb = IO.read_FEN(new FastBoard(), "8/4kR2/8/3K4/8/8/8/8 b - - 5 3");
 
-        AdvancedEvaluator av =  new AdvancedEvaluator(new SimpleDecider());
-
-
+        UCI.getAi().setLimit_flag(2);
+        UCI.getAi().setLimit(20);
+        UCI.getAi().setUse_qSearch(true);
+        UCI.getAi().setUse_null_moves(false);
+        UCI.getAi().setDebug(true);
         System.out.println(fb);
+        UCI.getAi().bestMove(fb);
 
-        long t = System.currentTimeMillis();
-        for(int i = 0; i < 1e8; i++)
-            av.staticExchangeEvaluation(fb, 4+4*8,-1, 3+2*8,3,1);
-        System.out.println(System.currentTimeMillis()-t);
+
     }
 }

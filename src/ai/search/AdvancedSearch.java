@@ -648,7 +648,7 @@ public class AdvancedSearch implements AI {
          * null move pruning
          */
         if (use_null_moves) {
-            if(!pv && !isInCheck){
+            if(!pv && !isInCheck && new SimpleDecider().getGamePhase(_board) < 0.8){
                 _board.move_null();
                 score = -pvSearch(-alpha-1, -alpha, currentDepth+1, depthLeft-1-null_move_reduction, false, false);
                 _board.undoMove_null();
