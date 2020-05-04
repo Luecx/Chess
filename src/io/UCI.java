@@ -51,6 +51,29 @@ public class UCI {
             1000);
 
 
+    public static String getLogName() {
+        return LOG_NAME;
+    }
+
+    public static String getENGINENAME() {
+        return ENGINENAME;
+    }
+
+    public static Board getB() {
+        return b;
+    }
+
+    public static TimeManager getTimeManager() {
+        return timeManager;
+    }
+
+    public static SenpaiReducer getSenpaiReducer() {
+        return senpaiReducer;
+    }
+
+    public static AdvancedSearch getAi() {
+        return ai;
+    }
 
     private static CommandDataBase cdb = new CommandDataBase();
 

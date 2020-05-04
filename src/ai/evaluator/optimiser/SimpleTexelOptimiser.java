@@ -10,8 +10,10 @@ import ai.search.AdvancedSearch;
 import ai.tools.threads.Pool;
 import board.Board;
 import board.FastBoard;
+import board.moves.Move;
 import io.IO;
 import io.Testing;
+import io.UCI;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -341,19 +343,82 @@ public class SimpleTexelOptimiser {
         return 1d / (1+Math.pow(10, - centipawns/400d));
     }
 
+    public void overview(){
+        int promotions = 0;
+        int goodCaps = 0;
+        int equalCaps = 0;
+        int badCaps = 0;
+        int inCheck = 0;
+        int givesCheck = 0;
+
+        AdvancedEvaluator evaluator = new AdvancedEvaluator(new SimpleDecider());
+
+        for(Board b:fen_strings){
+
+            if(b.isInCheck(b.getActivePlayer())){
+                inCheck ++;
+            }
+
+            for(Object m:b.getPseudoLegalMoves()){
+                Move move = (Move)m;
+
+                if(!b.isLegal(move)){
+                    continue;
+                }
+
+                if(b.givesCheck(move)){
+                    givesCheck++;
+                }
+                if(move.isCapture()){
+                    double see = evaluator.staticExchangeEvaluation(b, move.getTo(), move.getPieceTo(), move.getFrom(), move.getPieceFrom(), b.getActivePlayer());
+                    if(see > 0){
+                        goodCaps++;
+                    }else if(see == 0){
+                        equalCaps ++;
+                    }else{
+                        badCaps ++;
+                    }
+                }
+                if(move.isPromotion()){
+                    promotions ++;
+                }
+            }
+        }
+        System.out.println(fen_strings.size() + " positions with:");
+        System.out.format("%10s %-10s %n", inCheck , " position with king in check");
+        System.out.format("%10s %-10s %n", givesCheck , " moves that give check");
+        System.out.format("%10s %-10s %n", promotions , " promotions");
+        System.out.format("%10s %-10s %n", goodCaps , " good captures");
+        System.out.format("%10s %-10s %n", equalCaps , " equal captures");
+        System.out.format("%10s %-10s %n", badCaps, " bad captures");
+    }
+
+
     public static void main(String[] args) {
         SimpleTexelOptimiser tex = new SimpleTexelOptimiser();
         tex.readFile("resources/quiet-labeled.epd",
                      new FastBoard(),
-                     1000000);
+                     10);
 
-        AdvancedEvaluator evaluator2 = new AdvancedEvaluator(new SimpleDecider());
-
-
+        AdvancedSearch search = UCI.getAi();
 
 
-        double K = tex.computeK(evaluator2, 1E-9, 2, 100,2);
-        tex.iterationLocally(evaluator2, K, 16);
+//        for(Board b:tex.fen_strings){
+//            search.bestMove(b);
+//        }
+        search.setDebug(false);
+        search.setUse_qSearch(true);
+        search.setUse_null_moves(false);
+        search.bestMove(tex.fen_strings.get(tex.fen_strings.size()-1));
+
+        System.out.println(tex.fen_strings.get(tex.fen_strings.size()-1));
+
+        tex.overview();
+
+//        AdvancedEvaluator evaluator2 = new AdvancedEvaluator(new SimpleDecider());
+//
+//        double K = tex.computeK(evaluator2, 1E-9, 2, 100,2);
+//        tex.iterationLocally(evaluator2, K, 16);
 
 
     }

@@ -3,6 +3,7 @@ package ai.search;
 import ai.evaluator.AdvancedEvaluator;
 import ai.evaluator.Evaluator;
 import ai.evaluator.decider.SimpleDecider;
+import ai.ordering.DeweyOrderer;
 import ai.ordering.Orderer;
 import ai.ordering.SystematicOrderer2;
 import ai.reducing.Reducer;
@@ -19,7 +20,6 @@ import board.moves.MoveListBuffer;
 import board.setup.Setup;
 import io.IO;
 import io.UCI;
-import io.sizeFetcher.InstrumentationAgent;
 
 import java.util.List;
 
@@ -660,6 +660,7 @@ public class AdvancedSearch implements AI {
         }
 
 
+
         /**
          * generating all legal moves and sorting them
          */
@@ -667,7 +668,6 @@ public class AdvancedSearch implements AI {
         if(allMoves.size() == 0){
             return eval;
         }
-        orderer.sort(allMoves, currentDepth, _board, pv, _killerTable, _transpositionTable, _counterMoveTable);
 
         /**
          * calculate SEE value
@@ -676,6 +676,40 @@ public class AdvancedSearch implements AI {
             if(m.getType() == Move.DEFAULT)
                 m.setSeeScore(getSEE(m));
         }
+        orderer.sort(allMoves, currentDepth, _board, pv, _killerTable, _transpositionTable, _counterMoveTable);
+
+
+
+
+
+
+
+//        /**
+//         * prob cut. Implementation from Laser-engine
+//         */
+//        if (!pv && !isInCheck && depthLeft >= 6
+//            && eval >= beta - 100 - 20 * depthLeft
+//            && Math.abs(beta) < MIN_CHECKMATE_VALUE) {
+//            double probCutMargin = beta + 90;
+//            int probCutCount = 0;
+//            for (Move m : allMoves) {
+//                if (probCutCount >= 5) {
+//                    break;
+//                }
+//                if (!m.isCapture() || !_board.isLegal(m)) {
+//                    continue;
+//                }
+//                probCutCount++;
+//                _board.move(m);
+//                score = -pvSearch(-probCutMargin, -probCutMargin + 1, currentDepth + 1, depthLeft - depthLeft / 4 - 4, false, false);
+//                _board.undoMove();
+//                if (score >= probCutMargin)
+//                    return score;
+//            }
+//        }
+
+
+
 
         /**
          * looping over all moves
@@ -730,7 +764,7 @@ public class AdvancedSearch implements AI {
 
             if (debug && currentDepth == 0){
                 score = -pvSearch(- Double.POSITIVE_INFINITY, -Double.NEGATIVE_INFINITY, currentDepth+1, depthLeft-1-reduction+extensions, true, false);
-                System.out.format("%-6s %10.1f %n",UCI.moveToUCI(m, _board), score);
+                System.out.format("%-6s %10.1f %20s %10s %n", UCI.moveToUCI(m, _board), score, m.getOrderPriority(), m.getSeeScore());
             }else{
                 if (legalMoves == 0 && pv) {
                     score = -pvSearch(-beta, -alpha, currentDepth+1, depthLeft-1-reduction+extensions, true, false);
@@ -831,6 +865,7 @@ public class AdvancedSearch implements AI {
         double      bestScore       = Double.NEGATIVE_INFINITY;
         double      origonalAlpha   = alpha;
         long        zobrist         = _board.zobrist();
+
 
         /**
          * if no quiescene shall be used at all
@@ -1268,37 +1303,18 @@ public class AdvancedSearch implements AI {
         FastBoard fb = new FastBoard(Setup.DEFAULT);
 
 
-        fb = IO.read_FEN(fb, "r3kbr1/1p1q1p1p/3p2p1/pNn1p2n/P1Q1P3/1N6/1PPB1PPP/R3R1K1 w q -");
+        String[] fens = new String[]{
 
-        //        AdvancedSearch advancedSearch = new AdvancedSearch(
-//                new AdvancedEvaluator(new SimpleDecider()),
-//                new SystematicOrderer2(),
-//                new SenpaiReducer(1), 1, 0);
-
-        //advancedSearch.bestMove()
-
-//        advancedSearch.use_history_heuristic = true;
-//        advancedSearch.use_transposition = false;
-        //advancedSearch.bestMove(fb);
+        };
 
 
+        AdvancedSearch adv = UCI.getAi();
 
+        for(String s:fens){
+            fb = IO.read_FEN(fb, s);
+            adv.bestMove(fb);
+        }
 
-        AdvancedSearch advancedSearch = new AdvancedSearch(
-                new AdvancedEvaluator(new SimpleDecider()),
-                new SystematicOrderer2(),
-                new SenpaiReducer(5), 2, 20);
-
-        advancedSearch.setUse_transposition(true);
-
-        advancedSearch.bestMove(fb);
-//        advancedSearch.bestMove(fb);
-
-
-
-//        FastBoard finalFb = fb;
-//        new Frame(fb,new Player() {},  advancedSearch).setFlippedBoard(true);
-//
 
 
     }

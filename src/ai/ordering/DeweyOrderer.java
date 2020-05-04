@@ -11,6 +11,7 @@ import board.bitboards.BitBoard;
 import board.moves.Move;
 import board.setup.Setup;
 import io.IO;
+import io.UCI;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -22,8 +23,8 @@ public class DeweyOrderer implements Orderer {
 
     private int pvPriority = 0;
     private int goodCapturePriority = 1;
-    private int badCapturePriority = 2;
-    private int killerPriority = 3;
+    private int killerPriority = 2;
+    private int badCapturePriority = 3;
     private int nonCapturePriority = 4;
 
     private void setPriority(List<Move> collection,
@@ -39,10 +40,10 @@ public class DeweyOrderer implements Orderer {
             lastMove = (Move) board.getMoveHistory().lastElement();
         }
 
-        long priority = 0;
 
         //this bit has to be first
         for (Move m : collection) {
+            long priority = 0;
             if (!m.isCapture() && counterMoveTable != null && lastMove != null) {
                 m.setOrderPriority((int)counterMoveTable.get(
                         Math.abs(lastMove.getPieceFrom())-1,
@@ -53,14 +54,26 @@ public class DeweyOrderer implements Orderer {
                 NoahOrderer.setOrderPriority(m, board);
             }
 
+
             if (killerTable != null && killerTable.isKillerMove(depth, m)) {
                 priority += priorityList[killerPriority];
             } else if (m.getPieceTo() != 0) {
-                if (AdvancedMidGameEvaluator.EVALUATE_PRICE[Math.abs(m.getPieceTo())] >= AdvancedMidGameEvaluator.EVALUATE_PRICE[Math.abs(m.getPieceFrom())]) {
-                    priority += priorityList[goodCapturePriority];
-                } else {
-                    priority += priorityList[badCapturePriority];
+
+
+                if(m.getSeeScore() == 0){
+                    if (AdvancedMidGameEvaluator.EVALUATE_PRICE[Math.abs(m.getPieceTo())] >= AdvancedMidGameEvaluator.EVALUATE_PRICE[Math.abs(m.getPieceFrom())]) {
+                        priority += priorityList[goodCapturePriority];
+                    } else {
+                        priority += priorityList[badCapturePriority];
+                    }
+                }else{
+                    if(m.getSeeScore() > 0){
+                        priority += priorityList[goodCapturePriority];
+                    }else{
+                        priority += priorityList[badCapturePriority];
+                    }
                 }
+
             } else {
                 priority += priorityList[nonCapturePriority];
             }
@@ -75,6 +88,7 @@ public class DeweyOrderer implements Orderer {
                 int index = collection.indexOf(hashMove);
                 if (index != -1) {
                     collection.get(index).setOrderPriority(collection.get(index).getOrderPriority() + priorityList[pvPriority]);
+
                 }
             }
         }

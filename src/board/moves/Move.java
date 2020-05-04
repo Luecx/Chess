@@ -13,9 +13,6 @@ public final class Move {
     public static final byte CASTLING = 3;
 
 
-
-
-
     int from;
     int to;
 
