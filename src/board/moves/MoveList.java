@@ -156,12 +156,12 @@ public class MoveList implements Iterable<Move>, List<Move> {
         while (i <= j) {
             // If the current value from the left list is smaller than the pivot
             // element then get the next element from the left list
-            while (moves[i].getOrderPriority() < pivot) {
+            while (moves[i].getOrderPriority() > pivot) {
                 i++;
             }
             // If the current value from the right list is larger than the pivot
             // element then get the next element from the right list
-            while (moves[j].getOrderPriority() > pivot) {
+            while (moves[j].getOrderPriority() < pivot) {
                 j--;
             }
 
@@ -265,6 +265,19 @@ public class MoveList implements Iterable<Move>, List<Move> {
     }
 
     @Override
+    public String toString() {
+
+
+        StringBuilder builder = new StringBuilder();
+        builder.append("MoveList:\n");
+        for(int i = 0; i < size(); i++){
+            builder.append("\t"+moves[i]+"\n");
+        }
+
+        return builder.toString();
+    }
+
+    @Override
     public boolean remove(Object o) {
         throw new RuntimeException("Not yet implemented");
     }
@@ -308,5 +321,14 @@ public class MoveList implements Iterable<Move>, List<Move> {
     @Override
     public Spliterator<Move> spliterator() {
         throw new RuntimeException("Not yet implemented");
+    }
+
+    public static void main(String[] args) {
+        MoveList moves = new MoveList(10);
+        for(int i = 0; i < 10; i++){
+            moves.add(i,6,3,4).setOrderPriority(i);
+        }
+        moves.sort(null);
+        System.out.println(moves);
     }
 }
