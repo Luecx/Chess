@@ -1,6 +1,7 @@
 package ai.evaluator.optimiser;
 
 import ai.evaluator.AdvancedEvaluator;
+import ai.evaluator.AdvancedEvaluatorNew;
 import ai.evaluator.Evaluator;
 import ai.evaluator.SimpleEvaluator;
 import ai.evaluator.decider.SimpleDecider;
@@ -11,6 +12,7 @@ import ai.tools.threads.Pool;
 import board.Board;
 import board.FastBoard;
 import board.moves.Move;
+import com.sun.security.jgss.AuthorizationDataEntry;
 import io.IO;
 import io.Testing;
 import io.UCI;
@@ -36,6 +38,9 @@ public class SimpleTexelOptimiser {
 
     public void prepare(int cores) {
         //searchers = new AdvancedSearch[cores];
+
+
+
 
 
         //boards = new ArrayList[cores];
@@ -82,26 +87,42 @@ public class SimpleTexelOptimiser {
 
             String line;
             while((line=bufferedReader.readLine()) != null){
-                int midIndex = line.indexOf('"');
-                String fen = line.substring(0, midIndex-1).trim();
-                String res = line.substring(midIndex).trim();
-
-                //System.out.println(fen +  "     "  +res);
-
 
                 if(index == count){
                     break;
                 }
 
+                int midIndex = line.indexOf('c');
+                int endIndex = line.lastIndexOf('c');
+                String fen = line.substring(0, midIndex-1).trim();
+                String res = line.substring(endIndex+2).trim();
+                res = res.substring(1, res.length()-2).trim();
+
+
+
                 index++;
 
                 fen_strings.add(IO.read_FEN(template,fen));
 
-                switch (res){
-                    case "\"1/2-1/2\";": results.add(DRAW);break;
-                    case "\"1-0\";": results.add(WHITE_WIN);break;
-                    case "\"0-1\";": results.add(BLACK_WIN);break;
+                try{
+                    Double result = Double.parseDouble(res);
+                    if(result < 0.3){
+                        results.add(BLACK_WIN);
+                    }else if(result > 0.7){
+                        results.add(WHITE_WIN);
+                    }else{
+                        results.add(DRAW);
+                    }
+                }catch (Exception e){
+                    switch (res){
+                        case "1/2-1/2": results.add(DRAW);break;
+                        case "1-0": results.add(WHITE_WIN);break;
+                        case "0-1": results.add(BLACK_WIN);break;
+                        default: throw new RuntimeException();
+                    }
                 }
+
+
             }
 
 
@@ -116,68 +137,42 @@ public class SimpleTexelOptimiser {
         }
     }
 
-//    public void iterationGradient(Evaluator evaluator, double K, double eta) {
-//        double[] params = evaluator.getEvolvableValues();
-//
-//        double drX = 0.1;   //value to compute gradients
-//
-//        double initError = error(evaluator, K);
-//
-//        System.out.println("Iteration starting...");
-//        System.out.print("Initial params: " );
-//        for(double d:params){
-//            System.out.format(" %+3.1f", d);
-//        }
-//        System.out.println();
-//
-//        for(int i = 0; i < params.length; i++){
-//            double dX = Math.abs(params[i] * drX);
-//            params[i] += dX;
-//            evaluator.setEvolvableValues(params);
-//            double upperE = error(evaluator, K);
-//            params[i] -= 2 * dX;
-//            evaluator.setEvolvableValues(params);
-//            double lowerE = error(evaluator, K);
-//            params[i] += dX;
-//            evaluator.setEvolvableValues(params);
-//
-//            double dEdX = (upperE - lowerE) / (2 * dX);
-//
-////            double change = 0;
-////
-////            if(Math.abs(dEdX) < 1E-12){
-////                change = 0;
-////            }else{
-////                if(dEdX > 0){
-////                    change -= dX * eta;
-////                }else{
-////                    change += dX * eta;
-////                }
-////                params[i] += change;
-////            }
-//
-//            double change = -dEdX * eta;
-//            params[i] += change;
-//            evaluator.setEvolvableValues(params);
-//
-//            if(change == 0){
-//                System.err.format("param: %d change: %+6.7E upperE: %+2.7E lowerE: %+2.7E dEdX: %+2.7E\n", i, change, upperE, lowerE, dEdX);
-//            }else{
-//                System.out.format("param: %d change: %+6.7E upperE: %+2.7E lowerE: %+2.7E dEdX: %+2.7E\n", i, change, upperE, lowerE, dEdX);
-//            }
-//        }
-//
-//        double afterError = error(evaluator, K);
-//
-//
-//        evaluator.setEvolvableValues(params);
-//        System.out.println("Iteration finished; dE: "+(afterError - initError) + "  E_(i-1): " + initError + " E_i: " + afterError);
-//        System.out.print("Resulting params: " );
-//        for(double d:params){
-//            System.out.format(" %+3.1f", d);
-//        }
-//        System.out.println();
-//    }
+
+    public double[] iterationGradientDescent(AdvancedEvaluatorNew evaluator, double K, double eta, int cores){
+        prepare(cores);
+        Pool pool = new Pool(cores);
+
+
+        double[] params = evaluator.getEvolvableValues();
+        double[] gradBuffer = new double[params.length];
+
+        double lastError = 1000000;
+
+        while(true){
+            Arrays.fill(gradBuffer, 0);
+
+            double error = errorWithGradients(evaluator, K, pool, gradBuffer);
+
+            if(error > lastError){
+                pool.stop();
+                return params;
+            }
+
+            params = evaluator.getEvolvableValues();
+
+            System.out.println("error: " + error);
+            System.out.println("params: " + Arrays.toString(params));
+
+            double[] tweaked = evaluator.getEvolvableValues();
+            for(int i = 0; i < params.length; i++){
+                tweaked[i] -= gradBuffer[i] * eta;
+            }
+            evaluator.setEvolvableValues(tweaked);
+
+        }
+
+
+    }
 
     public double[] iterationLocally(Evaluator evaluator, double K, int cores){
         prepare(cores);
@@ -282,6 +277,64 @@ public class SimpleTexelOptimiser {
         return K;
     }
 
+    public double errorWithGradients(AdvancedEvaluatorNew evaluator, double K, Pool pool, double[] gradientsBuffer){
+        final Double[] score = {0d};
+
+        int tasks = fen_strings.size();
+        int threads = pool.getAvailableThreads();
+
+        final AdvancedEvaluatorNew[] evaluators             = new AdvancedEvaluatorNew  [pool.getActiveThreads()];
+        final double[]            [] threadGradients        = new double                [pool.getActiveThreads()][];
+        for(int i = 0; i < evaluators.length; i++){
+            evaluators[i]           = evaluator.copy();
+            threadGradients[i]      = new double[gradientsBuffer.length];
+        }
+
+        Arrays.fill(gradientsBuffer, 0);
+
+        pool.executeTotal((index, core) -> {
+            double pScore = 0;
+            double lower = (double) (tasks) / threads * index;
+            double upper = (double) (tasks) / threads * (index + 1);
+
+
+            for (int i = (int) lower; i < (int) upper; i++) {
+
+
+//                searchers[core].setEvaluator(evaluator);
+//                double qi = searchers[core].qSearch(fen_strings.get(i));
+                double qi = evaluators[core].evaluate(fen_strings.get(i));
+                double expected = results.get(i) == DRAW ? 0.5 :
+                        results.get(i) == WHITE_WIN ? 1 : 0;
+
+                double sig              = this.sigmoid(qi, K);
+                double sigPrime         = this.sigmoidPrime(qi, K);
+                double lossPrime        = -2 * (expected - sig);
+
+                double[] gradients      = evaluators[core].getGradients();
+
+                for(int g = 0; g < gradients.length; g++){
+                    threadGradients[core][g] += sigPrime * lossPrime * gradients[g];
+                }
+
+                //System.out.println(IO.write_FEN(fen_strings.get(i)) + " " + qi);
+
+                pScore += (expected - sig) * (expected - sig);
+            }
+            synchronized (score) {
+                score[0] += pScore;
+            }
+        }, threads, false);
+
+        for(int t = 0; t < pool.getActiveThreads(); t++){
+            for(int g = 0; g < gradientsBuffer.length; g++){
+                gradientsBuffer[g] += threadGradients[t][g];
+            }
+        }
+
+        return score[0] / tasks;
+    }
+
     private double errorSingleThreaded(Evaluator evaluator, double K){
 //        if(searchers[0] == null){
 //            prepare(0);
@@ -319,6 +372,9 @@ public class SimpleTexelOptimiser {
                 double qi = evaluator.evaluate(fen_strings.get(i));
                 double expected = results.get(i) == DRAW ? 0.5 :
                         results.get(i) == WHITE_WIN ? 1 : 0;
+
+                //System.out.println(IO.write_FEN(fen_strings.get(i)) + " " + qi);
+
                 double sig = SimpleTexelOptimiser.this.sigmoid(qi, K);
 
                 pScore += (expected - sig) * (expected - sig);
@@ -335,12 +391,27 @@ public class SimpleTexelOptimiser {
         return 1d / (1 + Math.exp(-K * s / 400));
     }
 
+    public double sigmoidPrime(double s, double K) {
+        double ex = Math.exp(-s * K / 400);
+        return (K * ex) / (400 * (ex + 1) * (ex + 1));
+    }
+
     public static int probabiltyToCentipawnAdvantage(double prob){
         return (int)(400 * Math.log10(prob / (1-prob)));
     }
 
     public static double centipawnAdvantageToProbability(int centipawns){
         return 1d / (1+Math.pow(10, - centipawns/400d));
+    }
+
+    public void compare(Evaluator ev1, Evaluator ev2, double eps){
+        for(Board b:fen_strings){
+            double e1 = ev1.evaluate(b);
+            double e2 = ev2.evaluate(b);
+            if(Math.abs(e1-e2) > eps){
+                System.err.println(IO.write_FEN(b));
+            }
+        }
     }
 
     public void overview(){
@@ -396,29 +467,16 @@ public class SimpleTexelOptimiser {
 
     public static void main(String[] args) {
         SimpleTexelOptimiser tex = new SimpleTexelOptimiser();
-        tex.readFile("resources/quiet-labeled.epd",
+        tex.readFile("resources/lichess-new-labeled.epd",
                      new FastBoard(),
-                     10);
+                     2500000);
 
-        AdvancedSearch search = UCI.getAi();
+        AdvancedEvaluatorNew evaluator2 = new AdvancedEvaluatorNew(new SimpleDecider());
 
 
-//        for(Board b:tex.fen_strings){
-//            search.bestMove(b);
-//        }
-        search.setDebug(false);
-        search.setUse_qSearch(true);
-        search.setUse_null_moves(false);
-        search.bestMove(tex.fen_strings.get(tex.fen_strings.size()-1));
 
-        System.out.println(tex.fen_strings.get(tex.fen_strings.size()-1));
-
-        tex.overview();
-
-//        AdvancedEvaluator evaluator2 = new AdvancedEvaluator(new SimpleDecider());
-//
-//        double K = tex.computeK(evaluator2, 1E-9, 2, 100,2);
-//        tex.iterationLocally(evaluator2, K, 16);
+        double K = tex.computeK(evaluator2, 1E-9, 2.6485215, 100,1);
+        tex.iterationGradientDescent(evaluator2, K, 0.01,12);
 
 
     }

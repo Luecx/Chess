@@ -4,6 +4,7 @@ import ai.evaluator.AdvancedEvaluator;
 import ai.evaluator.Evaluator;
 import ai.evaluator.decider.SimpleDecider;
 import ai.ordering.DeweyOrderer;
+import ai.ordering.NoOrderer;
 import ai.ordering.Orderer;
 import ai.ordering.SystematicOrderer2;
 import ai.reducing.Reducer;
@@ -630,7 +631,7 @@ public class AdvancedSearch implements AI {
                 !pv &&
                 !_board.isInCheck(_board.getActivePlayer()) &&
                 depthLeft <= 2 &&
-                (evaluator.evaluate(_board) * _board.getActivePlayer()) <= alpha - razor_margin) {
+                (eval) <= alpha - razor_margin) {
 
                 if (depthLeft == 1) {
                     return qSearch(alpha, beta, currentDepth,0);
@@ -770,7 +771,7 @@ public class AdvancedSearch implements AI {
                     score = -pvSearch(-beta, -alpha, currentDepth+1, depthLeft-1-reduction+extensions, true, false);
                 } else {
                     score = -pvSearch(-alpha-1, -alpha, currentDepth+1, depthLeft-1-reduction+extensions, false, false);
-                    if (score > alpha && score < beta && pv) // in fail-soft ... && score < beta ) is common
+                    if (score > alpha && pv) // in fail-soft ... && score < beta ) is common
                         score = -pvSearch(-beta, -alpha, currentDepth+1, depthLeft-1-reduction+extensions, true,false); // re-search
                 }
 
@@ -1303,17 +1304,15 @@ public class AdvancedSearch implements AI {
         FastBoard fb = new FastBoard(Setup.DEFAULT);
 
 
-        String[] fens = new String[]{
-
-        };
-
 
         AdvancedSearch adv = UCI.getAi();
 
-        for(String s:fens){
-            fb = IO.read_FEN(fb, s);
-            adv.bestMove(fb);
-        }
+        adv.setLimit(200);
+        adv.setLimit_flag(2);
+
+        adv.setOrderer(new DeweyOrderer());
+
+        adv.bestMove(fb);
 
 
 

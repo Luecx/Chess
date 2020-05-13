@@ -7,6 +7,7 @@ import board.Board;
 import board.FastBoard;
 import board.bitboards.BitBoard;
 import board.pieces.PieceList;
+import board.setup.Setup;
 import io.IO;
 import io.UCI;
 
@@ -278,12 +279,18 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
 
 
     private double PARAMETER_PAWN_TABLE_FACTOR_LATE =                                137;
+    private double PARAMETER_PAWN_CONNECTED_LATE =                                   11;
     private double PARAMETER_PAWN_PASSED_LATE =                                      69;
     private double PARAMETER_PAWN_ISOLATED_LATE =                                    -11;
     private double PARAMETER_PAWN_DOUBLED_LATE =                                     -9;
-    private double PARAMETER_PAWN_CONNECTED_LATE =                                   11;
     private double PARAMETER_PAWN_CONNECTED_PASSED_LATE =                            55;
     private double PARAMETER_PAWN_DOUBLED_ISOLATED_LATE =                            -40;
+
+    private double PARAMETER_KNIGHT_TABLE_FACTOR_LATE =                              156;
+    private double PARAMETER_KNIGHT_VALUE_LATE =                                     349;
+    private double PARAMETER_KNIGHT_VISIBILITY_LATE =                                6;
+    private double PARAMETER_KNIGHT_VISIBILITY_PAWN_COVER_LATE =                     3;
+    private double PARAMETER_KNIGHT_TRAPPED_LATE =                                   -20;
 
     private double PARAMETER_ROOK_TABLE_FACTOR_LATE =                                82;
     private double PARAMETER_ROOK_VALUE_LATE =                                       681;
@@ -293,12 +300,6 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
     private double PARAMETER_ROOK_KING_LINE_LATE =                                   9;
     private double PARAMETER_ROOK_HALF_OPEN_LATE =                                   -1;
     private double PARAMETER_ROOK_OPEN_LATE =                                        -16;
-
-    private double PARAMETER_KNIGHT_TABLE_FACTOR_LATE =                              156;
-    private double PARAMETER_KNIGHT_VALUE_LATE =                                     349;
-    private double PARAMETER_KNIGHT_VISIBILITY_LATE =                                6;
-    private double PARAMETER_KNIGHT_VISIBILITY_PAWN_COVER_LATE =                     3;
-    private double PARAMETER_KNIGHT_TRAPPED_LATE =                                   -20;
 
     private double PARAMETER_BISHOP_TABLE_FACTOR_LATE =                              91;
     private double PARAMETER_BISHOP_VALUE_LATE =                                     374;
@@ -312,8 +313,8 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
     private double PARAMETER_QUEEN_TABLE_FACTOR_LATE =                               46;
     private double PARAMETER_QUEEN_VALUE_LATE =                                      1169;
     private double PARAMETER_QUEEN_VISIBILITY_LATE =                                 9;
-    private double PARAMETER_QUEEN_VISIBILITY_PAWN_COVER_LATE =                      12;
     private double PARAMETER_QUEEN_TRAPPED_LATE =                                    -69;
+    private double PARAMETER_QUEEN_VISIBILITY_PAWN_COVER_LATE =                      12;
 
     private double PARAMETER_KING_TABLE_FACTOR_LATE =                                12;
     private double PARAMETER_KING_SAFETY_1_LATE =                                    -7;
@@ -500,9 +501,12 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
             ev += taper(PARAMETER_KNIGHT_VISIBILITY_PAWN_COVER_EARLY, PARAMETER_KNIGHT_VISIBILITY_PAWN_COVER_LATE, taper)
                   * BitBoard.bitCount(attacks & opponentPawnCover);
             ev += taper(PARAMETER_KNIGHT_TRAPPED_EARLY, PARAMETER_KNIGHT_TRAPPED_LATE, taper)
-                  * (attacks & opponentPawnCover) == attacks ? 1 : 0;
+                  * ((attacks & opponentPawnCover) == attacks ? 1 : 0);
         }
         evalResults[2] = ev;
+
+//        System.out.println("knights: " + ev);
+
         return ev;
     }
 
@@ -535,6 +539,9 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
             ev += taper(PARAMETER_PAWN_TABLE_FACTOR_EARLY, PARAMETER_PAWN_TABLE_FACTOR_LATE, taper) *
                   taper(pstEarly[0].get(index), pstLate[0].get(index), taper);
             ev += taper(CONST_PARAMETER_PAWN_VALUE_EARLY, CONST_PARAMETER_PAWN_VALUE_LATE, taper);
+
+
+
 
             boolean passed = (ourPassedPawnMask[index] & opponentPieceOccupancy[0]) == 0;
             boolean connected = ((1L << index) & (connectedPawnsEast | connectedPawnsWest)) != 0;
@@ -569,16 +576,17 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
 //            }
         }
 
-
-
         ev += taper(PARAMETER_PAWN_DOUBLED_EARLY, PARAMETER_PAWN_DOUBLED_LATE, taper) *
-              (color == 1 ?
-                       BitBoard.bitCount((BitBoard.shiftNorth(ourPieceOccupancy[0]) | BitBoard.shiftNorth(BitBoard.shiftNorth(ourPieceOccupancy[0])) ) & ourPieceOccupancy[0]) :
-                       BitBoard.bitCount((BitBoard.shiftNorth(ourPieceOccupancy[0]) | BitBoard.shiftNorth(BitBoard.shiftNorth(ourPieceOccupancy[0])) ) & ourPieceOccupancy[0]));
-//        ev += taper(PARAMETER_PAWN_CONNECTED_EARLY, PARAMETER_PAWN_CONNECTED_LATE, taper) *
+                       BitBoard.bitCount((BitBoard.shiftNorth(ourPieceOccupancy[0])) & ourPieceOccupancy[0]);
+
+        //        ev += taper(PARAMETER_PAWN_CONNECTED_EARLY, PARAMETER_PAWN_CONNECTED_LATE, taper) *
 //                       (BitBoard.bitCount(connectedPawnsEast) +
 //                        BitBoard.bitCount(connectedPawnsWest));
         //evalResults[0] = ev;
+
+
+//        System.out.println("pawns: " + ev);
+
         return ev;
     }
 
@@ -603,7 +611,7 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
             ev += taper(PARAMETER_ROOK_VISIBILITY_PAWN_COVER_EARLY, PARAMETER_ROOK_VISIBILITY_PAWN_COVER_LATE, taper)
                   * BitBoard.bitCount(attacks & opponentPawnCover);
             ev += taper(PARAMETER_ROOK_TRAPPED_EARLY, PARAMETER_ROOK_TRAPPED_LATE, taper)
-                  * (attacks & opponentPawnCover) == attacks ? 1 : 0;
+                  * ((attacks & opponentPawnCover) == attacks ? 1 : 0);
             ev += taper(PARAMETER_ROOK_KING_LINE_EARLY, PARAMETER_ROOK_KING_LINE_LATE, taper)
                   * ((BitBoard.lookUpRookAttack(index, 0L) & opponentPieceOccupancy[5]) > 0 ? 1 : 0);
             if ((BitBoard.files[BitBoard.fileIndex(index)] & ourPieceOccupancy[0]) == 0) {     //atleast half open
@@ -614,6 +622,9 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
             }
         }
         //evalResults[1] = ev;
+
+
+//        System.out.println("rooks: " + ev);
         return ev;
     }
 
@@ -638,7 +649,7 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
             ev += taper(PARAMETER_BISHOP_VISIBILITY_PAWN_COVER_EARLY, PARAMETER_BISHOP_VISIBILITY_PAWN_COVER_LATE, taper)
                   * BitBoard.bitCount(attacks & opponentPawnCover);
             ev += taper(PARAMETER_BISHOP_TRAPPED_EARLY, PARAMETER_BISHOP_TRAPPED_LATE, taper)
-                  * (attacks & opponentPawnCover) == attacks ? 1 : 0;
+                  * ((attacks & opponentPawnCover) == attacks ? 1 : 0);
             //// VERY POSSIBLY WRONG --Noah
             if (BitBoard.bitCount(BitBoard.center_squares & (ourPieceOccupancy[0] | opponentPieceOccupancy[0])) <= 1)  {
                 ev += taper(PARAMETER_BISHOP_OPEN_BONUS_EARLY, PARAMETER_BISHOP_OPEN_BONUS_LATE,taper);
@@ -649,6 +660,9 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
         if (ourPieces[3].size() > 1) {
             ev += taper(PARAMETER_BISHOP_DOUBLED_EARLY, PARAMETER_BISHOP_DOUBLED_LATE, taper);
         }
+
+
+//        System.out.println("bishops: " + ev);
         //evalResults[3] = ev;
         return ev;
     }
@@ -684,6 +698,7 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
 //            ev += evalResults[7];
 //            ev += evalResults[8];
 
+
             ev += taper(PARAMETER_QUEEN_TABLE_FACTOR_EARLY, PARAMETER_QUEEN_TABLE_FACTOR_LATE, taper) *
                              taper(pstEarly[4].get(index), pstLate[4].get(index), taper);
             ev += taper(PARAMETER_QUEEN_VALUE_EARLY, PARAMETER_QUEEN_VALUE_LATE, taper);
@@ -692,8 +707,14 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
             ev += taper(PARAMETER_QUEEN_VISIBILITY_PAWN_COVER_EARLY, PARAMETER_QUEEN_VISIBILITY_PAWN_COVER_LATE, taper)
                              * BitBoard.bitCount(attacks & opponentPawnCover);
             ev += taper(PARAMETER_QUEEN_TRAPPED_EARLY, PARAMETER_QUEEN_TRAPPED_LATE, taper)
-                             * (attacks & opponentPawnCover) == attacks ? 1 : 0;
+                             * ((attacks & opponentPawnCover) == attacks ? 1 : 0);
+
+
         }
+
+
+//        System.out.println("queen: " + ev);
+
         //evalResults[4] = ev;
         return ev;
     }
@@ -718,21 +739,24 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
             if(!opponentKingIsAlone){
                 ev += taper(PARAMETER_KING_TABLE_FACTOR_EARLY, PARAMETER_KING_TABLE_FACTOR_LATE, taper) *
                       taper(pstEarly[5].get(index), pstLate[5].get(index), taper);
+
                 ev += taper(PARAMETER_KING_SAFETY_1_EARLY, PARAMETER_KING_SAFETY_1_LATE, taper) *
                       (BitBoard.bitCount(BitBoard.KING_ATTACKS[index] & ourTotalOccupancy));
+
                 ev += taper(PARAMETER_KING_SAFETY_2_EARLY, PARAMETER_KING_SAFETY_2_LATE, taper) *
                       (BitBoard.bitCount(BitBoard.KING_ATTACKS[index] & opponentTotalOccupancy));
+
                 ev += taper(PARAMETER_KING_PAWN_SHIELD_EARLY, PARAMETER_KING_PAWN_SHIELD_LATE, taper) *
                       (BitBoard.bitCount(BitBoard.KING_ATTACKS[index] & ourPieceOccupancy[0]));
 
-
                 ev += taper(PARAMETER_KING_SAFETY_3_EARLY, PARAMETER_KING_SAFETY_3_LATE, taper) * BitBoard.bitCount(
                         attackedSquares & BitBoard.KING_ATTACKS[index]);
+
+
             }else{
                 ev -= BitBoard.chebyshevDistance(index, BitBoard.bitscanForward(opponentTotalOccupancy)) * 20;
             }
             ev += taper(CONST_PARAMETER_KING_VALUE_EARLY, CONST_PARAMETER_KING_VALUE_LATE, taper);
-
 
 
 
@@ -753,6 +777,10 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
 
 
         }
+
+
+//        System.out.println("king: " + ev);
+
         return ev;
     }
 
@@ -1154,24 +1182,22 @@ public class AdvancedEvaluator implements Evaluator<AdvancedEvaluator> {
 //        Evaluator.createParameters(AdvancedEvaluator.class, ar);
 
 
-//        long t = System.currentTimeMillis();
-//        for(int i = 0; i < 1E7; i++){
-//            getBinomial(10,0.1);
-//        }
-//        System.out.println(System.currentTimeMillis()-t);
 
 
+        FastBoard fb = IO.read_FEN(new FastBoard(), "r3kb2/p5pp/n1q1bprn/1p1pp3/2pPP1P1/NRP2P1N/PP5P/2BQKB1R w Kq - 0 1");
 
-        FastBoard fb = IO.read_FEN(new FastBoard(), "8/4kR2/8/3K4/8/8/8/8 b - - 5 3");
+//        fb = new FastBoard(Setup.DEFAULT);
 
-        UCI.getAi().setLimit_flag(2);
-        UCI.getAi().setLimit(20);
-        UCI.getAi().setUse_qSearch(true);
-        UCI.getAi().setUse_null_moves(false);
-        UCI.getAi().setDebug(true);
         System.out.println(fb);
-        UCI.getAi().bestMove(fb);
 
+        AdvancedEvaluatorNew ev2 = new AdvancedEvaluatorNew(new SimpleDecider());
+        AdvancedEvaluator ev1 = new AdvancedEvaluator(new SimpleDecider());
+
+        long t = System.currentTimeMillis();
+        for(int i = 0; i < 1E7; i++){
+            ev2.evaluate(fb);
+        }
+        System.out.println((System.currentTimeMillis()-t) / 10);
 
     }
 }

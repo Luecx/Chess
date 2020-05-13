@@ -1045,6 +1045,18 @@ public class BitBoard {
     public static void main(String[] args) {
 
 
+        long time = System.currentTimeMillis();
+
+        long b = 1239013111231928319L;
+
+        BitBoard.printBitmap(b);
+
+        for(int i = 0; i < 1E9; i++){
+            BitBoard.bitCount(b+1);
+        }
+
+
+        System.out.println(System.currentTimeMillis() - time);
 
         //generatePassedPawnMask();
 
